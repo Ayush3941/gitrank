@@ -1,14 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { startTransition, useDeferredValue, useId, useMemo, useState } from "react";
 import { ControlSurface } from "@/components/shared/ControlSurface";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
 import { RemovableFilterChip } from "@/components/shared/RemovableFilterChip";
 import { ScrollableRegion } from "@/components/shared/ScrollableRegion";
 import { SearchInputWithClear } from "@/components/shared/SearchInputWithClear";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
-import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import type { RepositoryVisibility } from "@/types/gitrank";
 
@@ -199,33 +198,24 @@ export function PrivacyRepositoryToggleList({
             ))}
           </ul>
         ) : (
-          <div className="neon-surface space-y-3 rounded-[var(--radius-universal)] border-dashed px-4 py-4 text-sm text-muted">
+          <div className="min-h-[12rem]">
             {counts.total === 0 ? (
-              <p>
-                Repository visibility records will appear here after the next profile sync.
-                Open sync settings to refresh repository privacy controls now.
-              </p>
+              <EmptyState
+                eyebrow="Repository privacy"
+                title="Repository visibility will appear after sync."
+                description="Open dashboard to let auto-sync refresh repository privacy controls."
+                actionLabel="Open dashboard"
+                actionHref="/dashboard"
+              />
             ) : (
-              <p>
-                No repositories match the current search and visibility filter.
-                Reset filters or widen the search scope.
-              </p>
+              <EmptyState
+                eyebrow="Filter results"
+                title="No repositories match current filters."
+                description="Reset filters or widen the search scope."
+                actionLabel="Reset filters"
+                onAction={handleReset}
+              />
             )}
-            <div className="flex flex-wrap gap-2">
-              <Button
-                type="button"
-                size="sm"
-                variant="secondary"
-                onClick={handleReset}
-                aria-controls={repositoriesRegionId}
-                disabled={!canReset}
-              >
-                Reset filters
-              </Button>
-              <Button asChild size="sm" variant="secondary">
-                <Link href="/dashboard" prefetch={false}>Open dashboard</Link>
-              </Button>
-            </div>
           </div>
         )}
       </ScrollableRegion>

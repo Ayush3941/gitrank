@@ -4,8 +4,8 @@ import { AlertTriangle, CheckCircle2, Clock3, RefreshCw, XCircle } from "lucide-
 import { useDeferredValue, useId, useMemo, useState } from "react";
 import { ControlSurface } from "@/components/shared/ControlSurface";
 import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { ExactTime } from "@/components/shared/ExactTime";
-import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { RelativeTime } from "@/components/shared/RelativeTime";
 import { ScrollableRegion } from "@/components/shared/ScrollableRegion";
@@ -337,28 +337,24 @@ export function SyncRunActivityPanel({
             <LoadingState message="Recent sync activity" />
           </div>
         ) : runs.length === 0 ? (
-          <div className={`neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}>
-            <p>No sync runs yet. Open dashboard to start auto-sync.</p>
-            <div className="flex flex-wrap gap-2">
-              <Button asChild size="sm" variant="secondary">
-                <IntentPrefetchLink href="/dashboard">Open dashboard</IntentPrefetchLink>
-              </Button>
-            </div>
+          <div className={resultsRegionClassName}>
+            <EmptyState
+              eyebrow="Sync activity"
+              title="No sync runs yet."
+              description="Open dashboard to start auto-sync and populate recent activity."
+              actionLabel="Open dashboard"
+              actionHref="/dashboard"
+            />
           </div>
         ) : filteredRows.length === 0 ? (
-          <div className={`neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}>
-            <p>No sync runs match this filter.</p>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                type="button"
-                size="sm"
-                variant="secondary"
-                onClick={handleResetFilters}
-                disabled={!canReset}
-              >
-                Reset filters
-              </Button>
-            </div>
+          <div className={resultsRegionClassName}>
+            <EmptyState
+              eyebrow="Filter results"
+              title="No sync runs match this filter."
+              description="Reset filters to inspect all recent sync attempts."
+              actionLabel="Reset filters"
+              onAction={handleResetFilters}
+            />
           </div>
         ) : (
           <ol role="list" className={`grid gap-2 ${resultsRegionClassName}`}>

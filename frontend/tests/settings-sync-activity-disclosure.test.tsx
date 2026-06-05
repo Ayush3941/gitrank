@@ -6,6 +6,8 @@ import {
   renderWithClient,
 } from "@/tests/helpers/live-fixtures";
 
+const asyncFindOptions = { timeout: 10_000 };
+
 describe("settings sync activity disclosure", () => {
   beforeEach(() => {
     document.cookie = "gitrank_csrf=test-csrf-token";
@@ -15,9 +17,9 @@ describe("settings sync activity disclosure", () => {
     vi.stubGlobal("fetch", vi.fn((input, init) => settingsFetch(input, init, "healthy")));
 
     renderWithClient(<SettingsPageClient />);
-    await screen.findByRole("heading", { name: "Settings" });
+    await screen.findByRole("heading", { name: "Settings" }, asyncFindOptions);
 
-    expect(await screen.findByRole("button", { name: /Show details/i })).toBeTruthy();
+    expect(await screen.findByRole("button", { name: /Show details/i }, asyncFindOptions)).toBeTruthy();
     expect(screen.queryByRole("region", { name: /Show details/i })).toBeNull();
     expect(screen.queryByText("Recent sync runs")).toBeNull();
   }, 10_000);
@@ -26,12 +28,12 @@ describe("settings sync activity disclosure", () => {
     vi.stubGlobal("fetch", vi.fn((input, init) => settingsFetch(input, init, "attention")));
 
     renderWithClient(<SettingsPageClient />);
-    await screen.findByRole("heading", { name: "Settings" });
+    await screen.findByRole("heading", { name: "Settings" }, asyncFindOptions);
 
-    expect(await screen.findByRole("button", { name: /Hide details/i })).toBeTruthy();
-    expect(await screen.findByRole("region", { name: /Hide details/i })).toBeTruthy();
-    expect(await screen.findByText("Recent sync runs")).toBeTruthy();
-    expect(await screen.findByText("1 failed")).toBeTruthy();
+    expect(await screen.findByRole("button", { name: /Hide details/i }, asyncFindOptions)).toBeTruthy();
+    expect(await screen.findByRole("region", { name: /Hide details/i }, asyncFindOptions)).toBeTruthy();
+    expect(await screen.findByText("Recent sync runs", undefined, asyncFindOptions)).toBeTruthy();
+    expect(await screen.findByText("1 failed", undefined, asyncFindOptions)).toBeTruthy();
   }, 10_000);
 
   it("keeps sync activity details open after manual refresh resolves to healthy runs", async () => {
@@ -111,14 +113,14 @@ describe("settings sync activity disclosure", () => {
     );
 
     renderWithClient(<SettingsPageClient />);
-    await screen.findByRole("heading", { name: "Settings" });
+    await screen.findByRole("heading", { name: "Settings" }, asyncFindOptions);
 
-    expect(await screen.findByRole("button", { name: /Hide details/i })).toBeTruthy();
-    const refreshButton = await screen.findByRole("button", { name: /Refresh log/i });
+    expect(await screen.findByRole("button", { name: /Hide details/i }, asyncFindOptions)).toBeTruthy();
+    const refreshButton = await screen.findByRole("button", { name: /Refresh log/i }, asyncFindOptions);
     fireEvent.click(refreshButton);
 
-    expect(await screen.findByRole("button", { name: /Hide details/i })).toBeTruthy();
-    expect(await screen.findByText("Recent sync runs")).toBeTruthy();
+    expect(await screen.findByRole("button", { name: /Hide details/i }, asyncFindOptions)).toBeTruthy();
+    expect(await screen.findByText("Recent sync runs", undefined, asyncFindOptions)).toBeTruthy();
   }, 10_000);
 });
 

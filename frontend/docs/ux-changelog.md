@@ -2,6 +2,9 @@
 
 ## 2026-06-05
 
+- Settings empty states:
+  - repository-visibility and sync-run empty/filter results now use shared `EmptyState` cards instead of feature-local dashed cards.
+  - the zero-repository state no longer renders a disabled reset button; only real recovery actions remain visible.
 - Panel loading placeholders:
   - added shared `PanelLoadingPlaceholder` for deferred and dynamic feature panels.
   - dashboard, contribution, badge, quest, leaderboard, public-profile, PR-report, and settings skeleton fallbacks now share one busy-state and live-announcement contract while preserving each panel's existing skeleton proportions.

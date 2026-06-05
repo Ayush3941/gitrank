@@ -69,12 +69,11 @@ describe("accessibility control naming", () => {
       <PrivacyRepositoryToggleList repositories={[]} />
     );
 
-    const reset = rendered.getByRole("button", { name: "Reset filters" });
     const syncAction = rendered.getByRole("link", { name: /Open dashboard/i });
     const search = rendered.getByRole("searchbox", { name: "Search repositories" });
 
-    expect(reset).toBeTruthy();
-    expect(reset.hasAttribute("disabled")).toBe(true);
+    expect(rendered.queryByRole("button", { name: "Reset filters" })).toBeNull();
+    expect(rendered.getByText("Repository visibility will appear after sync.")).toBeTruthy();
     expect(syncAction).toBeTruthy();
     expect(syncAction.getAttribute("href")).toBe("/dashboard");
     const describedById = search.getAttribute("aria-describedby");
