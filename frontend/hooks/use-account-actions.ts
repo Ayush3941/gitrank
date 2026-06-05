@@ -5,16 +5,9 @@ import {
   deleteMyAccount,
   exportMyAccountData,
   logoutCurrentSession,
-  queueSyncRequest,
-  runCommitSync,
-  runInstallationSync,
-  runIssueSync,
   runPullRequestSync,
-  runRepositorySync,
-  runReviewSync,
   runUserSync,
   startAccountLink,
-  type QueueSyncInput,
   unlinkMyAccount,
 } from "@/lib/api/account-api";
 import { myProfileQueryKey } from "@/hooks/use-profile";
@@ -48,39 +41,9 @@ export function useRequestProfileSync() {
   });
 }
 
-export function useQueueSyncRequest() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (input: QueueSyncInput) => queueSyncRequest(input),
-    onSuccess: () => {
-      invalidateProfileDerivedQueries(queryClient);
-    },
-  });
-}
-
 export function useStartAccountLink() {
   return useMutation({
     mutationFn: (returnTo: string) => startAccountLink(returnTo),
-  });
-}
-
-export function useRunRepositorySync() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({
-      repository,
-      user,
-      installationId,
-    }: {
-      repository: string;
-      user?: string;
-      installationId?: number;
-    }) => runRepositorySync(repository, { user, installationId }),
-    onSuccess: () => {
-      invalidateProfileDerivedQueries(queryClient);
-    },
   });
 }
 
@@ -89,17 +52,6 @@ export function useRunUserSync() {
 
   return useMutation({
     mutationFn: (user?: string) => runUserSync(user),
-    onSuccess: () => {
-      invalidateProfileDerivedQueries(queryClient);
-    },
-  });
-}
-
-export function useRunInstallationSync() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (installationId: number) => runInstallationSync(installationId),
     onSuccess: () => {
       invalidateProfileDerivedQueries(queryClient);
     },
@@ -122,72 +74,6 @@ export function useRunPullRequestSync() {
       installationId?: number;
     }) =>
       runPullRequestSync(repository, number, { user, installationId }),
-    onSuccess: () => {
-      invalidateProfileDerivedQueries(queryClient);
-    },
-  });
-}
-
-export function useRunReviewSync() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({
-      repository,
-      number,
-      user,
-      installationId,
-    }: {
-      repository: string;
-      number: number;
-      user?: string;
-      installationId?: number;
-    }) =>
-      runReviewSync(repository, number, { user, installationId }),
-    onSuccess: () => {
-      invalidateProfileDerivedQueries(queryClient);
-    },
-  });
-}
-
-export function useRunIssueSync() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({
-      repository,
-      number,
-      user,
-      installationId,
-    }: {
-      repository: string;
-      number: number;
-      user?: string;
-      installationId?: number;
-    }) =>
-      runIssueSync(repository, number, { user, installationId }),
-    onSuccess: () => {
-      invalidateProfileDerivedQueries(queryClient);
-    },
-  });
-}
-
-export function useRunCommitSync() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({
-      repository,
-      sha,
-      user,
-      installationId,
-    }: {
-      repository: string;
-      sha: string;
-      user?: string;
-      installationId?: number;
-    }) =>
-      runCommitSync(repository, sha, { user, installationId }),
     onSuccess: () => {
       invalidateProfileDerivedQueries(queryClient);
     },

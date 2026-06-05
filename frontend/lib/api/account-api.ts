@@ -173,10 +173,6 @@ export type AccountDataExport = {
   redactions?: string[];
 };
 
-export async function requestProfileSync(): Promise<ApiSyncResponse> {
-  return queueSyncRequest({ mode: "user" });
-}
-
 export async function queueSyncRequest(input: QueueSyncInput): Promise<ApiSyncResponse> {
   const csrfToken = requireCSRFToken();
   const response = await fetch("/api/sync", {

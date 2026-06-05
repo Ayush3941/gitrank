@@ -2,6 +2,9 @@
 
 ## 2026-06-05
 
+- Frontend route and hook cleanup:
+  - removed obsolete top-level dashboard route aliases so dashboard pages live only under the canonical `/dashboard/*` tree.
+  - pruned unused sync mutation hook wrappers, the dead profile-sync API alias, and the unused dialog close export after static reachability checks.
 - Exact timestamp consistency:
   - added shared `ExactTime` rendering for exact sync timestamps.
   - onboarding sync status and settings sync-run rows now render valid timestamps as semantic `<time>` elements instead of raw locale strings.

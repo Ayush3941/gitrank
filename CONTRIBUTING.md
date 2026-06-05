@@ -6,6 +6,8 @@ This document is intentionally detailed.
 
 ## Session Notes (June 5, 2026)
 
+- Removed obsolete top-level dashboard route alias files (`/badges`, `/contributions`, `/leaderboard`, `/quests`, `/settings`) after confirming the canonical `/dashboard/*` routes own those pages; pruned unused sync mutation hook wrappers, the dead profile-sync API alias, and the unused dialog close export.
+- Hardened the workflow Make-target reference guard to use a here-string lookup instead of a `printf | rg -qx` pipeline, avoiding `pipefail` false failures when a valid target is found early.
 - Added shared `ExactTime` rendering for exact user-facing timestamps so onboarding sync status and settings sync-run rows expose valid timestamps through semantic `<time>` elements instead of raw locale strings.
 - Extended `formatDateTime` with an explicit fallback parameter and reused it for contribution CSV date labels, keeping invalid timestamp handling deliberate without duplicating local date parsing.
 - Added shared plain, signed, and XP number formatters and routed dashboard rank, league, progress, and recent battle-report numbers through them instead of repeating locale formatting in UI components.
