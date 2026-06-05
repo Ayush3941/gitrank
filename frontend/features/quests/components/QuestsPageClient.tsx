@@ -112,7 +112,7 @@ export function QuestsPageClient() {
     },
   });
   const questSnapshotRefreshedAt =
-    data?.staleness?.refreshedAt ?? profile?.refreshedAt ?? new Date().toISOString();
+    data?.staleness?.refreshedAt ?? profile?.refreshedAt;
   const contributionRows = profile?.user.contributions ?? [];
   const streak = summarizeContributionStreak(contributionRows);
   const dayOfYear = dayOfYearUTC(new Date());

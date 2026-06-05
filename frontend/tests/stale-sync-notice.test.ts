@@ -36,6 +36,21 @@ describe("buildStaleSyncNotice", () => {
     expect(notice.reasonMessage).toBeUndefined();
   });
 
+  it("does not invent a fresh timestamp when snapshot refresh time is missing", () => {
+    const notice = buildStaleSyncNotice({
+      syncState: "stale",
+      latestSyncOutcome: null,
+      snapshotLabel: "Contribution evidence",
+      partialFallback: "partial fallback",
+      staleFallback: "New PR rows appear after sync completes.",
+    });
+
+    expect(notice.message).toBe(
+      "Contribution evidence refresh time is unavailable. New PR rows appear after sync completes.",
+    );
+    expect(notice.message).not.toContain("Just now");
+  });
+
   it("returns blocker-aware stale messaging when app access is unavailable", () => {
     const notice = buildStaleSyncNotice({
       syncState: "stale",
@@ -54,5 +69,23 @@ describe("buildStaleSyncNotice", () => {
     expect(notice.reasonMessage).toBe(
       "Strict GitHub App runtime is required before extracting contribution data.",
     );
+  });
+
+  it("keeps app-access blocker guidance honest when refresh time is missing", () => {
+    const notice = buildStaleSyncNotice({
+      syncState: "stale",
+      latestSyncOutcome: {
+        code: "app_runtime_required",
+        message: "Strict GitHub App runtime is required before extracting contribution data.",
+      },
+      snapshotLabel: "Leaderboard context",
+      partialFallback: "partial fallback",
+      staleFallback: "stale fallback",
+    });
+
+    expect(notice.message).toBe(
+      "Leaderboard context refresh time is unavailable, but new PR evidence is blocked until GitHub App access is restored.",
+    );
+    expect(notice.message).not.toContain("Just now");
   });
 });

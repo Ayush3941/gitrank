@@ -160,7 +160,7 @@ export function LeaderboardPageClient() {
     () =>
       buildStaleSyncNotice({
         syncState: displaySyncState === "partially_synced" ? "partially_synced" : "stale",
-        refreshedAt: myProfile?.refreshedAt ?? new Date().toISOString(),
+        refreshedAt: myProfile?.refreshedAt,
         latestSyncOutcome,
         snapshotLabel: "Leaderboard context",
         partialFallback:

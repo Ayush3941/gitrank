@@ -17,7 +17,7 @@ export function buildStaleSyncNotice({
   staleFallback,
 }: {
   syncState: StaleSyncState;
-  refreshedAt: string;
+  refreshedAt?: string;
   latestSyncOutcome: SyncRunDiagnostic | null;
   snapshotLabel: string;
   partialFallback: string;
@@ -25,6 +25,7 @@ export function buildStaleSyncNotice({
 }): StaleSyncNotice {
   const syncCode = latestSyncOutcome?.code ?? "none";
   const reasonMessage = latestSyncOutcome?.message?.trim() ? latestSyncOutcome.message.trim() : undefined;
+  const refreshedLabel = refreshedAt ? `refreshed ${formatRelativeDays(refreshedAt)}` : "refresh time is unavailable";
   const appAccessBlocked =
     syncCode === "app_installation_required" ||
     syncCode === "app_installation_unavailable" ||
@@ -46,15 +47,13 @@ export function buildStaleSyncNotice({
 
   if (appAccessBlocked) {
     return {
-      message: `${snapshotLabel} refreshed ${formatRelativeDays(
-        refreshedAt,
-      )}, but new PR evidence is blocked until GitHub App access is restored.`,
+      message: `${snapshotLabel} ${refreshedLabel}, but new PR evidence is blocked until GitHub App access is restored.`,
       reasonMessage,
     };
   }
 
   return {
-    message: `${snapshotLabel} refreshed ${formatRelativeDays(refreshedAt)}. ${staleFallback}`,
+    message: `${snapshotLabel} ${refreshedLabel}. ${staleFallback}`,
     reasonMessage,
   };
 }

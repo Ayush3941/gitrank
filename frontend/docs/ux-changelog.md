@@ -11,6 +11,9 @@
 - Evidence-state chip accessibility:
   - pending, stale, partial, rate-limited, and failed profile evidence chips now attach their explanations with `aria-describedby`.
   - removed browser tooltip dependency from these chips so keyboard and touch users receive the same status context.
+- Stale-notice freshness integrity:
+  - contribution, badge, quest, and leaderboard stale notices no longer synthesize local render time when backend refresh timestamps are missing.
+  - missing freshness now reads as unavailable so stale UI does not imply evidence was verified just now.
 - Loading-state polish:
   - added a shared loading-copy helper for card and route loading states so screen-reader announcements avoid repeated `Loading` phrasing while preserving progressive route copy like `Preparing your dashboard`.
   - kept skeleton bars outside live regions and covered route/card loading announcements with focused render tests.

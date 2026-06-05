@@ -172,7 +172,7 @@ export function ContributionsPageClient() {
     () =>
       buildStaleSyncNotice({
         syncState: displaySyncState === "partially_synced" ? "partially_synced" : "stale",
-        refreshedAt: profile?.refreshedAt ?? new Date().toISOString(),
+        refreshedAt: profile?.refreshedAt,
         latestSyncOutcome,
         snapshotLabel: "Contribution evidence",
         partialFallback:
