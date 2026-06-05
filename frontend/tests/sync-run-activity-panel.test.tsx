@@ -105,6 +105,28 @@ const supersededActiveRowRun = {
 };
 
 describe("SyncRunActivityPanel", () => {
+  it("uses the shared loading state for sync activity fetches", () => {
+    render(
+      <SyncRunActivityPanel
+        runs={[]}
+        isLoading
+        isRefreshing={false}
+        isError={false}
+        onRefresh={() => undefined}
+      />,
+    );
+
+    const region = screen.getByRole("region", { name: "Recent sync runs" });
+    expect(region.getAttribute("aria-busy")).toBe("true");
+    expect(screen.getByText("Recent sync activity")).toBeTruthy();
+    expect(
+      screen
+        .getAllByRole("status")
+        .some((status) => status.textContent === "Loading recent sync activity."),
+    ).toBe(true);
+    expect(screen.queryByText("Loading recent sync activity…")).toBeNull();
+  });
+
   it("announces concise run counts without turning the polling viewport into a live region", () => {
     render(
       <SyncRunActivityPanel

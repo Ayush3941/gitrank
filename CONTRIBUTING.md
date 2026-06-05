@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 5, 2026)
 
+- Normalized the settings sync-activity loading state through the shared `LoadingState` primitive and removed leftover empty local dashboard-alias directories from the working tree after the canonical `/dashboard/*` routes were already in place.
 - Routed remaining JSX-capable stale/profile/onboarding freshness copy through shared semantic time components so relative refresh/sync labels expose valid `<time>` metadata and screen-reader exact timestamps.
 - Added shared `formatXpLabel` rendering for complete `number + XP` labels and routed dashboard, leaderboard, contribution, timeline, onboarding, profile, deterministic fallback, and evidence-chip XP copy through it.
 - Removed obsolete top-level dashboard route alias files (`/badges`, `/contributions`, `/leaderboard`, `/quests`, `/settings`) after confirming the canonical `/dashboard/*` routes own those pages; pruned unused sync mutation hook wrappers, the dead profile-sync API alias, and the unused dialog close export.

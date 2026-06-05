@@ -6,6 +6,7 @@ import { ControlSurface } from "@/components/shared/ControlSurface";
 import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { ExactTime } from "@/components/shared/ExactTime";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
+import { LoadingState } from "@/components/shared/LoadingState";
 import { RelativeTime } from "@/components/shared/RelativeTime";
 import { ScrollableRegion } from "@/components/shared/ScrollableRegion";
 import { SearchInputWithClear } from "@/components/shared/SearchInputWithClear";
@@ -332,8 +333,8 @@ export function SyncRunActivityPanel({
         className="sync-runs-results-viewport overflow-y-auto pr-1"
       >
         {isLoading ? (
-          <div className={`neon-surface grid gap-2 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}>
-            <p>Loading recent sync activity…</p>
+          <div className={resultsRegionClassName}>
+            <LoadingState message="Recent sync activity" />
           </div>
         ) : runs.length === 0 ? (
           <div className={`neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4 text-sm text-muted ${resultsRegionClassName}`}>

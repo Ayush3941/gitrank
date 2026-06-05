@@ -2,6 +2,9 @@
 
 ## 2026-06-05
 
+- Settings cleanup:
+  - settings sync activity now renders loading through the shared `LoadingState` card instead of a one-off paragraph surface.
+  - removed leftover empty local dashboard-alias directories from the working tree after the canonical `/dashboard/*` route cleanup.
 - Semantic freshness copy:
   - `StaleState` now accepts rich status content and uses shared exact-time rendering for verification timestamps.
   - public-profile stale copy plus onboarding sync/reveal freshness copy now render shared semantic relative timestamps instead of plain relative-time strings.
