@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 5, 2026)
 
+- Split settings GitHub-account action rendering into `SettingsAccountCard`, keeping sync, relink, logout, and disconnect mutation ownership in the page client while reducing account-card markup noise.
 - Split PR report processing-state and AI-summary retry rendering into `ReportProcessingStateCard`, preserving retry feedback while reducing the page client surface.
 - Split the PR report deterministic metrics ledger into `DeterministicMetricsLedgerCard`, keeping the same note-toggle behavior while reducing the page client god-file surface and isolating score-input presentation logic.
 - Added shared `CompactEmptyState` for embedded dashboard and public-profile card lanes, replacing repeated dashed empty panels in quest, battle-report, badge, skill, timeline, repository, and best-PR surfaces with one accessible note pattern and real recovery links.

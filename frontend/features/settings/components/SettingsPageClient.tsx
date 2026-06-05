@@ -2,12 +2,11 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useId, useMemo, useState } from "react";
-import { Download, FolderGit2, LogOut, Palette, RefreshCw, Trash2 } from "lucide-react";
+import { Download, Palette, Trash2 } from "lucide-react";
 import { BrandLogo } from "@/components/shared/BrandLogo";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { ErrorState } from "@/components/shared/ErrorState";
-import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlockNotice";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
@@ -17,7 +16,6 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { PanelLoadingPlaceholder } from "@/components/shared/PanelLoadingPlaceholder";
 import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
 import { RouteLoadingState } from "@/components/shared/RouteLoadingState";
-import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -57,6 +55,7 @@ import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import { type ThemePreference, useThemePreference } from "@/hooks/use-theme-preference";
+import { SettingsAccountCard } from "@/features/settings/components/SettingsAccountCard";
 
 type BackedPrivacyKey =
   | "publicProfileEnabled"
@@ -380,6 +379,29 @@ export function SettingsPageClient() {
     });
   }
 
+  function handleRunProfileRefresh() {
+    if (appInstallationBlocked || isActing || isFetching) {
+      return;
+    }
+    setActionNotice("");
+    setActionNoticeVariant("info");
+    runUserSync.mutate(undefined, {
+      onSuccess: (result) => {
+        const feedback = buildUserSyncRefreshFeedback(result);
+        setActionNotice(feedback.message);
+        setActionNoticeVariant(
+          feedback.tone === "success"
+            ? "success"
+            : feedback.tone === "error"
+              ? "error"
+              : "warning",
+        );
+        void refetch();
+        void syncRunsQuery.refetch();
+      },
+    });
+  }
+
   return (
     <div className="stable-scroll-scope space-y-6">
       <PageHeader
@@ -414,124 +436,30 @@ export function SettingsPageClient() {
       />
       <InPageSectionNav sections={SETTINGS_SECTION_LINKS} className="render-opt-section" />
       <section id="settings-account" data-scroll-target="true">
-        <GlowCard className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-xs font-medium text-primary">GitHub account</p>
-            <h2 className="mt-2 text-xl font-semibold text-white">@{data.user.username}</h2>
-          </div>
-          <SyncStatusPill
-            status={
-              displaySyncState === data.user.syncStatus.state
-                ? data.user.syncStatus
-                : { ...data.user.syncStatus, state: displaySyncState }
-            }
-          />
-        </div>
-        <div className={`grid gap-2 sm:grid-cols-2 ${appInstallationBlocked ? "xl:grid-cols-4" : "xl:grid-cols-5"}`}>
-          <Button
-            variant="secondary"
-            className="w-full justify-center"
-            disabled={appInstallationBlocked || isActing || isFetching}
-            onClick={() => {
-              setActionNotice("");
-              setActionNoticeVariant("info");
-              runUserSync.mutate(undefined, {
-                onSuccess: (result) => {
-                  const feedback = buildUserSyncRefreshFeedback(result);
-                  setActionNotice(feedback.message);
-                  setActionNoticeVariant(
-                    feedback.tone === "success"
-                      ? "success"
-                      : feedback.tone === "error"
-                        ? "error"
-                        : "warning",
-                  );
-                  void refetch();
-                  void syncRunsQuery.refetch();
-                },
-              });
-            }}
-          >
-            <RefreshCw className="h-4 w-4" aria-hidden="true" />
-            {appInstallationBlocked
-              ? "Install app to sync"
-              : runUserSync.isPending
-                ? "Refreshing profile..."
-                : isFetching
-                  ? "Refreshing..."
-                  : "Refresh profile"}
-          </Button>
-          <Button
-            variant="secondary"
-            className="w-full justify-center"
-            disabled={isActing}
-            onClick={handleAccountRelink}
-          >
-            <FolderGit2 className="h-4 w-4" aria-hidden="true" />
-            {accountLinkStart.isPending ? "Starting relink..." : "Reconnect GitHub"}
-          </Button>
-          {!appInstallationBlocked ? (
-            isActing ? (
-              <Button variant="secondary" className="w-full justify-center" disabled>
-                Manage GitHub App
-              </Button>
-            ) : (
-              <Button
-                asChild
-                variant="secondary"
-                className="w-full justify-center"
-              >
-                <IntentPrefetchLink href="/oauth/github/install">
-                  Manage GitHub App
-                </IntentPrefetchLink>
-              </Button>
-            )
-          ) : null}
-          <Button
-            variant="secondary"
-            className="w-full justify-center"
-            disabled={isActing}
-            onClick={handleSessionLogout}
-          >
-            <LogOut className="h-4 w-4" aria-hidden="true" />
-            {logoutSession.isPending ? "Signing out..." : "Sign out"}
-          </Button>
-          <Button
-            variant="secondary"
-            className="w-full justify-center"
-            disabled={isActing}
-            onClick={handleUnlinkAccount}
-          >
-            <FolderGit2 className="h-4 w-4" aria-hidden="true" />
-            {unlinkAccount.isPending ? "Disconnecting..." : "Disconnect GitHub"}
-          </Button>
-        </div>
-        {appInstallationBlocked ? (
-          <p className="text-xs leading-5 text-rose-100">
-            PR sync requires a GitHub App installation for your account. Install the app, then return here for automatic refresh.
-          </p>
-        ) : null}
-        {appInstallationBlocked ? (
-          <GitHubAppSyncBlockNotice message={latestSyncOutcome?.message} showSettingsLink={false} />
-        ) : null}
-        <InlineNotice
-          message={actionError || actionNotice}
-          placeholder={actionError ? "Account action error" : "Account action status"}
-          variant={actionError ? "error" : actionNoticeVariant}
-          liveRole={actionError ? "alert" : "status"}
-          minHeightClassName="min-h-7"
-          onDismiss={
-            actionError
-              ? undefined
-              : () => {
-                  setActionNotice("");
-                  setActionNoticeVariant("info");
-                }
-          }
-          dismissLabel="Dismiss account status"
+        <SettingsAccountCard
+          username={data.user.username}
+          syncStatus={data.user.syncStatus}
+          displaySyncState={displaySyncState}
+          appInstallationBlocked={appInstallationBlocked}
+          appBlockMessage={latestSyncOutcome?.message}
+          actionError={actionError}
+          actionNotice={actionNotice}
+          actionNoticeVariant={actionNoticeVariant}
+          isActing={isActing}
+          isFetchingProfile={isFetching}
+          isUserSyncPending={runUserSync.isPending}
+          isRelinkPending={accountLinkStart.isPending}
+          isLogoutPending={logoutSession.isPending}
+          isUnlinkPending={unlinkAccount.isPending}
+          onRefreshProfile={handleRunProfileRefresh}
+          onReconnectGitHub={handleAccountRelink}
+          onSignOut={handleSessionLogout}
+          onDisconnectGitHub={handleUnlinkAccount}
+          onDismissNotice={() => {
+            setActionNotice("");
+            setActionNoticeVariant("info");
+          }}
         />
-        </GlowCard>
       </section>
 
       <section

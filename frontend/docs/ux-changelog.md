@@ -2,6 +2,9 @@
 
 ## 2026-06-05
 
+- Settings account card:
+  - moved GitHub-account action buttons, sync status, App-install blocker copy, and account notices into `SettingsAccountCard`.
+  - kept sync, relink, logout, and disconnect mutation behavior in the page client so the extracted component remains presentation-owned.
 - PR report processing state:
   - moved rate-limit, deterministic-fallback, and AI-summary retry presentation into `ReportProcessingStateCard`.
   - kept retry mutation ownership in the report page client while isolating the visible status card, CTA, and inline retry notice.
