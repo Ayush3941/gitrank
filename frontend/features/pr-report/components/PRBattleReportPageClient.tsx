@@ -29,6 +29,7 @@ import {
   buildDeterministicImpactSummary,
   shouldUseDeterministicImpactSummary,
 } from "@/lib/presentation/deterministic-impact-summary";
+import { formatNumber, formatXp } from "@/lib/formatters";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import { formatEvidenceStatusLabel, toneForEvidenceStatus } from "@/lib/presentation/status-tone";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
@@ -265,7 +266,7 @@ export function PRBattleReportPageClient({
           <div className="text-right">
             <p className="text-xs font-medium text-primary">XP earned</p>
             <p className="numeric-readout mt-2 text-4xl font-semibold text-white">
-              {data.contribution.xpEarned.toLocaleString("en-US")}
+              {formatXp(data.contribution.xpEarned)}
             </p>
             <div
               className={
@@ -287,7 +288,7 @@ export function PRBattleReportPageClient({
             <div className="neon-metric rounded-[var(--radius-universal)] px-4 py-3">
               <p className="text-xs font-medium text-muted">Files changed</p>
               <p className="mt-2 text-sm font-semibold text-white">
-                {data.contribution.changedFilesCount.toLocaleString("en-US")}
+                {formatNumber(data.contribution.changedFilesCount)}
               </p>
             </div>
             <div className="neon-metric rounded-[var(--radius-universal)] px-4 py-3">
@@ -371,7 +372,7 @@ export function PRBattleReportPageClient({
                 {
                   id: "xp_earned",
                   label: "XP earned",
-                  value: data.contribution.xpEarned.toLocaleString("en-US"),
+                  value: formatXp(data.contribution.xpEarned),
                   description: "Final deterministic XP after multipliers and penalties.",
                 },
                 {
@@ -445,19 +446,19 @@ export function PRBattleReportPageClient({
                 {
                   id: "changed_files",
                   label: "Changed files",
-                  value: data.contribution.changedFilesCount.toLocaleString("en-US"),
+                  value: formatNumber(data.contribution.changedFilesCount),
                   description: "File count input.",
                 },
                 {
                   id: "additions",
                   label: "Additions",
-                  value: data.contribution.additions.toLocaleString("en-US"),
+                  value: formatNumber(data.contribution.additions),
                   description: "Added line-count input.",
                 },
                 {
                   id: "deletions",
                   label: "Deletions",
-                  value: data.contribution.deletions.toLocaleString("en-US"),
+                  value: formatNumber(data.contribution.deletions),
                   description: "Deleted line-count input.",
                 },
               ]}

@@ -1,4 +1,5 @@
 import { GlowCard } from "@/components/shared/GlowCard";
+import { formatSignedXp } from "@/lib/formatters";
 import type { PullRequestAnalysis } from "@/types/gitrank";
 
 export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
@@ -6,12 +7,12 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
   const fallbackRows = [
     {
       label: "Base PR value",
-      value: formatXpValue(report.baseValue),
+      value: formatSignedXp(report.baseValue),
       detail: `${contribution.difficultyScore}/100 difficulty and ${contribution.impactScore}/100 impact.`,
     },
     {
       label: "Merged bonus",
-      value: formatXpValue(report.mergedBonus),
+      value: formatSignedXp(report.mergedBonus),
       detail:
         contribution.status === "merged"
           ? "Merged work receives full verification weight."
@@ -19,21 +20,21 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
     },
     {
       label: "Review depth bonus",
-      value: formatXpValue(report.reviewBonus),
+      value: formatSignedXp(report.reviewBonus),
       detail: contribution.maintainerReviewed
         ? "Maintainer review was detected."
         : "No maintainer review detected yet.",
     },
     {
       label: "Test impact bonus",
-      value: formatXpValue(report.testBonus),
+      value: formatSignedXp(report.testBonus),
       detail: contribution.ciPassed
         ? "CI passed and test signal contributed."
         : "CI proof was missing or incomplete.",
     },
     {
       label: "Repo weight bonus",
-      value: formatXpValue(report.repoBonus),
+      value: formatSignedXp(report.repoBonus),
       detail: `Repository context multiplier ${contribution.repoWeight.toFixed(2)}x.`,
     },
   ];
@@ -98,7 +99,7 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
             <div className="flex items-center justify-between gap-4">
               <p className="text-sm text-rose-50">{penalty.label}</p>
               <p className="text-sm font-semibold text-rose-100">
-                {penalty.deltaXp} XP
+                {formatSignedXp(penalty.deltaXp)}
               </p>
             </div>
             <p className="mt-2 text-xs leading-5 text-rose-100">
@@ -109,17 +110,6 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
       </ul>
     </GlowCard>
   );
-}
-
-function formatXpValue(value: number): string {
-  if (!Number.isFinite(value)) {
-    return "0 XP";
-  }
-  const rounded = Math.round(value);
-  if (rounded > 0) {
-    return `+${rounded} XP`;
-  }
-  return `${rounded} XP`;
 }
 
 function prioritizeFinalXpRow(

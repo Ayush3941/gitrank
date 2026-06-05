@@ -10,6 +10,7 @@ This document is intentionally detailed.
 - Extended `formatDateTime` with an explicit fallback parameter and reused it for contribution CSV date labels, keeping invalid timestamp handling deliberate without duplicating local date parsing.
 - Added shared plain, signed, and XP number formatters and routed dashboard rank, league, progress, and recent battle-report numbers through them instead of repeating locale formatting in UI components.
 - Routed leaderboard preview, nearby-bracket, XP gap, movement, and metric values through the shared number formatters so ranking surfaces follow the same numeric display contract as dashboard cards.
+- Added shared signed-XP formatting and routed PR battle-report overview, deterministic ledger, change-volume rows, score fallback rows, and penalty deltas through shared number formatters.
 
 ## Session Notes (June 4, 2026)
 

@@ -12,6 +12,9 @@
 - Leaderboard number consistency:
   - leaderboard preview, nearby-bracket, XP gap, movement, and metric values now reuse the shared numeric formatting helpers.
   - this keeps rank-comparison labels aligned with dashboard XP and signed-movement presentation.
+- PR report number consistency:
+  - added shared signed-XP formatting for PR report score deltas and fallback breakdown rows.
+  - PR report overview, deterministic ledger, changed-file, addition, and deletion values now reuse shared number formatting instead of local locale calls.
 
 ## 2026-06-04
 

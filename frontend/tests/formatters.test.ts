@@ -4,6 +4,7 @@ import {
   formatNumber,
   formatRelativeDays,
   formatSignedNumber,
+  formatSignedXp,
   formatXp,
   normalizeDateTime,
 } from "@/lib/formatters";
@@ -15,6 +16,9 @@ describe("number formatters", () => {
     expect(formatSignedNumber(1200)).toBe("+1,200");
     expect(formatSignedNumber(-1200)).toBe("-1,200");
     expect(formatSignedNumber(0)).toBe("0");
+    expect(formatSignedXp(1200.4)).toBe("+1,200 XP");
+    expect(formatSignedXp(-1200.4)).toBe("-1,200 XP");
+    expect(formatSignedXp(Number.NaN)).toBe("0 XP");
   });
 });
 

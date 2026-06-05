@@ -14,6 +14,13 @@ export function formatXp(value: number) {
   return formatNumber(value);
 }
 
+export function formatSignedXp(value: number) {
+  if (!Number.isFinite(value)) {
+    return "0 XP";
+  }
+  return `${formatSignedNumber(Math.round(value))} XP`;
+}
+
 export function formatCompactNumber(value: number) {
   return new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(
     value,
