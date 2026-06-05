@@ -15,6 +15,7 @@ This document is intentionally detailed.
 - Cleaned local generated TypeScript cache output and removed the stale `frontend/app/favicon.ico` asset now that metadata, shortcuts, Apple touch icons, and the web app manifest all resolve through `/assets/logo.png`.
 - Added shared `RelativeTime` rendering for freshness and sync-run timestamps so exact times no longer depend on hover-only `title` text; mobile and keyboard users now get semantic `<time>` output with screen-reader exact timestamps.
 - Reworked PR report metric-ledger descriptions to use `aria-describedby` instead of hover-only `title` tooltips; collapsed notes remain screen-reader available and expanded notes render visibly through the existing metric-notes toggle.
+- Reworked `ProfileEvidenceStateChip` pending-state explanations to use `aria-describedby` and screen-reader-only text instead of browser tooltip titles across dashboard, contribution, badge, quest, leaderboard, and settings headers.
 
 ## Session Notes (June 3, 2026)
 

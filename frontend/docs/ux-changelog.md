@@ -8,6 +8,9 @@
 - PR report metric-ledger clarity:
   - metric descriptions now use `aria-describedby` instead of browser tooltip titles.
   - collapsed metric notes stay screen-reader available, while the existing note toggle reveals the same one-line descriptions visually without duplicating tooltip-only behavior.
+- Evidence-state chip accessibility:
+  - pending, stale, partial, rate-limited, and failed profile evidence chips now attach their explanations with `aria-describedby`.
+  - removed browser tooltip dependency from these chips so keyboard and touch users receive the same status context.
 - Loading-state polish:
   - added a shared loading-copy helper for card and route loading states so screen-reader announcements avoid repeated `Loading` phrasing while preserving progressive route copy like `Preparing your dashboard`.
   - kept skeleton bars outside live regions and covered route/card loading announcements with focused render tests.

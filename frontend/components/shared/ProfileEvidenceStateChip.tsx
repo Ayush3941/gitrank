@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { cn } from "@/lib/cn";
 import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import type { SyncState } from "@/types/gitrank";
@@ -8,7 +9,7 @@ export function ProfileEvidenceStateChip({
   syncState,
   refreshedLabel = "Refreshed",
   pendingLabel = "Evidence pending",
-  pendingTitle = "No scored PR evidence has been materialized yet.",
+  pendingDescription = "No scored PR evidence has been materialized yet.",
   className,
 }: {
   showFreshness: boolean;
@@ -16,10 +17,11 @@ export function ProfileEvidenceStateChip({
   syncState?: SyncState;
   refreshedLabel?: string;
   pendingLabel?: string;
-  pendingTitle?: string;
+  pendingDescription?: string;
   className?: string;
 }) {
-  const pendingState = resolvePendingState(syncState, pendingLabel, pendingTitle);
+  const descriptionId = useId();
+  const pendingState = resolvePendingState(syncState, pendingLabel, pendingDescription);
 
   if (showFreshness) {
     return (
@@ -38,9 +40,12 @@ export function ProfileEvidenceStateChip({
         pendingState.className,
         className,
       )}
-      title={pendingState.title}
+      aria-describedby={descriptionId}
     >
       {pendingState.label}
+      <span id={descriptionId} className="sr-only">
+        {pendingState.description}
+      </span>
     </span>
   );
 }
@@ -48,50 +53,50 @@ export function ProfileEvidenceStateChip({
 function resolvePendingState(
   syncState: SyncState | undefined,
   pendingLabel: string,
-  pendingTitle: string,
+  pendingDescription: string,
 ): {
   label: string;
-  title: string;
+  description: string;
   className: string;
 } {
   if (syncState === "syncing") {
     return {
       label: "Syncing evidence",
-      title: "GitRank is syncing your latest contribution evidence.",
+      description: "GitRank is syncing your latest contribution evidence.",
       className: "neon-chip neon-chip-info",
     };
   }
   if (syncState === "partially_synced") {
     return {
       label: "Partially synced",
-      title: "Snapshot exists, but some PR evidence is still pending.",
+      description: "Snapshot exists, but some PR evidence is still pending.",
       className: "neon-chip neon-chip-warning",
     };
   }
   if (syncState === "stale") {
     return {
       label: "Data is stale",
-      title: "Profile snapshot is older than the freshness window.",
+      description: "Profile snapshot is older than the freshness window.",
       className: "neon-chip neon-chip-warning",
     };
   }
   if (syncState === "rate_limited") {
     return {
       label: "Rate limited",
-      title: "Rate limits delayed evidence refresh. Retry shortly.",
+      description: "Rate limits delayed evidence refresh. Retry shortly.",
       className: "neon-chip neon-chip-warning",
     };
   }
   if (syncState === "failed") {
     return {
       label: "Sync failed",
-      title: "Latest sync failed. Open settings to retry.",
+      description: "Latest sync failed. Open settings to retry.",
       className: "border border-rose-300/26 bg-rose-500/12 text-rose-100",
     };
   }
   return {
     label: pendingLabel,
-    title: pendingTitle,
+    description: pendingDescription,
     className: "neon-chip neon-chip-muted",
   };
 }
