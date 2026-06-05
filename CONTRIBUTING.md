@@ -10,6 +10,7 @@ This document is intentionally detailed.
 - Replaced the shared `SegmentedTablist` implementation with `SegmentedControl` radio-group semantics for dashboard filters and view selectors; filter controls now expose `radiogroup`/`radio` with `aria-checked`, and `npm run check:segmented-filters` enforces the shared component.
 - Tightened the segmented-control cleanup guard so stale tablist component names, stale `aria-selected` filter state, and old leaderboard snapshot naming cannot drift back into shared/source/test files.
 - Made frontend ABRA insight generation respect `AI_PROVIDER` explicitly: OpenAI remains the default when configured, Gemini is used only when selected or when it is the only available key, and identity labels now distinguish ChatGPT, Gemini, and deterministic fallback.
+- Removed the unused `@radix-ui/react-tabs` dependency after all dashboard lane/filter controls moved to the shared `SegmentedControl` radio-group implementation.
 
 ## Session Notes (June 3, 2026)
 

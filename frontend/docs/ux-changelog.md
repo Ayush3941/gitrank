@@ -11,6 +11,9 @@
 - ABRA insight provider clarity:
   - frontend ABRA insight generation now follows `AI_PROVIDER` explicitly instead of selecting provider credentials by implicit fallback order.
   - identity-summary source labels distinguish `ChatGPT`, `Gemini`, and deterministic copy so users can tell which enrichment path generated the visible narrative.
+- Dependency hygiene:
+  - removed unused `@radix-ui/react-tabs` from the frontend package after segmented lane/filter controls no longer use tab primitives.
+  - keeps install size and dependency review surface aligned with the current shared radio-group control architecture.
 
 ## 2026-06-03
 
