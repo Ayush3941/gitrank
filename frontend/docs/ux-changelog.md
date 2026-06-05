@@ -2,6 +2,9 @@
 
 ## 2026-06-05
 
+- Inline error notices:
+  - shared `InlineNotice` now supports assertive alert-mode announcements.
+  - settings account-action errors and onboarding sync-action errors use the shared notice surface instead of feature-local alert markup.
 - Settings empty states:
   - repository-visibility and sync-run empty/filter results now use shared `EmptyState` cards instead of feature-local dashed cards.
   - the zero-repository state no longer renders a disabled reset button; only real recovery actions remain visible.

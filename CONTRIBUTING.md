@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 5, 2026)
 
+- Extended shared `InlineNotice` with assertive alert-mode semantics and routed settings account-action errors plus onboarding sync-action errors through it instead of hand-built inline alert markup.
 - Routed settings repository-visibility and sync-run empty/filter states through shared `EmptyState`, removing one-off dashed cards and dead disabled reset actions while keeping real reset and dashboard recovery actions available.
 - Refined shared panel loading placeholders so visible copy separates the state chip (`Loading`) from the normalized target text, matching the shared loading-card pattern and avoiding repeated `Loading ...` phrasing in deferred panel fallbacks.
 - Added shared `PanelLoadingPlaceholder` for deferred/dynamic feature panels and routed dashboard, contribution, badge, quest, leaderboard, profile, PR-report, and settings skeleton placeholders through it so loading surfaces share one busy-state and announcement contract.

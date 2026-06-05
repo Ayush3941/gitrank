@@ -285,7 +285,6 @@ export function SettingsPageClient() {
     (syncRunsQuery.error as Error | null)?.message || "",
     "settings-sync-runs",
   );
-  const accountActionErrorId = "settings-account-action-error";
 
   function handlePrivacyToggle(key: BackedPrivacyKey, checked: boolean) {
     if (key === "reducedGamification") {
@@ -516,25 +515,22 @@ export function SettingsPageClient() {
         {appInstallationBlocked ? (
           <GitHubAppSyncBlockNotice message={latestSyncOutcome?.message} showSettingsLink={false} />
         ) : null}
-        {actionError ? (
-          <div className="min-h-6">
-            <p id={accountActionErrorId} role="alert" aria-atomic="true" className="inline-flex items-center rounded-[var(--radius-universal)] border border-rose-300/26 bg-rose-500/10 px-3 py-1.5 text-sm text-rose-100">
-              {actionError}
-            </p>
-          </div>
-        ) : (
-          <InlineNotice
-            message={actionNotice}
-            placeholder="Account action status"
-            variant={actionNoticeVariant}
-            minHeightClassName="min-h-7"
-            onDismiss={() => {
-              setActionNotice("");
-              setActionNoticeVariant("info");
-            }}
-            dismissLabel="Dismiss account status"
-          />
-        )}
+        <InlineNotice
+          message={actionError || actionNotice}
+          placeholder={actionError ? "Account action error" : "Account action status"}
+          variant={actionError ? "error" : actionNoticeVariant}
+          liveRole={actionError ? "alert" : "status"}
+          minHeightClassName="min-h-7"
+          onDismiss={
+            actionError
+              ? undefined
+              : () => {
+                  setActionNotice("");
+                  setActionNoticeVariant("info");
+                }
+          }
+          dismissLabel="Dismiss account status"
+        />
         </GlowCard>
       </section>
 

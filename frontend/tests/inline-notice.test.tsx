@@ -30,4 +30,21 @@ describe("InlineNotice", () => {
     fireEvent.click(dismiss);
     expect(onDismiss).toHaveBeenCalledTimes(1);
   });
+
+  it("can announce inline errors assertively without a dismiss action", () => {
+    render(
+      <InlineNotice
+        message="Sync failed."
+        placeholder="Sync action error"
+        variant="error"
+        liveRole="alert"
+      />,
+    );
+
+    const alert = screen.getByRole("alert");
+    expect(alert.textContent).toBe("Sync failed.");
+    expect(alert.getAttribute("aria-live")).toBe("assertive");
+    expect(alert.getAttribute("aria-atomic")).toBe("true");
+    expect(screen.queryByRole("button")).toBeNull();
+  });
 });

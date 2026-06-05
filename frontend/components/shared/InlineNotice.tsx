@@ -15,6 +15,7 @@ export function InlineNotice({
   variant = "info",
   className,
   minHeightClassName = "min-h-6",
+  liveRole = "status",
   onDismiss,
   dismissLabel = "Dismiss status message",
 }: {
@@ -23,6 +24,7 @@ export function InlineNotice({
   variant?: NoticeVariant;
   className?: string;
   minHeightClassName?: string;
+  liveRole?: "status" | "alert";
   onDismiss?: () => void;
   dismissLabel?: string;
 }) {
@@ -44,7 +46,12 @@ export function InlineNotice({
           variantClassName[variant],
         )}
       >
-        <span role="status" aria-live="polite" aria-atomic="true" className="min-w-0 break-anywhere">
+        <span
+          role={liveRole}
+          aria-live={liveRole === "alert" ? "assertive" : "polite"}
+          aria-atomic="true"
+          className="min-w-0 break-anywhere"
+        >
           {message}
         </span>
         {onDismiss ? (

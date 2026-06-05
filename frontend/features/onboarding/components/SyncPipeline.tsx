@@ -235,19 +235,19 @@ export function SyncPipeline() {
               Sync is running. GitRank is waiting for the refreshed snapshot.
             </p>
           ) : null}
-          {actionError ? (
-            <p role="alert" aria-atomic="true" className="text-sm text-rose-200">
-              {actionError}
-            </p>
-          ) : null}
           <InlineNotice
-            message={syncNotice}
-            placeholder="Sync status update"
-            variant="success"
+            message={actionError || syncNotice}
+            placeholder={actionError ? "Sync action error" : "Sync status update"}
+            variant={actionError ? "error" : "success"}
+            liveRole={actionError ? "alert" : "status"}
             minHeightClassName="min-h-7"
-            onDismiss={() => {
-              setSyncNotice("");
-            }}
+            onDismiss={
+              actionError
+                ? undefined
+                : () => {
+                    setSyncNotice("");
+                  }
+            }
             dismissLabel="Dismiss sync status update"
           />
         </div>
