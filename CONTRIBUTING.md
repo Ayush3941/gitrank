@@ -11,6 +11,7 @@ This document is intentionally detailed.
 - Tightened the segmented-control cleanup guard so stale tablist component names, stale `aria-selected` filter state, and old leaderboard snapshot naming cannot drift back into shared/source/test files.
 - Made frontend ABRA insight generation respect `AI_PROVIDER` explicitly: OpenAI remains the default when configured, Gemini is used only when selected or when it is the only available key, and identity labels now distinguish ChatGPT, Gemini, and deterministic fallback.
 - Removed the unused `@radix-ui/react-tabs` dependency after all dashboard lane/filter controls moved to the shared `SegmentedControl` radio-group implementation.
+- Moved React Query devtools to a development-only dependency path and added an explicit `NODE_ENV` production gate so local diagnostics cannot be loaded by production sessions; the client-env guard now allows only that non-secret build-mode key outside `NEXT_PUBLIC_*`.
 
 ## Session Notes (June 3, 2026)
 

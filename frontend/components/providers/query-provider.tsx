@@ -6,13 +6,16 @@ import type { ReactNode } from "react";
 import { useState, useSyncExternalStore } from "react";
 import { GlobalFetchIndicator } from "@/components/providers/global-fetch-indicator";
 
-const ReactQueryDevtools = dynamic(
-  () =>
-    import("@tanstack/react-query-devtools").then(
-      (mod) => mod.ReactQueryDevtools,
-    ),
-  { ssr: false },
-);
+const ReactQueryDevtools =
+  process.env.NODE_ENV === "production"
+    ? null
+    : dynamic(
+        () =>
+          import("@tanstack/react-query-devtools").then(
+            (mod) => mod.ReactQueryDevtools,
+          ),
+        { ssr: false },
+      );
 
 export function QueryProvider({ children }: { children: ReactNode }) {
   const showDevtools = useSyncExternalStore(
@@ -37,7 +40,9 @@ export function QueryProvider({ children }: { children: ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <GlobalFetchIndicator />
       {children}
-      {showDevtools ? <ReactQueryDevtools initialIsOpen={false} /> : null}
+      {showDevtools && ReactQueryDevtools ? (
+        <ReactQueryDevtools initialIsOpen={false} />
+      ) : null}
     </QueryClientProvider>
   );
 }
@@ -50,7 +55,23 @@ function readLocalDevtoolsFlag() {
   if (typeof window === "undefined") {
     return false;
   }
-  const hostname = window.location.hostname.toLowerCase();
+  return shouldShowReactQueryDevtools({
+    hostname: window.location.hostname,
+    nodeEnv: process.env.NODE_ENV,
+  });
+}
+
+export function shouldShowReactQueryDevtools({
+  hostname,
+  nodeEnv,
+}: {
+  hostname: string;
+  nodeEnv: string | undefined;
+}) {
+  if (nodeEnv === "production") {
+    return false;
+  }
+  const normalizedHostname = hostname.toLowerCase();
   const localHosts = new Set(["localhost", "127.0.0.1", "0.0.0.0", "[::1]"]);
-  return localHosts.has(hostname) || hostname.endsWith(".local");
+  return localHosts.has(normalizedHostname) || normalizedHostname.endsWith(".local");
 }

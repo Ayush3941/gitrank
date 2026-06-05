@@ -4,6 +4,7 @@ import path from "node:path";
 const root = process.cwd();
 const scanRoots = ["app", "components", "features", "hooks", "lib"];
 const ignoredPathSegments = ["/app/api/", "/lib/ai/", "/lib/api/gateway-server", "/lib/api/auth-server"];
+const allowedNonPublicEnvKeys = new Set(["NODE_ENV"]);
 const violations = [];
 
 for (const scanRoot of scanRoots) {
@@ -47,7 +48,7 @@ function walk(entry) {
   const envMatches = source.match(/process\.env\.([A-Z0-9_]+)/g) ?? [];
   for (const match of envMatches) {
     const key = match.split(".").at(-1) ?? "";
-    if (!key.startsWith("NEXT_PUBLIC_")) {
+    if (!key.startsWith("NEXT_PUBLIC_") && !allowedNonPublicEnvKeys.has(key)) {
       violations.push({
         file: relative,
         message: `non-public env key in client scope (${key})`,

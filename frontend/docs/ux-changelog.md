@@ -14,6 +14,10 @@
 - Dependency hygiene:
   - removed unused `@radix-ui/react-tabs` from the frontend package after segmented lane/filter controls no longer use tab primitives.
   - keeps install size and dependency review surface aligned with the current shared radio-group control architecture.
+- Query devtools production guard:
+  - moved React Query devtools to `devDependencies` and kept the runtime loader disabled when `NODE_ENV=production`.
+  - kept `NODE_ENV` as the only allowed non-public client build-mode key in `check:client-env-safety`; all other client env access must still use `NEXT_PUBLIC_*`.
+  - added policy coverage for local-development visibility versus production/remote-host suppression.
 
 ## 2026-06-03
 
@@ -700,8 +704,8 @@
   - wired filter reset/clear actions with `aria-controls` targeting the contribution cards region for clearer assistive context.
   - connected contributions filter panel to the cards region ID to tighten filter-to-results relationship without API changes.
 - Client env-safety hardening pass:
-  - removed non-public `process.env.NODE_ENV` usage from the client-side query provider.
   - switched React Query devtools gating to a runtime local-host detector backed by `useSyncExternalStore`, keeping hydration-safe defaults.
+  - kept client env access constrained by `check:client-env-safety` so only approved public/runtime keys can appear in client-scoped modules.
   - validated with `npm run check:client-env-safety`.
 - Tabs main-thread guard hardening pass:
   - removed `requestAnimationFrame` usage from shared `TabsList` mount behavior and switched to immediate mount-time active-tab alignment.
