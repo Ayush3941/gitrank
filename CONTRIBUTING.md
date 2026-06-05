@@ -9,6 +9,7 @@ This document is intentionally detailed.
 - Added shared `ExactTime` rendering for exact user-facing timestamps so onboarding sync status and settings sync-run rows expose valid timestamps through semantic `<time>` elements instead of raw locale strings.
 - Extended `formatDateTime` with an explicit fallback parameter and reused it for contribution CSV date labels, keeping invalid timestamp handling deliberate without duplicating local date parsing.
 - Added shared plain, signed, and XP number formatters and routed dashboard rank, league, progress, and recent battle-report numbers through them instead of repeating locale formatting in UI components.
+- Routed leaderboard preview, nearby-bracket, XP gap, movement, and metric values through the shared number formatters so ranking surfaces follow the same numeric display contract as dashboard cards.
 
 ## Session Notes (June 4, 2026)
 

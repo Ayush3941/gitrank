@@ -9,6 +9,9 @@
 - Dashboard number consistency:
   - added shared plain, signed, and XP number formatting helpers.
   - dashboard rank, league, level progress, and recent battle-report XP values now reuse the same display-formatting path instead of repeating locale formatting inside components.
+- Leaderboard number consistency:
+  - leaderboard preview, nearby-bracket, XP gap, movement, and metric values now reuse the shared numeric formatting helpers.
+  - this keeps rank-comparison labels aligned with dashboard XP and signed-movement presentation.
 
 ## 2026-06-04
 

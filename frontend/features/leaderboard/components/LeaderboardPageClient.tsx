@@ -36,6 +36,7 @@ import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
 import { useStaleSyncRefresh } from "@/hooks/use-stale-sync-refresh";
 import { useMyProfile } from "@/hooks/use-profile";
 import type { LeaderboardTab } from "@/lib/api/leaderboard-api";
+import { formatXp } from "@/lib/formatters";
 import { shouldShowProfileFreshnessPill } from "@/lib/presentation/sync-evidence";
 import {
   isGitHubAppInstallationBlocked,
@@ -420,7 +421,7 @@ export function LeaderboardPageClient() {
                   </p>
                   <p className="mt-1 text-xs text-muted">
                     {myProfile.user.rankProgress.nextTier
-                      ? `${myProfile.user.rankProgress.xpToNextTier.toLocaleString("en-US")} XP to ${myProfile.user.rankProgress.nextTier}.`
+                      ? `${formatXp(myProfile.user.rankProgress.xpToNextTier)} XP to ${myProfile.user.rankProgress.nextTier}.`
                       : "You are at the current top tier band."}
                   </p>
                 </div>

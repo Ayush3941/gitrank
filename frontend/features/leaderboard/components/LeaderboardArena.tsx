@@ -3,7 +3,13 @@ import { ArrowDownRight, ArrowUpRight, CalendarClock, Flame, ShieldCheck } from 
 import { ClampedText } from "@/components/shared/ClampedText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { RankBadge } from "@/components/shared/RankBadge";
-import { formatDate, formatTimeUntil } from "@/lib/formatters";
+import {
+  formatDate,
+  formatNumber,
+  formatSignedNumber,
+  formatTimeUntil,
+  formatXp,
+} from "@/lib/formatters";
 import type { LeaderboardSnapshot } from "@/types/gitrank";
 
 export function LeaderboardArena({
@@ -100,13 +106,13 @@ export function LeaderboardArena({
           <GlowCard className="space-y-4 border border-primary/22">
             <div className="neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold">
               {nextAboveRow
-                ? `${nextAboveGap.toLocaleString("en-US")} XP to pass #${nextAboveRow.rank}`
+                ? `${formatXp(nextAboveGap)} XP to pass #${nextAboveRow.rank}`
                 : "You lead this lane"}
             </div>
             <ol className="grid gap-2">
               {localBracketRows.map((row) => {
                 const gapToCurrent = row.seasonXp - currentUser.seasonXp;
-                const movementLabel = `${row.movement >= 0 ? "+" : ""}${row.movement}`;
+                const movementLabel = formatSignedNumber(row.movement);
                 return (
                   <li
                     key={`local-${row.rank}-${row.username}`}
@@ -128,7 +134,7 @@ export function LeaderboardArena({
                     </div>
                     <div className="flex flex-wrap items-center gap-2 text-xs">
                       <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-                        {row.seasonXp.toLocaleString("en-US")} XP
+                        {formatXp(row.seasonXp)} XP
                       </span>
                       <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
                         Move {movementLabel}
@@ -136,8 +142,8 @@ export function LeaderboardArena({
                       {!row.isCurrentUser && showDetails ? (
                         <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
                           {gapToCurrent > 0
-                            ? `+${gapToCurrent.toLocaleString("en-US")} vs you`
-                            : `${Math.abs(gapToCurrent).toLocaleString("en-US")} behind you`}
+                            ? `${formatSignedNumber(gapToCurrent)} vs you`
+                            : `${formatNumber(Math.abs(gapToCurrent))} behind you`}
                         </span>
                       ) : null}
                     </div>
@@ -295,7 +301,7 @@ function Metric({
     <div className="neon-metric rounded-[var(--radius-universal)] px-4 py-3">
       <p className="text-xs font-medium text-muted">{label}</p>
       <div className="numeric-readout mt-2 flex items-center gap-2 text-xl font-semibold text-white">
-        <span>{typeof value === "number" ? value.toLocaleString("en-US") : value}</span>
+        <span>{typeof value === "number" ? formatNumber(value) : value}</span>
         {icon ? <span aria-hidden="true">{icon}</span> : null}
       </div>
     </div>
