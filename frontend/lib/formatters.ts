@@ -1,5 +1,17 @@
-export function formatXp(value: number) {
+export function formatNumber(value: number) {
   return new Intl.NumberFormat("en-US").format(value);
+}
+
+export function formatSignedNumber(value: number) {
+  if (value === 0) {
+    return "0";
+  }
+  const prefix = value > 0 ? "+" : "-";
+  return `${prefix}${formatNumber(Math.abs(value))}`;
+}
+
+export function formatXp(value: number) {
+  return formatNumber(value);
 }
 
 export function formatCompactNumber(value: number) {

@@ -3,6 +3,7 @@ import { ClampedText } from "@/components/shared/ClampedText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { Button } from "@/components/ui/button";
+import { formatXp } from "@/lib/formatters";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import type { PullRequestAnalysis } from "@/types/gitrank";
 
@@ -69,7 +70,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
                 <div className="text-right">
                   <p className="text-xs font-medium text-primary">XP earned</p>
                   <p className="numeric-readout mt-2 text-3xl font-semibold text-foreground">
-                    {report.contribution.xpEarned.toLocaleString("en-US")}
+                    {formatXp(report.contribution.xpEarned)}
                   </p>
                   <p className="mt-2 inline-flex items-center gap-1 text-xs text-cyan-100">
                     <ShieldCheck className="h-3.5 w-3.5 text-cyan-200" aria-hidden="true" />

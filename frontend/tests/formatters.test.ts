@@ -1,5 +1,22 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { formatDateTime, formatRelativeDays, normalizeDateTime } from "@/lib/formatters";
+import {
+  formatDateTime,
+  formatNumber,
+  formatRelativeDays,
+  formatSignedNumber,
+  formatXp,
+  normalizeDateTime,
+} from "@/lib/formatters";
+
+describe("number formatters", () => {
+  it("formats plain, signed, and XP numbers consistently", () => {
+    expect(formatNumber(1234567)).toBe("1,234,567");
+    expect(formatXp(4200)).toBe("4,200");
+    expect(formatSignedNumber(1200)).toBe("+1,200");
+    expect(formatSignedNumber(-1200)).toBe("-1,200");
+    expect(formatSignedNumber(0)).toBe("0");
+  });
+});
 
 describe("formatRelativeDays", () => {
   afterEach(() => {

@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { CalendarClock, TrendingDown, TrendingUp, Trophy } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { Progress } from "@/components/ui/progress";
-import { formatDate, formatTimeUntil } from "@/lib/formatters";
+import { formatDate, formatSignedNumber, formatTimeUntil, formatXp } from "@/lib/formatters";
 import { buildEvidenceSignalChips } from "@/lib/presentation/evidence-signal";
 import type { UserProfile } from "@/types/gitrank";
 
@@ -28,8 +28,12 @@ export function CurrentLeagueCard({ user }: { user: UserProfile }) {
           label="Position"
           value={user.leaguePosition > 0 ? `#${user.leaguePosition}` : "Unranked"}
         />
-        <Metric label="Weekly XP" value={user.weeklyXp.toLocaleString("en-US")} />
-        <Metric label="Movement" value={`${positive ? "+" : ""}${user.movement}`} icon={<MovementIcon className="h-4 w-4" aria-hidden="true" />} />
+        <Metric label="Weekly XP" value={formatXp(user.weeklyXp)} />
+        <Metric
+          label="Movement"
+          value={formatSignedNumber(user.movement)}
+          icon={<MovementIcon className="h-4 w-4" aria-hidden="true" />}
+        />
       </div>
       <div className="neon-tile rounded-[var(--radius-universal)] p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -37,7 +41,7 @@ export function CurrentLeagueCard({ user }: { user: UserProfile }) {
             <p className="text-xs font-medium text-muted">Promotion</p>
             <p className="mt-2 text-sm text-muted">
               {user.rankProgress.nextTier
-                ? `${user.rankProgress.xpToNextTier.toLocaleString("en-US")} XP to ${user.rankProgress.nextTier}`
+                ? `${formatXp(user.rankProgress.xpToNextTier)} XP to ${user.rankProgress.nextTier}`
                 : "Top tier"}
             </p>
           </div>
@@ -59,7 +63,8 @@ export function CurrentLeagueCard({ user }: { user: UserProfile }) {
           )}
         />
         <p className="mt-3 text-xs text-muted">
-          Ends {formatDate(user.rankProgress.season.endsAt)} • {formatTimeUntil(user.rankProgress.season.endsAt)}
+          Ends {formatDate(user.rankProgress.season.endsAt)} •{" "}
+          {formatTimeUntil(user.rankProgress.season.endsAt)}
         </p>
       </div>
       <ul role="list" className="flex flex-wrap gap-2">

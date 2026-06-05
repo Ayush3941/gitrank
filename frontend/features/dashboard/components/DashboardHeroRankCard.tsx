@@ -10,6 +10,7 @@ import { XPProgress } from "@/components/shared/XPProgress";
 import { Button } from "@/components/ui/button";
 import { uniqueDisplayValues } from "@/lib/display-values";
 import type { AbraInsightSource } from "@/lib/ai/abra-insights-types";
+import { formatNumber, formatXp } from "@/lib/formatters";
 import { formatAIInsightSourceLabel } from "@/lib/presentation/ai-insight-source";
 import type { UserProfile } from "@/types/gitrank";
 
@@ -78,22 +79,25 @@ export function DashboardHeroRankCard({
         <div className="neon-metric rounded-[var(--radius-universal)] p-5">
           <p className="text-xs font-medium text-primary">Level</p>
           <p className="mt-3 text-4xl font-semibold text-white">
-            <span className="numeric-readout">{user.level.currentLevel.toLocaleString("en-US")}</span>
+            <span className="numeric-readout">{formatNumber(user.level.currentLevel)}</span>
           </p>
         </div>
         <div className="neon-metric rounded-[var(--radius-universal)] p-5">
           <p className="text-xs font-medium text-primary">Total XP</p>
           <p className="mt-3 text-4xl font-semibold text-white">
-            <span className="numeric-readout">{user.level.currentXp.toLocaleString("en-US")}</span>
+            <span className="numeric-readout">{formatXp(user.level.currentXp)}</span>
           </p>
         </div>
         <div className="neon-metric rounded-[var(--radius-universal)] p-5">
           <p className="text-xs font-medium text-primary">To next level</p>
           <p className="mt-3 text-lg font-medium text-white">
-            <span className="numeric-readout">{Math.max(0, user.level.nextLevelXp - user.level.currentXp).toLocaleString("en-US")}</span> XP left
+            <span className="numeric-readout">
+              {formatXp(Math.max(0, user.level.nextLevelXp - user.level.currentXp))}
+            </span>{" "}
+            XP left
           </p>
           <p className="mt-2 text-sm text-muted">
-            Target: <span className="numeric-readout">{user.level.nextLevelXp.toLocaleString("en-US")}</span> XP
+            Target: <span className="numeric-readout">{formatXp(user.level.nextLevelXp)}</span> XP
           </p>
         </div>
       </div>
@@ -108,7 +112,7 @@ export function DashboardHeroRankCard({
             </p>
             <p className="text-sm leading-6 text-muted">
               {user.rankProgress.nextTier
-                ? `${user.rankProgress.xpToNextTier.toLocaleString("en-US")} XP to ${user.rankProgress.nextTier}.`
+                ? `${formatXp(user.rankProgress.xpToNextTier)} XP to ${user.rankProgress.nextTier}.`
                 : "Top tier reached for this season."}
             </p>
             <p className="text-sm leading-6 text-muted">{nextAction.description}</p>
