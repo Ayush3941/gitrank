@@ -9,6 +9,7 @@ import {
   useNetworkConstraintPreference,
   useReducedGamification,
 } from "@/hooks/use-gamification-preference";
+import { toRatioPercent } from "@/lib/formatters";
 import { deduplicateSkillNodes } from "@/lib/presentation/skill-normalization";
 import type { SkillNode } from "@/types/gitrank";
 
@@ -138,7 +139,7 @@ function SkillRadarLite({ skills }: { skills: SkillNode[] }) {
     <div className="neon-surface h-full space-y-3 px-4 py-4">
       <div className="space-y-2">
         {skills.map((skill) => {
-          const fill = Math.max(0, Math.min(100, Math.round((skill.score / maxScore) * 100)));
+          const fill = toRatioPercent(skill.score / maxScore);
           return (
             <div key={skillRowKey(skill)} className="space-y-1">
               <div className="flex items-center justify-between gap-3 text-xs text-muted">

@@ -12,7 +12,7 @@ import { OnboardingStepper } from "@/features/onboarding/components/OnboardingSt
 import { useRequestProfileSync } from "@/hooks/use-account-actions";
 import { useMyProfile } from "@/hooks/use-profile";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
-import { formatRelativeDays } from "@/lib/formatters";
+import { formatRelativeDays, toRatioPercent } from "@/lib/formatters";
 import { deriveEffectiveSyncState } from "@/lib/presentation/sync-evidence";
 import { formatSyncStateLabel } from "@/lib/presentation/status-tone";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
@@ -160,7 +160,7 @@ export function SyncPipeline() {
 
   const completedSteps =
     isSynced ? steps.length : syncStartedAt || userSync.isPending ? 3 : 1;
-  const pipelineProgress = Math.round((completedSteps / steps.length) * 100);
+  const pipelineProgress = toRatioPercent(completedSteps / steps.length);
   const currentPhaseLabel =
     completedSteps < steps.length ? steps[completedSteps] : "Pipeline complete";
 

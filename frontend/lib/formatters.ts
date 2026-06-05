@@ -26,12 +26,24 @@ export function formatSignedXp(value: number) {
   return `${formatSignedNumber(Math.round(value))} XP`;
 }
 
+export function toBoundedPercent(value: number, fallback = 0) {
+  const resolvedValue = Number.isFinite(value) ? value : fallback;
+  const safeValue = Number.isFinite(resolvedValue) ? resolvedValue : 0;
+  return Math.max(0, Math.min(100, Math.round(safeValue)));
+}
+
+export function toRatioPercent(value: number, fallback = 0) {
+  if (!Number.isFinite(value)) {
+    return toBoundedPercent(fallback);
+  }
+  return toBoundedPercent(value * 100, fallback);
+}
+
 export function formatPercent(value: number, fallback = "0%") {
   if (!Number.isFinite(value)) {
     return fallback;
   }
-  const percent = Math.max(0, Math.min(100, Math.round(value)));
-  return `${formatNumber(percent)}%`;
+  return `${formatNumber(toBoundedPercent(value))}%`;
 }
 
 export function formatRatioPercent(value: number, fallback = "0%") {

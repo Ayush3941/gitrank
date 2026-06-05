@@ -2,7 +2,7 @@
 
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/cn";
-import { formatPercent, formatXp } from "@/lib/formatters";
+import { formatPercent, formatXp, toRatioPercent } from "@/lib/formatters";
 
 export function XPProgress({
   current,
@@ -15,7 +15,7 @@ export function XPProgress({
   className?: string;
   label?: string;
 }) {
-  const progress = Math.min(100, Math.round((current / next) * 100));
+  const progress = toRatioPercent(current / next);
 
   return (
     <div className={cn("space-y-2", className)}>

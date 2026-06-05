@@ -2,16 +2,18 @@ import { Flag, Gift, Link2 } from "lucide-react";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { Progress } from "@/components/ui/progress";
-import { formatNumber, formatPluralCount, formatSignedXp } from "@/lib/formatters";
+import {
+  formatNumber,
+  formatPluralCount,
+  formatSignedXp,
+  toRatioPercent,
+} from "@/lib/formatters";
 import { buildEvidenceSignalChips } from "@/lib/presentation/evidence-signal";
 import type { Quest } from "@/types/gitrank";
 
 export function QuestCard({ quest }: { quest: Quest }) {
   const goal = quest.goal > 0 ? quest.goal : 1;
-  const progress = Math.max(
-    0,
-    Math.min(100, Math.round((quest.progress / goal) * 100)),
-  );
+  const progress = toRatioPercent(quest.progress / goal);
   const statusTone =
     quest.status === "Completed"
       ? "neon-chip neon-chip-success"

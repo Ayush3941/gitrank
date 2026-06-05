@@ -9,6 +9,7 @@ import {
   useNetworkConstraintPreference,
   useReducedGamification,
 } from "@/hooks/use-gamification-preference";
+import { toRatioPercent } from "@/lib/formatters";
 
 const TimelineChartInner = dynamic(
   () => import("@/components/shared/timeline-chart-inner").then((mod) => mod.TimelineChartInner),
@@ -162,7 +163,7 @@ function TimelineChartLite({ data }: { data: Array<{ label: string; xp: number }
       <p className="text-xs font-semibold text-primary">Lite timeline view</p>
       <div className="space-y-2">
         {compactWindow.map((point, index) => {
-          const fill = Math.max(0, Math.min(100, Math.round((point.xp / maxXP) * 100)));
+          const fill = toRatioPercent(point.xp / maxXP);
           return (
             <div key={`${point.label}-${index}`} className="space-y-1">
               <div className="flex items-center justify-between gap-3 text-xs text-muted">

@@ -29,7 +29,11 @@ import {
   normalizePRCategory,
 } from "@/lib/runtime/pr-category-policy";
 import { contributionDisplayConfig } from "@/lib/runtime/contribution-display-config";
-import { formatMonthDay, formatRatioPercent } from "@/lib/formatters";
+import {
+  formatMonthDay,
+  formatRatioPercent,
+  toRatioPercent,
+} from "@/lib/formatters";
 import type { PullRequestAnalysis } from "@/types/gitrank";
 
 const DEFAULT_CSRF_COOKIE_NAME = frontendPolicy.csrfCookieName;
@@ -329,7 +333,7 @@ function toProfileViewData(
     mergedPrCount: response.summary.merged_pull_requests,
     reviewedPrCount,
     bestCategory: topSkills[0] ?? "Backend",
-    consistencyScore: Math.round((activeBuckets / totalBuckets) * 100),
+    consistencyScore: toRatioPercent(activeBuckets / totalBuckets),
     strongestSignals: topSkills,
     topSkills,
     level: {

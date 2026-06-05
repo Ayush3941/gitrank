@@ -14,6 +14,8 @@ import {
   formatUtcMonthDay,
   formatXp,
   normalizeDateTime,
+  toBoundedPercent,
+  toRatioPercent,
 } from "@/lib/formatters";
 
 describe("number formatters", () => {
@@ -29,6 +31,12 @@ describe("number formatters", () => {
   });
 
   it("formats percent labels with clamping and ratio conversion", () => {
+    expect(toBoundedPercent(42.4)).toBe(42);
+    expect(toBoundedPercent(130)).toBe(100);
+    expect(toBoundedPercent(-5)).toBe(0);
+    expect(toBoundedPercent(Number.NaN, 15)).toBe(15);
+    expect(toRatioPercent(0.756)).toBe(76);
+    expect(toRatioPercent(Number.NaN, 15)).toBe(15);
     expect(formatPercent(42.4)).toBe("42%");
     expect(formatPercent(130)).toBe("100%");
     expect(formatPercent(-5)).toBe("0%");

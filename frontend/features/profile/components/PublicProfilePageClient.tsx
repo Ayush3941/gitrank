@@ -32,6 +32,7 @@ import {
   formatSignedNumber,
   formatSignedXp,
   formatXp,
+  toRatioPercent,
 } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
@@ -451,7 +452,7 @@ function LiteSkillSummary({ skills }: { skills: SkillNode[] }) {
       ) : null}
       <ul role="list" className="space-y-3">
         {topSkills.map((skill) => {
-          const width = Math.max(8, Math.round((skill.score / maxScore) * 100));
+          const width = Math.max(8, toRatioPercent(skill.score / maxScore));
           return (
             <li
               key={`${skill.category}-${skill.score}-${skill.delta}`}
@@ -464,7 +465,7 @@ function LiteSkillSummary({ skills }: { skills: SkillNode[] }) {
               <div className="mt-2 h-2 rounded-full bg-primary/10">
                 <div
                   className="h-full rounded-full bg-primary/70"
-                  style={{ width: `${Math.min(100, width)}%` }}
+                  style={{ width: `${width}%` }}
                 />
               </div>
             </li>

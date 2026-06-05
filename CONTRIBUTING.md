@@ -16,6 +16,7 @@ This document is intentionally detailed.
 - Added shared plural-count formatting and routed quest rewards, quest progress, onboarding reveal metrics, dashboard streak copy, public-profile repository snippets, and deterministic fallback summaries through shared numeric presentation helpers.
 - Added shared month/day date-label helpers with explicit invalid-date fallbacks, then routed contribution cards, activity pulse labels, and profile/leaderboard API date labels away from local locale formatting.
 - Added shared percent and ratio-percent formatting helpers, then routed badge progress, XP progress, PR confidence, dashboard report confidence, and profile skill-confidence labels through one bounded display path.
+- Added shared numeric percent helpers for progressbar values and chart fills, then routed quest progress, XP meters, badge completion, onboarding pipeline progress, skill bars, timeline bars, and profile consistency mapping through the same 0-100 clamp.
 - Removed dead frontend client helpers and tests that were only self-referenced after the app moved to direct BFF route contracts, existing React Query hooks, and shared copy/share components.
 - Removed ignored local research PDF binaries from the working tree; durable research context remains in this file and `docs/research/README.md` documents where optional local copies belong.
 - Added explicit `.gitignore` exceptions for required evidence templates so tracked runbook templates are not misclassified as ignored local clutter.

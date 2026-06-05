@@ -3,6 +3,7 @@
 import * as React from "react";
 import * as ProgressPrimitive from "@radix-ui/react-progress";
 import { cn } from "@/lib/cn";
+import { toBoundedPercent } from "@/lib/formatters";
 
 export function Progress({
   className,
@@ -11,8 +12,7 @@ export function Progress({
 }: React.ComponentProps<typeof ProgressPrimitive.Root> & {
   indicatorClassName?: string;
 }) {
-  const normalizedValue = Number.isFinite(value ?? 0) ? Number(value ?? 0) : 0;
-  const safeValue = Math.max(0, Math.min(100, normalizedValue));
+  const safeValue = toBoundedPercent(Number(value ?? 0));
 
   return (
     <ProgressPrimitive.Root

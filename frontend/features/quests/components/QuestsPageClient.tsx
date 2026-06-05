@@ -34,7 +34,7 @@ import { useProfileSyncRuns } from "@/hooks/use-profile-sync-runs";
 import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
 import { useStaleSyncRefresh } from "@/hooks/use-stale-sync-refresh";
 import { useQuests } from "@/hooks/use-quests";
-import { formatNumber, formatSignedXp } from "@/lib/formatters";
+import { formatNumber, formatSignedXp, toRatioPercent } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { shouldShowProfileFreshnessPill } from "@/lib/presentation/sync-evidence";
 import {
@@ -117,7 +117,7 @@ export function QuestsPageClient() {
   const contributionRows = profile?.user.contributions ?? [];
   const streak = summarizeContributionStreak(contributionRows);
   const dayOfYear = dayOfYearUTC(new Date());
-  const dayProgress = Math.round((dayOfYear / 365) * 100);
+  const dayProgress = toRatioPercent(dayOfYear / 365);
   const questMap = {
     Daily: quests.filter((quest) => quest.cadence === "Daily"),
     Weekly: quests.filter((quest) => quest.cadence === "Weekly"),
@@ -494,11 +494,7 @@ function questStatusRank(status: Quest["status"]): number {
 
 function safeQuestProgress(quest: Quest): number {
   const goal = quest.goal > 0 ? quest.goal : 1;
-  const ratio = (quest.progress / goal) * 100;
-  if (!Number.isFinite(ratio)) {
-    return 0;
-  }
-  return Math.max(0, Math.min(100, Math.round(ratio)));
+  return toRatioPercent(quest.progress / goal);
 }
 
 function MissionSpotlightCard({

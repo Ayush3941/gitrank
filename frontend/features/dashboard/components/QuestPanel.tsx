@@ -4,7 +4,12 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { formatNumber, formatPluralCount, formatSignedXp } from "@/lib/formatters";
+import {
+  formatNumber,
+  formatPluralCount,
+  formatSignedXp,
+  toRatioPercent,
+} from "@/lib/formatters";
 import { buildEvidenceSignalChips } from "@/lib/presentation/evidence-signal";
 import type { Quest } from "@/types/gitrank";
 
@@ -87,9 +92,5 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
 
 function safeQuestProgress(progress: number, goal: number): number {
   const safeGoal = goal > 0 ? goal : 1;
-  const ratio = (progress / safeGoal) * 100;
-  if (!Number.isFinite(ratio)) {
-    return 0;
-  }
-  return Math.max(0, Math.min(100, Math.round(ratio)));
+  return toRatioPercent(progress / safeGoal);
 }

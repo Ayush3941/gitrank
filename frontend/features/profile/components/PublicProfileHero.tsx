@@ -15,7 +15,7 @@ import { XPProgress } from "@/components/shared/XPProgress";
 import { Button } from "@/components/ui/button";
 import { uniqueDisplayValues } from "@/lib/display-values";
 import type { AbraInsightSource } from "@/lib/ai/abra-insights-types";
-import { formatNumber, formatXp } from "@/lib/formatters";
+import { formatNumber, formatPercent, formatXp } from "@/lib/formatters";
 import { formatAIInsightSourceLabel } from "@/lib/presentation/ai-insight-source";
 import type { UserProfile } from "@/types/gitrank";
 
@@ -71,7 +71,7 @@ export function PublicProfileHero({
               label="GitRank score"
               value={formatNumber(user.gitRankScore)}
             />
-            <MiniMetric icon={<ShieldCheck className="h-4 w-4" aria-hidden="true" />} label="Consistency" value={`${user.consistencyScore}%`} />
+            <MiniMetric icon={<ShieldCheck className="h-4 w-4" aria-hidden="true" />} label="Consistency" value={formatPercent(user.consistencyScore)} />
           </div>
           {identitySummary ? (
             <div className="neon-callout rounded-[var(--radius-universal)] px-4 py-3 text-sm text-muted">

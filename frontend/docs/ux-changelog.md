@@ -30,6 +30,9 @@
 - Percent-label consistency:
   - badge progress, XP progress, PR confidence, dashboard report confidence, and profile skill-confidence labels now use shared bounded percent formatters.
   - ratio-style confidence values and 0-100 progress values no longer carry separate rounding or clamping logic in each component.
+- Progress-value consistency:
+  - quest progress, XP meters, badge completion, onboarding pipeline progress, skill bars, timeline bars, and profile consistency mapping now use shared numeric percent helpers.
+  - the shared progress primitive also clamps through the same helper, keeping meter values and labels aligned at the final rendering boundary.
 - Source cleanup:
   - removed dead browser API wrapper modules plus their self-referential tests after verifying production code uses BFF route contracts, React Query hooks, and shared copy/share components instead.
   - removed ignored local research PDFs from the working tree and added ignore exceptions for required evidence templates, keeping local reference files out of source cleanup scans without hiding tracked runbook templates.

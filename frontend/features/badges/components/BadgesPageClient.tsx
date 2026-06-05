@@ -43,7 +43,7 @@ import {
   deriveDeterministicArchetype,
   shouldRequestAbraInsights,
 } from "@/lib/ai/deterministic-identity-summary";
-import { formatPercent } from "@/lib/formatters";
+import { formatPercent, toRatioPercent } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { shouldShowProfileFreshnessPill } from "@/lib/presentation/sync-evidence";
@@ -181,7 +181,7 @@ export function BadgesPageClient() {
   const visibleBadges = filtered.slice(0, visibleBadgeCount);
   const hasMoreBadges = filtered.length > visibleBadges.length;
   const remainingBadges = Math.max(0, filtered.length - visibleBadges.length);
-  const completionPercent = totalCount > 0 ? Math.round((unlockedCount / totalCount) * 100) : 0;
+  const completionPercent = toRatioPercent(unlockedCount / totalCount);
   const streak = summarizeContributionStreak(profile?.user.contributions ?? []);
   const nextUnlockTarget = lockedBadgesSorted[0] ?? null;
 
@@ -383,7 +383,7 @@ export function BadgesPageClient() {
               </div>
               <div className="grid gap-3 md:grid-cols-4">
                 <BadgeMetric label="Unlocked" value={unlockedCount} icon={<ShieldCheck className="h-4 w-4 text-cyan-200" aria-hidden="true" />} />
-                <BadgeMetric label="Completion" value={`${completionPercent}%`} icon={<Crown className="h-4 w-4 text-fuchsia-200" aria-hidden="true" />} />
+                <BadgeMetric label="Completion" value={formatPercent(completionPercent)} icon={<Crown className="h-4 w-4 text-fuchsia-200" aria-hidden="true" />} />
                 <BadgeMetric label="Level" value={profile.user.level.currentLevel} icon={<Trophy className="h-4 w-4 text-violet-200" aria-hidden="true" />} />
                 <BadgeMetric label="Current streak" value={`${streak.currentStreakDays}d`} icon={<Sparkles className="h-4 w-4 text-emerald-200" aria-hidden="true" />} />
               </div>
