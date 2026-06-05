@@ -1,8 +1,13 @@
 # Contributing to GitRank
 
-Last reviewed: June 4, 2026
+Last reviewed: June 5, 2026
 
 This document is intentionally detailed.
+
+## Session Notes (June 5, 2026)
+
+- Added shared `ExactTime` rendering for exact user-facing timestamps so onboarding sync status and settings sync-run rows expose valid timestamps through semantic `<time>` elements instead of raw locale strings.
+- Extended `formatDateTime` with an explicit fallback parameter and reused it for contribution CSV date labels, keeping invalid timestamp handling deliberate without duplicating local date parsing.
 
 ## Session Notes (June 4, 2026)
 

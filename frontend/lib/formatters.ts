@@ -31,10 +31,10 @@ export function formatRelativeDays(value?: string) {
   return `${days} days ago`;
 }
 
-export function formatDateTime(value?: string) {
-  if (!value) return "Unknown";
+export function formatDateTime(value?: string, fallback = "Unknown") {
+  if (!value) return fallback;
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Unknown";
+  if (Number.isNaN(date.getTime())) return fallback;
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",

@@ -45,6 +45,7 @@ import {
 import { buildStaleSyncNotice } from "@/lib/presentation/stale-sync-notice";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
 import { contributionDisplayConfig } from "@/lib/runtime/contribution-display-config";
+import { formatDateTime } from "@/lib/formatters";
 import {
   buildContributionFocusCounts,
   buildContributionStatusCounts,
@@ -605,11 +606,7 @@ function toCSVCell(value: string | number | boolean): string {
 }
 
 function formatCSVDate(value: string): string {
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return "";
-  }
-  return parsed.toLocaleString();
+  return formatDateTime(value, "");
 }
 
 function ContributionListPlaceholder() {

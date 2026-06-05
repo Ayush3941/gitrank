@@ -34,6 +34,11 @@ describe("formatDateTime", () => {
     expect(formatDateTime("not-a-date")).toBe("Unknown");
     expect(formatDateTime(undefined)).toBe("Unknown");
   });
+
+  it("uses the requested fallback for invalid values", () => {
+    expect(formatDateTime("not-a-date", "time pending")).toBe("time pending");
+    expect(formatDateTime(undefined, "")).toBe("");
+  });
 });
 
 describe("normalizeDateTime", () => {

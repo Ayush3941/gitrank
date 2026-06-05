@@ -4,6 +4,7 @@ import { AlertTriangle, CheckCircle2, Clock3, RefreshCw, XCircle } from "lucide-
 import { useDeferredValue, useId, useMemo, useState } from "react";
 import { ControlSurface } from "@/components/shared/ControlSurface";
 import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
+import { ExactTime } from "@/components/shared/ExactTime";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { RelativeTime } from "@/components/shared/RelativeTime";
 import { ScrollableRegion } from "@/components/shared/ScrollableRegion";
@@ -388,7 +389,7 @@ export function SyncRunActivityPanel({
                     </div>
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
                       <span>
-                        Started {toFriendlyTimestamp(run.started_at)}
+                        Started <ExactTime value={run.started_at} />
                       </span>
                       {run.finished_at ? (
                         <span>Duration {runDuration(run.started_at, run.finished_at)}</span>
@@ -510,14 +511,6 @@ function runLabel(run: ApiSyncRunRecord): string {
     return run.subject;
   }
   return "Sync run";
-}
-
-function toFriendlyTimestamp(value: string): string {
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return "time pending";
-  }
-  return parsed.toLocaleString();
 }
 
 function runDuration(startedAt: string, finishedAt: string): string {

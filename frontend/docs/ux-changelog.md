@@ -1,5 +1,12 @@
 # Frontend UX Changelog
 
+## 2026-06-05
+
+- Exact timestamp consistency:
+  - added shared `ExactTime` rendering for exact sync timestamps.
+  - onboarding sync status and settings sync-run rows now render valid timestamps as semantic `<time>` elements instead of raw locale strings.
+  - contribution CSV date labels use the shared `formatDateTime` fallback path so invalid dates stay intentional and empty rather than parser-dependent.
+
 ## 2026-06-04
 
 - Timestamp accessibility pass:

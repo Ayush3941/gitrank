@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, LoaderCircle, RefreshCcw } from "lucide-react";
+import { ExactTime } from "@/components/shared/ExactTime";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { InlineNotice } from "@/components/shared/InlineNotice";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
@@ -215,7 +216,7 @@ export function SyncPipeline() {
           ) : null}
           {syncStartedAt ? (
             <p className="text-sm text-cyan-100">
-              Sync run started at {new Date(syncStartedAt).toLocaleString()}.
+              Sync run started at <ExactTime value={syncStartedAt} />.
             </p>
           ) : null}
           {syncStartedAt && !isSynced ? (
