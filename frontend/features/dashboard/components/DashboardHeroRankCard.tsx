@@ -10,7 +10,7 @@ import { XPProgress } from "@/components/shared/XPProgress";
 import { Button } from "@/components/ui/button";
 import { uniqueDisplayValues } from "@/lib/display-values";
 import type { AbraInsightSource } from "@/lib/ai/abra-insights-types";
-import { formatNumber, formatXp } from "@/lib/formatters";
+import { formatNumber, formatXp, formatXpLabel } from "@/lib/formatters";
 import { formatAIInsightSourceLabel } from "@/lib/presentation/ai-insight-source";
 import type { UserProfile } from "@/types/gitrank";
 
@@ -92,12 +92,12 @@ export function DashboardHeroRankCard({
           <p className="text-xs font-medium text-primary">To next level</p>
           <p className="mt-3 text-lg font-medium text-white">
             <span className="numeric-readout">
-              {formatXp(Math.max(0, user.level.nextLevelXp - user.level.currentXp))}
+              {formatXpLabel(Math.max(0, user.level.nextLevelXp - user.level.currentXp))}
             </span>{" "}
-            XP left
+            left
           </p>
           <p className="mt-2 text-sm text-muted">
-            Target: <span className="numeric-readout">{formatXp(user.level.nextLevelXp)}</span> XP
+            Target: <span className="numeric-readout">{formatXpLabel(user.level.nextLevelXp)}</span>
           </p>
         </div>
       </div>
@@ -112,7 +112,7 @@ export function DashboardHeroRankCard({
             </p>
             <p className="text-sm leading-6 text-muted">
               {user.rankProgress.nextTier
-                ? `${formatXp(user.rankProgress.xpToNextTier)} XP to ${user.rankProgress.nextTier}.`
+                ? `${formatXpLabel(user.rankProgress.xpToNextTier)} to ${user.rankProgress.nextTier}.`
                 : "Top tier reached for this season."}
             </p>
             <p className="text-sm leading-6 text-muted">{nextAction.description}</p>

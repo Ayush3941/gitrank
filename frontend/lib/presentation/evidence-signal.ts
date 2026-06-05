@@ -1,3 +1,5 @@
+import { formatXpLabel } from "@/lib/formatters";
+
 const SUMMARY_PREFIX = "summary=[";
 
 export function buildEvidenceSignalChips(
@@ -137,7 +139,7 @@ export function formatEvidenceSignal(signal: string): string | null {
 
   if (lower.startsWith("testing_xp=")) {
     const xp = parsePositiveInteger(value.slice("testing_xp=".length));
-    return xp == null ? "Testing XP" : `${xp} testing XP`;
+    return xp == null ? "Testing XP" : `Testing ${formatXpLabel(xp)}`;
   }
 
   if (lower.startsWith("contribution_span=")) {

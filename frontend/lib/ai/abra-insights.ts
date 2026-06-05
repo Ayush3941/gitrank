@@ -15,7 +15,7 @@ import {
   type AIProvider,
   type AIProviderConfig,
 } from "@/lib/ai/ai-provider-config";
-import { formatPercent, formatPluralCount, formatXp } from "@/lib/formatters";
+import { formatPercent, formatPluralCount, formatXpLabel } from "@/lib/formatters";
 
 const CACHE_TTL_MS = 20 * 60 * 1000;
 const MAX_CONTRIBUTIONS = 8;
@@ -196,7 +196,7 @@ function buildIdentitySummary(input: AbraInsightsRequest, archetype: string): st
   const signal = profile.strongestSignals[0] ?? "backend";
   const mergedPrSummary = formatPluralCount(profile.mergedPrCount, "merged PR");
   const mergedPrVerb = profile.mergedPrCount === 1 ? "has" : "have";
-  return `${profile.displayName} currently profiles as a ${archetype}, with strongest evidence in ${signal}. ${mergedPrSummary} ${mergedPrVerb} produced ${formatXp(profile.totalXp)} XP so far, with a contribution streak of ${formatPluralCount(profile.streakDays, "day")} and ${formatPluralCount(profile.repositoriesTouched, "repository", "repositories")} touched.`;
+  return `${profile.displayName} currently profiles as a ${archetype}, with strongest evidence in ${signal}. ${mergedPrSummary} ${mergedPrVerb} produced ${formatXpLabel(profile.totalXp)} so far, with a contribution streak of ${formatPluralCount(profile.streakDays, "day")} and ${formatPluralCount(profile.repositoriesTouched, "repository", "repositories")} touched.`;
 }
 
 function fallbackContributionNarrative(input: AbraContributionInput): ContributionNarrative {
@@ -209,7 +209,7 @@ function fallbackContributionNarrative(input: AbraContributionInput): Contributi
         : "steady";
   return {
     what: `Delivered a ${area} contribution in ${input.owner}/${input.repo} (${input.title}).`,
-    why: `This was rated as ${challenge} work by the score ledger and contributed ${input.xpEarned} XP.`,
+    why: `This was rated as ${challenge} work by the score ledger and contributed ${formatXpLabel(input.xpEarned)}.`,
     signal:
       input.evidenceSignals[0] ||
       "Shows ability to ship and close contribution loops with evidence-backed outcomes.",
@@ -260,7 +260,7 @@ function fallbackSkillInsights(input: AbraInsightsRequest): Record<string, Skill
 
     out[discipline] = {
       discipline: titleCaseDiscipline(discipline),
-      summary: `${related.length} scored PRs produced ${totalXP} XP in this discipline.`,
+      summary: `${formatPluralCount(related.length, "scored PR")} produced ${formatXpLabel(totalXP)} in this discipline.`,
       evidence: topEvidence,
       confidence: confidenceFromSampleSize(related.length),
     };

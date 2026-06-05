@@ -7,7 +7,7 @@ import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { Button } from "@/components/ui/button";
 import { OnboardingStepper } from "@/features/onboarding/components/OnboardingStepper";
 import { uniqueDisplayValues } from "@/lib/display-values";
-import { formatNumber, formatPluralCount, formatRelativeDays, formatXp } from "@/lib/formatters";
+import { formatNumber, formatPluralCount, formatRelativeDays, formatXpLabel } from "@/lib/formatters";
 import type { AbraInsightSource } from "@/lib/ai/abra-insights-types";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { formatAIInsightSourceLabel } from "@/lib/presentation/ai-insight-source";
@@ -104,7 +104,7 @@ export function RevealPanel({
         <div className="flex flex-wrap items-center justify-center gap-3">
           <RankBadge rank={user.level.rankTier} />
           <div className="neon-chip neon-chip-muted rounded-full px-4 py-2 text-sm text-muted">
-            <span className="numeric-readout">{formatXp(user.level.currentXp)} / {formatXp(user.level.nextLevelXp)}</span> XP
+            <span className="numeric-readout">{formatXpLabel(user.level.currentXp)} / {formatXpLabel(user.level.nextLevelXp)}</span>
           </div>
         </div>
         <div className="space-y-4">

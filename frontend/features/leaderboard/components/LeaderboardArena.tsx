@@ -8,7 +8,7 @@ import {
   formatNumber,
   formatSignedNumber,
   formatTimeUntil,
-  formatXp,
+  formatXpLabel,
 } from "@/lib/formatters";
 import type { LeaderboardSnapshot } from "@/types/gitrank";
 
@@ -106,7 +106,7 @@ export function LeaderboardArena({
           <GlowCard className="space-y-4 border border-primary/22">
             <div className="neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold">
               {nextAboveRow
-                ? `${formatXp(nextAboveGap)} XP to pass #${nextAboveRow.rank}`
+                ? `${formatXpLabel(nextAboveGap)} to pass #${nextAboveRow.rank}`
                 : "You lead this lane"}
             </div>
             <ol className="grid gap-2">
@@ -134,7 +134,7 @@ export function LeaderboardArena({
                     </div>
                     <div className="flex flex-wrap items-center gap-2 text-xs">
                       <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-                        {formatXp(row.seasonXp)} XP
+                        {formatXpLabel(row.seasonXp)}
                       </span>
                       <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
                         Move {movementLabel}
@@ -218,7 +218,7 @@ export function LeaderboardArena({
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                     <Metric label="Season XP" value={row.seasonXp} />
-                    <Metric label="To next rank" value={row.xpToNextRank ? `${row.xpToNextRank} XP` : "Lead"} />
+                    <Metric label="To next rank" value={row.xpToNextRank ? formatXpLabel(row.xpToNextRank) : "Lead"} />
                     {showDetails ? <Metric label="Total XP" value={row.totalXp} /> : null}
                     <Metric
                       label="Movement"

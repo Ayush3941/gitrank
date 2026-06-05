@@ -32,6 +32,7 @@ import {
   formatSignedNumber,
   formatSignedXp,
   formatXp,
+  formatXpLabel,
   toRatioPercent,
 } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
@@ -507,7 +508,7 @@ function LiteTimelineSummary({
           </span>
         </div>
         <p className="mt-1 text-lg font-semibold text-white">
-          {formatXp(latest.xp)} XP
+          {formatXpLabel(latest.xp)}
         </p>
         <p className="mt-1 text-xs text-muted">
           {latest.label}

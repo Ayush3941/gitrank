@@ -9,7 +9,7 @@ import {
   useNetworkConstraintPreference,
   useReducedGamification,
 } from "@/hooks/use-gamification-preference";
-import { toRatioPercent } from "@/lib/formatters";
+import { formatSignedXp, formatXp, formatXpLabel, toRatioPercent } from "@/lib/formatters";
 
 const TimelineChartInner = dynamic(
   () => import("@/components/shared/timeline-chart-inner").then((mod) => mod.TimelineChartInner),
@@ -87,21 +87,21 @@ export function TimelineChart({ data }: { data: Array<{ label: string; xp: numbe
           />
         </div>
         <p id={summaryId} className="mt-2 text-sm text-muted">
-          Start {firstPoint.label}: {firstPoint.xp} XP. Latest {lastPoint.label}: {lastPoint.xp} XP.
-          {" "}Net change: {growth >= 0 ? "+" : ""}{growth} XP.
+          Start {firstPoint.label}: {formatXpLabel(firstPoint.xp)}. Latest {lastPoint.label}: {formatXpLabel(lastPoint.xp)}.
+          {" "}Net change: {formatSignedXp(growth)}.
         </p>
         <p className="mt-1 text-sm text-muted">
-          Peak month: {topPoint.label} ({topPoint.xp} XP).
-          {previousPoint ? ` Latest step: ${formatSignedXP(latestDelta)} XP.` : ""}
+          Peak month: {topPoint.label} ({formatXpLabel(topPoint.xp)}).
+          {previousPoint ? ` Latest step: ${formatSignedXp(latestDelta)}.` : ""}
         </p>
         <ul role="list" className="mt-3 space-y-1 text-xs text-muted">
           {recentWindow.map((point, index) => (
             <li key={`${point.label}-${index}`} className="flex items-center justify-between gap-3">
               <span>{point.label}</span>
-            <span>{point.xp} XP</span>
-          </li>
-        ))}
-      </ul>
+              <span>{formatXpLabel(point.xp)}</span>
+            </li>
+          ))}
+        </ul>
         {showDataTable ? (
           <ScrollableRegion
             id={tableRegionId}
@@ -124,7 +124,7 @@ export function TimelineChart({ data }: { data: Array<{ label: string; xp: numbe
                   return (
                     <tr key={`${point.label}-${point.xp}-${index}`} className="border-b border-white/6 last:border-b-0">
                       <th scope="row" className="px-2 py-2 font-medium text-white">{point.label}</th>
-                      <td className="px-2 py-2">{point.xp}</td>
+                      <td className="px-2 py-2">{formatXp(point.xp)}</td>
                       <td className="px-2 py-2">{index === 0 ? "-" : `${delta > 0 ? "+" : ""}${delta}`}</td>
                     </tr>
                   );
@@ -136,13 +136,6 @@ export function TimelineChart({ data }: { data: Array<{ label: string; xp: numbe
       </div>
     </div>
   );
-}
-
-function formatSignedXP(value: number): string {
-  if (value > 0) {
-    return `+${value}`;
-  }
-  return `${value}`;
 }
 
 function TimelineChartFallback() {
@@ -168,7 +161,7 @@ function TimelineChartLite({ data }: { data: Array<{ label: string; xp: number }
             <div key={`${point.label}-${index}`} className="space-y-1">
               <div className="flex items-center justify-between gap-3 text-xs text-muted">
                 <span>{point.label}</span>
-                <span>{point.xp} XP</span>
+                <span>{formatXpLabel(point.xp)}</span>
               </div>
               <div className="neon-track h-2.5 overflow-hidden border border-primary/22 bg-primary/8">
                 <div className="h-full bg-gradient-to-r from-primary/80 to-primary-2/75" style={{ width: `${fill}%` }} />

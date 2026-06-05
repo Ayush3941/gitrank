@@ -6,7 +6,7 @@ import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { NewTabHint } from "@/components/shared/NewTabHint";
 import type { ContributionNarrative } from "@/lib/ai/abra-insights-types";
-import { formatMonthDayYear } from "@/lib/formatters";
+import { formatMonthDayYear, formatXpLabel } from "@/lib/formatters";
 import { formatContributionStatusLabel } from "@/lib/presentation/contribution-status";
 import {
   buildDeterministicImpactSummary,
@@ -105,7 +105,7 @@ export function ContributionList({
                 </div>
                 <div className={`neon-surface border-primary/28 text-right ${useLiteCards ? "rounded-[var(--radius-universal)] px-3 py-2.5" : "rounded-[var(--radius-universal)] px-4 py-3"}`}>
                   <p className="text-xs font-medium text-primary">Earned</p>
-                  <p className="numeric-readout mt-2 text-3xl font-semibold text-white">{item.xpEarned} XP</p>
+                  <p className="numeric-readout mt-2 text-3xl font-semibold text-white">{formatXpLabel(item.xpEarned)}</p>
                   {!useLiteCards && showDetails ? (
                     <>
                       <p className="mt-2 text-xs text-muted">Signal {signalBand.label}</p>

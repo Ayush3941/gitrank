@@ -2,6 +2,9 @@
 
 ## 2026-06-05
 
+- XP-label consistency:
+  - added shared `formatXpLabel` rendering for complete `number + XP` labels.
+  - dashboard, leaderboard, contribution cards, timeline summaries, onboarding reveal copy, public-profile snippets, deterministic fallback narratives, and evidence chips now share one XP-label path.
 - Frontend route and hook cleanup:
   - removed obsolete top-level dashboard route aliases so dashboard pages live only under the canonical `/dashboard/*` tree.
   - pruned unused sync mutation hook wrappers, the dead profile-sync API alias, and the unused dialog close export after static reachability checks.

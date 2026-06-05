@@ -36,7 +36,7 @@ import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
 import { useStaleSyncRefresh } from "@/hooks/use-stale-sync-refresh";
 import { useMyProfile } from "@/hooks/use-profile";
 import type { LeaderboardTab } from "@/lib/api/leaderboard-api";
-import { formatXp } from "@/lib/formatters";
+import { formatXpLabel } from "@/lib/formatters";
 import { shouldShowProfileFreshnessPill } from "@/lib/presentation/sync-evidence";
 import {
   isGitHubAppInstallationBlocked,
@@ -421,7 +421,7 @@ export function LeaderboardPageClient() {
                   </p>
                   <p className="mt-1 text-xs text-muted">
                     {myProfile.user.rankProgress.nextTier
-                      ? `${formatXp(myProfile.user.rankProgress.xpToNextTier)} XP to ${myProfile.user.rankProgress.nextTier}.`
+                      ? `${formatXpLabel(myProfile.user.rankProgress.xpToNextTier)} to ${myProfile.user.rankProgress.nextTier}.`
                       : "You are at the current top tier band."}
                   </p>
                 </div>
@@ -450,7 +450,7 @@ export function LeaderboardPageClient() {
                 </p>
                 <p className="mt-1 text-xs text-muted">
                   {snapshot.currentUser.xpToNextRank > 0
-                    ? `${snapshot.currentUser.xpToNextRank} XP to next band`
+                    ? `${formatXpLabel(snapshot.currentUser.xpToNextRank)} to next band`
                     : "You currently lead this lane"}
                 </p>
               </div>

@@ -11,7 +11,11 @@ export function formatSignedNumber(value: number) {
 }
 
 export function formatXp(value: number) {
-  return formatNumber(value);
+  return formatNumber(Number.isFinite(value) ? Math.round(value) : 0);
+}
+
+export function formatXpLabel(value: number) {
+  return `${formatXp(value)} XP`;
 }
 
 export function formatPluralCount(value: number, singular: string, plural = `${singular}s`) {

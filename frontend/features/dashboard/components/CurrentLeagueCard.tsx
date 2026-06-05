@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { CalendarClock, TrendingDown, TrendingUp, Trophy } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { Progress } from "@/components/ui/progress";
-import { formatDate, formatSignedNumber, formatTimeUntil, formatXp } from "@/lib/formatters";
+import { formatDate, formatSignedNumber, formatTimeUntil, formatXp, formatXpLabel, toRatioPercent } from "@/lib/formatters";
 import { buildEvidenceSignalChips } from "@/lib/presentation/evidence-signal";
 import type { UserProfile } from "@/types/gitrank";
 
@@ -41,7 +41,7 @@ export function CurrentLeagueCard({ user }: { user: UserProfile }) {
             <p className="text-xs font-medium text-muted">Promotion</p>
             <p className="mt-2 text-sm text-muted">
               {user.rankProgress.nextTier
-                ? `${formatXp(user.rankProgress.xpToNextTier)} XP to ${user.rankProgress.nextTier}`
+                ? `${formatXpLabel(user.rankProgress.xpToNextTier)} to ${user.rankProgress.nextTier}`
                 : "Top tier"}
             </p>
           </div>
@@ -53,13 +53,9 @@ export function CurrentLeagueCard({ user }: { user: UserProfile }) {
         <Progress
           className="mt-4"
           aria-label="Season XP progress toward next rank tier"
-          value={Math.min(
-            100,
-            Math.round(
-              (user.rankProgress.seasonXp /
-                Math.max(1, user.rankProgress.seasonXp + user.rankProgress.xpToNextTier)) *
-                100,
-            ),
+          value={toRatioPercent(
+            user.rankProgress.seasonXp /
+              Math.max(1, user.rankProgress.seasonXp + user.rankProgress.xpToNextTier),
           )}
         />
         <p className="mt-3 text-xs text-muted">

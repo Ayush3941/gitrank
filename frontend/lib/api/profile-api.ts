@@ -32,6 +32,7 @@ import { contributionDisplayConfig } from "@/lib/runtime/contribution-display-co
 import {
   formatMonthDay,
   formatRatioPercent,
+  formatXpLabel,
   toRatioPercent,
 } from "@/lib/formatters";
 import type { PullRequestAnalysis } from "@/types/gitrank";
@@ -445,7 +446,7 @@ function toSkillTree(skills: ApiSkillArea[]): SkillNode[] {
 
 function skillNote(skill: ApiSkillArea): string {
   const base =
-    skill.summary || `${humanizeKey(skill.key)} contributes ${skill.total_xp} XP.`;
+    skill.summary || `${humanizeKey(skill.key)} contributes ${formatXpLabel(skill.total_xp)}.`;
   const source = readableEvidenceSource(skill.evidence_source);
   const confidence =
     typeof skill.confidence === "number" && skill.confidence > 0
@@ -826,7 +827,7 @@ function toRepositoryVisibilityFromTopRepos(source: ApiRepository[]): Repository
     name: repository.full_name,
     tracked: true,
     visibility: normalizeVisibility(repository.visibility),
-    reason: `${repository.contribution_count} scored contributions, ${repository.total_xp} XP.`,
+    reason: `${repository.contribution_count} scored contributions, ${formatXpLabel(repository.total_xp)}.`,
   }));
 }
 
