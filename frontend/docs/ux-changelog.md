@@ -5,6 +5,9 @@
 - Timestamp accessibility pass:
   - added shared `RelativeTime` rendering for freshness, sync-status, and sync-run activity timestamps.
   - removed hover-only exact-time `title` hints from those surfaces; exact timestamps now stay available through semantic `<time>` text and screen-reader-only labels, with responsive visible exact text where the chip design already supported it.
+- PR report metric-ledger clarity:
+  - metric descriptions now use `aria-describedby` instead of browser tooltip titles.
+  - collapsed metric notes stay screen-reader available, while the existing note toggle reveals the same one-line descriptions visually without duplicating tooltip-only behavior.
 - Loading-state polish:
   - added a shared loading-copy helper for card and route loading states so screen-reader announcements avoid repeated `Loading` phrasing while preserving progressive route copy like `Preparing your dashboard`.
   - kept skeleton bars outside live regions and covered route/card loading announcements with focused render tests.

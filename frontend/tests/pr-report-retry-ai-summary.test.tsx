@@ -82,6 +82,50 @@ describe("pr report ai retry action", () => {
   });
 });
 
+describe("pr report metric ledger", () => {
+  beforeEach(() => {
+    mockUsePrReport.mockReset();
+    mockMutateAsync.mockReset();
+    mockRefetch.mockReset();
+    mockRefetch.mockResolvedValue(undefined);
+  });
+
+  it("keeps metric descriptions semantic without hover-only title text", () => {
+    mockUsePrReport.mockReturnValue({
+      data: buildReportFixture("complete"),
+      isLoading: false,
+      isError: false,
+      refetch: mockRefetch,
+    });
+
+    render(<PRBattleReportPageClient owner="octo" repo="gitrank" number={42} />);
+
+    const xpMetricLabel = screen.getByText((content, element) => {
+      return element?.tagName.toLowerCase() === "dt" && content === "XP earned";
+    });
+    const xpMetricCell = xpMetricLabel.closest("div");
+    if (!xpMetricCell) {
+      throw new Error("Expected XP earned metric cell to render.");
+    }
+    const xpValue = xpMetricCell.querySelector("dd[aria-describedby]");
+    if (!xpValue) {
+      throw new Error("Expected XP earned metric value to reference its description.");
+    }
+    const descriptionId = xpValue.getAttribute("aria-describedby");
+    expect(xpValue.hasAttribute("title")).toBe(false);
+    expect(descriptionId).toBeTruthy();
+
+    const description = document.getElementById(descriptionId ?? "");
+    expect(description?.textContent).toBe("Final deterministic XP after multipliers and penalties.");
+    expect(description?.className).toContain("sr-only");
+
+    fireEvent.click(screen.getByRole("button", { name: "Show metric notes" }));
+
+    expect(description?.className).not.toContain("sr-only");
+    expect(screen.getByText("Final deterministic XP after multipliers and penalties.")).toBeTruthy();
+  });
+});
+
 function buildReportFixture(
   status: "complete" | "rate_limited" | "deterministic_only",
 ) {

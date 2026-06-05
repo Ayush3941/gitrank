@@ -1105,13 +1105,25 @@ function MetricCell({
   description: string;
   showDescription: boolean;
 }) {
+  const descriptionId = useId();
+
   return (
     <div className="neon-surface rounded-[var(--radius-universal)] px-4 py-3">
       <dt className="text-xs text-muted">{label}</dt>
-      <dd className="break-anywhere mt-1 text-sm font-semibold text-white" title={description}>
+      <dd
+        className="break-anywhere mt-1 text-sm font-semibold text-white"
+        aria-describedby={descriptionId}
+      >
         {value}
       </dd>
-      {showDescription ? <dd className="break-anywhere mt-2 text-xs leading-5 text-muted">{description}</dd> : null}
+      <dd
+        id={descriptionId}
+        className={
+          showDescription ? "break-anywhere mt-2 text-xs leading-5 text-muted" : "sr-only"
+        }
+      >
+        {description}
+      </dd>
     </div>
   );
 }
