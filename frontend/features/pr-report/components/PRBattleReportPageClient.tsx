@@ -15,6 +15,7 @@ import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { NewTabHint } from "@/components/shared/NewTabHint";
 import { InlineNotice } from "@/components/shared/InlineNotice";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { PanelLoadingPlaceholder } from "@/components/shared/PanelLoadingPlaceholder";
 import { RouteLoadingState } from "@/components/shared/RouteLoadingState";
 import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { Button } from "@/components/ui/button";
@@ -1045,11 +1046,15 @@ function uniqueStrings(values: string[]): string[] {
 
 function TechnicalPanelPlaceholder({ label }: { label: string }) {
   return (
-    <GlowCard variant="loading" className="min-h-[14rem] space-y-3">
-      <p className="text-xs font-medium text-primary">{label}</p>
-      <div className="neon-skeleton h-10 w-1/2" />
-      <div className="neon-skeleton h-24 w-full" />
-    </GlowCard>
+    <PanelLoadingPlaceholder
+      label={label}
+      minHeightClassName="min-h-[14rem]"
+      cardVariant="loading"
+      skeletons={[
+        { className: "h-10 w-1/2" },
+        { className: "h-24 w-full" },
+      ]}
+    />
   );
 }
 

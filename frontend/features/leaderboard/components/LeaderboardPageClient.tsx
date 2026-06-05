@@ -23,6 +23,7 @@ import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { PanelLoadingPlaceholder } from "@/components/shared/PanelLoadingPlaceholder";
 import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { StaleState } from "@/components/shared/StaleState";
@@ -492,11 +493,14 @@ export function LeaderboardPageClient() {
 
 function LeaderboardPanelPlaceholder({ label }: { label: string }) {
   return (
-    <GlowCard className="min-h-[18rem] space-y-3">
-      <p className="text-xs font-medium text-primary">{label}</p>
-      <div className="neon-skeleton h-9 w-1/2" />
-      <div className="neon-skeleton h-24 w-full" />
-      <div className="neon-skeleton h-24 w-full" />
-    </GlowCard>
+    <PanelLoadingPlaceholder
+      label={label}
+      minHeightClassName="min-h-[18rem]"
+      skeletons={[
+        { className: "h-9 w-1/2" },
+        { className: "h-24 w-full" },
+        { className: "h-24 w-full" },
+      ]}
+    />
   );
 }

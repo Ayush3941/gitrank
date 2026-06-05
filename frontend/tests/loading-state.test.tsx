@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { LoadingState } from "@/components/shared/LoadingState";
+import { PanelLoadingPlaceholder } from "@/components/shared/PanelLoadingPlaceholder";
 
 describe("LoadingState", () => {
   it("keeps the visual shell busy while limiting announcements to one status node", () => {
@@ -30,5 +31,42 @@ describe("LoadingState", () => {
     expect(screen.getByRole("status").textContent).toBe("Loading quests.");
     expect(screen.getByText("quests")).toBeTruthy();
     expect(screen.queryByText("Loading quests...")).toBeNull();
+  });
+});
+
+describe("PanelLoadingPlaceholder", () => {
+  it("keeps feature-panel skeletons outside the single live status", () => {
+    const { container } = render(
+      <PanelLoadingPlaceholder
+        label="Loading contribution cards"
+        skeletons={[
+          { className: "h-9 w-1/2" },
+          { className: "h-24 w-full" },
+          { className: "h-24 w-full" },
+        ]}
+      />,
+    );
+
+    const shell = container.firstElementChild;
+    const status = screen.getByRole("status");
+    expect(shell?.getAttribute("aria-busy")).toBe("true");
+    expect(status.textContent).toBe("Loading contribution cards.");
+    expect(container.querySelectorAll("[role='status']")).toHaveLength(1);
+    expect(container.querySelectorAll(".neon-skeleton")).toHaveLength(3);
+    expect(status.querySelector(".neon-skeleton")).toBeNull();
+  });
+
+  it("supports plain deferred placeholders without adding an extra card surface", () => {
+    const { container } = render(
+      <PanelLoadingPlaceholder
+        label="Loading repository controls"
+        surface="plain"
+      />,
+    );
+
+    const shell = container.firstElementChild;
+    expect(shell?.getAttribute("aria-busy")).toBe("true");
+    expect(shell?.className).not.toContain("glass-panel");
+    expect(screen.getByRole("status").textContent).toBe("Loading repository controls.");
   });
 });

@@ -20,6 +20,7 @@ import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { PanelLoadingPlaceholder } from "@/components/shared/PanelLoadingPlaceholder";
 import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
 import { RouteLoadingState } from "@/components/shared/RouteLoadingState";
 import { StaleState } from "@/components/shared/StaleState";
@@ -361,10 +362,6 @@ export function DashboardPageClient() {
 
 function LazyLanePlaceholder({ label }: { label: string }) {
   return (
-    <GlowCard className="min-h-[15rem] space-y-3">
-      <p className="text-xs font-medium text-primary">{label}</p>
-      <div className="neon-skeleton h-10 w-3/5" />
-      <div className="neon-skeleton h-24 w-full" />
-    </GlowCard>
+    <PanelLoadingPlaceholder label={label} />
   );
 }

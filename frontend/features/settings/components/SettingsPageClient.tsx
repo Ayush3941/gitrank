@@ -14,6 +14,7 @@ import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { InlineNotice } from "@/components/shared/InlineNotice";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { PanelLoadingPlaceholder } from "@/components/shared/PanelLoadingPlaceholder";
 import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
 import { RouteLoadingState } from "@/components/shared/RouteLoadingState";
 import { SyncStatusPill } from "@/components/shared/SyncStatusPill";
@@ -1032,10 +1033,13 @@ function toControlID(value: string): string {
 
 function SettingsPanelPlaceholder({ label }: { label: string }) {
   return (
-    <div className="min-h-[15rem] space-y-3">
-      <p className="text-xs font-medium text-primary">{label}</p>
-      <div className="neon-skeleton h-9 w-1/2" />
-      <div className="neon-skeleton h-24 w-full" />
-    </div>
+    <PanelLoadingPlaceholder
+      label={label}
+      surface="plain"
+      skeletons={[
+        { className: "h-9 w-1/2" },
+        { className: "h-24 w-full" },
+      ]}
+    />
   );
 }

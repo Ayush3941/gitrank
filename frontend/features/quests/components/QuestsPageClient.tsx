@@ -23,6 +23,7 @@ import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { PanelLoadingPlaceholder } from "@/components/shared/PanelLoadingPlaceholder";
 import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { StaleState } from "@/components/shared/StaleState";
@@ -608,10 +609,12 @@ function questStatusMeta(status: Quest["status"]): { label: string; className: s
 
 function QuestPanelPlaceholder() {
   return (
-    <GlowCard className="min-h-[15rem] space-y-3">
-      <p className="text-xs font-medium text-primary">Loading quest card</p>
-      <div className="neon-skeleton h-9 w-2/5" />
-      <div className="neon-skeleton h-24 w-full" />
-    </GlowCard>
+    <PanelLoadingPlaceholder
+      label="Loading quest card"
+      skeletons={[
+        { className: "h-9 w-2/5" },
+        { className: "h-24 w-full" },
+      ]}
+    />
   );
 }

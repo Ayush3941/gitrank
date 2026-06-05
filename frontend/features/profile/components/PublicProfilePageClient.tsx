@@ -10,6 +10,7 @@ import { ExpandableText } from "@/components/shared/ExpandableText";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
+import { PanelLoadingPlaceholder } from "@/components/shared/PanelLoadingPlaceholder";
 import { RarityBadge } from "@/components/shared/RarityBadge";
 import { RouteLoadingState } from "@/components/shared/RouteLoadingState";
 import { RelativeTime } from "@/components/shared/RelativeTime";
@@ -591,10 +592,13 @@ function LiteBestPRSummary({
 
 function PublicLanePlaceholder({ label }: { label: string }) {
   return (
-    <GlowCard className="min-h-[16rem] space-y-3">
-      <p className="text-xs font-medium text-primary">{label}</p>
-      <div className="neon-skeleton h-10 w-2/5" />
-      <div className="neon-skeleton h-24 w-full" />
-    </GlowCard>
+    <PanelLoadingPlaceholder
+      label={label}
+      minHeightClassName="min-h-[16rem]"
+      skeletons={[
+        { className: "h-10 w-2/5" },
+        { className: "h-24 w-full" },
+      ]}
+    />
   );
 }

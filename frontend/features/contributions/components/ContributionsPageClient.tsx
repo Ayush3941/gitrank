@@ -6,11 +6,11 @@ import { Download, LayoutList, Rows3 } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlockNotice";
-import { GlowCard } from "@/components/shared/GlowCard";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { InlineNotice } from "@/components/shared/InlineNotice";
 import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { PanelLoadingPlaceholder } from "@/components/shared/PanelLoadingPlaceholder";
 import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
 import { RouteLoadingState } from "@/components/shared/RouteLoadingState";
 import { StaleState } from "@/components/shared/StaleState";
@@ -611,11 +611,14 @@ function formatCSVDate(value: string): string {
 
 function ContributionListPlaceholder() {
   return (
-    <GlowCard className="min-h-[18rem] space-y-3">
-      <p className="text-xs font-medium text-primary">Loading contribution cards</p>
-      <div className="neon-skeleton h-9 w-1/2" />
-      <div className="neon-skeleton h-24 w-full" />
-      <div className="neon-skeleton h-24 w-full" />
-    </GlowCard>
+    <PanelLoadingPlaceholder
+      label="Loading contribution cards"
+      minHeightClassName="min-h-[18rem]"
+      skeletons={[
+        { className: "h-9 w-1/2" },
+        { className: "h-24 w-full" },
+        { className: "h-24 w-full" },
+      ]}
+    />
   );
 }
