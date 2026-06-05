@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ClampedText } from "@/components/shared/ClampedText";
+import { CompactEmptyState } from "@/components/shared/CompactEmptyState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { formatXp } from "@/lib/formatters";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
@@ -28,14 +29,15 @@ export function BestPRsPanel({
       </div>
       <div className="space-y-3">
         {reports.length === 0 ? (
-          <div className="neon-surface rounded-[var(--radius-universal)] border-dashed border-primary/24 p-4 text-sm text-muted">
-            <p>No public PR reports yet for this profile snapshot.</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <Button asChild variant="secondary" size="sm">
-                <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>
-              </Button>
-            </div>
-          </div>
+          <CompactEmptyState
+            title="No public PR reports yet"
+            description="This profile snapshot has no visible PR reports yet."
+            primaryAction={{
+              label: "Open contributions",
+              href: "/dashboard/contributions",
+              prefetchMode: "never",
+            }}
+          />
         ) : (
           <ol role="list" className="space-y-3">
             {uniqueReports.slice(0, 5).map((report, index) => {

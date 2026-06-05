@@ -1,9 +1,9 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import { useMemo } from "react";
 import { Award } from "lucide-react";
+import { CompactEmptyState } from "@/components/shared/CompactEmptyState";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { ExpandableText } from "@/components/shared/ExpandableText";
@@ -16,7 +16,6 @@ import { RouteLoadingState } from "@/components/shared/RouteLoadingState";
 import { RelativeTime } from "@/components/shared/RelativeTime";
 import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { StaleState } from "@/components/shared/StaleState";
-import { Button } from "@/components/ui/button";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { useProfile } from "@/hooks/use-profile";
@@ -298,14 +297,15 @@ export function PublicProfilePageClient({
                 ))}
               </ul>
             ) : (
-              <div className="neon-surface space-y-3 rounded-[var(--radius-universal)] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
-                <p>Badge unlocks will appear here as scored contributions land.</p>
-                <div className="flex flex-wrap gap-2">
-                  <Button asChild size="sm" variant="secondary">
-                    <Link href="/dashboard/quests" prefetch={false}>Open quests</Link>
-                  </Button>
-                </div>
-              </div>
+              <CompactEmptyState
+                title="No badge unlocks yet"
+                description="Badge unlocks appear here as scored contributions land."
+                primaryAction={{
+                  label: "Open quests",
+                  href: "/dashboard/quests",
+                  prefetchMode: "never",
+                }}
+              />
             )}
           </GlowCard>
           <GlowCard className="space-y-5">
@@ -317,14 +317,15 @@ export function PublicProfilePageClient({
               </p>
             </div>
             {skillTree.length === 0 ? (
-              <div className="neon-surface space-y-3 rounded-[var(--radius-universal)] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
-                <p>Skill evidence will appear here after the next scored snapshot.</p>
-                <div className="flex flex-wrap gap-2">
-                  <Button asChild size="sm" variant="secondary">
-                    <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>
-                  </Button>
-                </div>
-              </div>
+              <CompactEmptyState
+                title="No skill evidence yet"
+                description="Skill evidence appears here after the next scored snapshot."
+                primaryAction={{
+                  label: "Open contributions",
+                  href: "/dashboard/contributions",
+                  prefetchMode: "never",
+                }}
+              />
             ) : constrainedNetwork ? (
               <LiteSkillSummary skills={skillTree} />
             ) : (
@@ -363,14 +364,15 @@ export function PublicProfilePageClient({
               <p className="mt-1 text-sm text-muted">{data.trendWindowLabel}</p>
             </div>
             {data.user.xpTimeline.length === 0 ? (
-              <div className="neon-surface space-y-3 rounded-[var(--radius-universal)] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
-                <p>Timeline signal will appear here after more scored history is synced.</p>
-                <div className="flex flex-wrap gap-2">
-                  <Button asChild size="sm" variant="secondary">
-                    <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>
-                  </Button>
-                </div>
-              </div>
+              <CompactEmptyState
+                title="No timeline signal yet"
+                description="Timeline signal appears here after more scored history is synced."
+                primaryAction={{
+                  label: "Open contributions",
+                  href: "/dashboard/contributions",
+                  prefetchMode: "never",
+                }}
+              />
             ) : constrainedNetwork ? (
               <LiteTimelineSummary timeline={data.user.xpTimeline} />
             ) : (
@@ -389,14 +391,15 @@ export function PublicProfilePageClient({
             </div>
             <div className="space-y-3">
               {data.topRepositories.length === 0 ? (
-                <div className="neon-surface space-y-3 rounded-[var(--radius-universal)] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
-                  <p>Repository signal will appear here after more scored PR evidence is synced.</p>
-                  <div className="flex flex-wrap gap-2">
-                    <Button asChild size="sm" variant="secondary">
-                      <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>
-                    </Button>
-                  </div>
-                </div>
+                <CompactEmptyState
+                  title="No repository signal yet"
+                  description="Repository signal appears here after more scored PR evidence is synced."
+                  primaryAction={{
+                    label: "Open contributions",
+                    href: "/dashboard/contributions",
+                    prefetchMode: "never",
+                  }}
+                />
               ) : (
                 <ul role="list" className="space-y-3">
                   {data.topRepositories.slice(0, 3).map((repository, index) => (
@@ -437,9 +440,10 @@ export function PublicProfilePageClient({
 function LiteSkillSummary({ skills }: { skills: SkillNode[] }) {
   if (skills.length === 0) {
     return (
-      <div className="neon-surface rounded-[var(--radius-universal)] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
-        <p>Skill evidence will appear here after the next scored snapshot.</p>
-      </div>
+      <CompactEmptyState
+        title="No skill evidence yet"
+        description="Skill evidence appears here after the next scored snapshot."
+      />
     );
   }
 
@@ -495,9 +499,10 @@ function LiteTimelineSummary({
 }) {
   if (timeline.length === 0) {
     return (
-      <div className="neon-surface rounded-[var(--radius-universal)] border-dashed border-primary/24 px-4 py-3 text-sm text-muted">
-        <p>Timeline signal will appear here after more scored history is synced.</p>
-      </div>
+      <CompactEmptyState
+        title="No timeline signal yet"
+        description="Timeline signal appears here after more scored history is synced."
+      />
     );
   }
 
@@ -560,12 +565,15 @@ function LiteBestPRSummary({
   if (reports.length === 0) {
     return (
       <GlowCard className="space-y-3">
-        <p className="text-sm text-muted">No public battle reports are available in this snapshot yet.</p>
-        <div className="flex flex-wrap gap-2">
-          <Button asChild size="sm" variant="secondary">
-            <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>
-          </Button>
-        </div>
+        <CompactEmptyState
+          title="No public battle reports yet"
+          description="This profile snapshot has no visible battle reports yet."
+          primaryAction={{
+            label: "Open contributions",
+            href: "/dashboard/contributions",
+            prefetchMode: "never",
+          }}
+        />
       </GlowCard>
     );
   }

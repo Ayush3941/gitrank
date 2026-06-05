@@ -1,5 +1,6 @@
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import { ClampedText } from "@/components/shared/ClampedText";
+import { CompactEmptyState } from "@/components/shared/CompactEmptyState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { Button } from "@/components/ui/button";
@@ -26,16 +27,19 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
       </div>
       <ul role="list" className="grid gap-3">
         {sortedReports.length === 0 ? (
-          <li className="list-none neon-surface space-y-3 rounded-[var(--radius-universal)] border-dashed p-4 text-sm text-muted">
-            <p>No reports yet. New merged PRs appear here after auto-sync settles.</p>
-            <div className="flex flex-wrap gap-2">
-              <Button asChild size="sm" variant="secondary">
-                <IntentPrefetchLink href="/dashboard/contributions">Inspect contributions</IntentPrefetchLink>
-              </Button>
-              <Button asChild size="sm" variant="ghost">
-                <IntentPrefetchLink href="/dashboard/settings">Open sync settings</IntentPrefetchLink>
-              </Button>
-            </div>
+          <li className="list-none">
+            <CompactEmptyState
+              title="No battle reports yet"
+              description="New merged PR reports appear here after auto-sync settles."
+              primaryAction={{
+                label: "Inspect contributions",
+                href: "/dashboard/contributions",
+              }}
+              secondaryAction={{
+                label: "Open sync settings",
+                href: "/dashboard/settings",
+              }}
+            />
           </li>
         ) : null}
         {sortedReports.map((report, index) => {

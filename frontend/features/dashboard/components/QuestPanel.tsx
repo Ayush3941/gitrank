@@ -1,9 +1,8 @@
 import { Link2, Target } from "lucide-react";
+import { CompactEmptyState } from "@/components/shared/CompactEmptyState";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
-import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
 import {
   formatNumber,
   formatPluralCount,
@@ -26,17 +25,18 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
       </div>
       <div className="space-y-3">
         {quests.length === 0 ? (
-          <div className="neon-surface space-y-3 rounded-[var(--radius-universal)] border-dashed p-4 text-sm text-muted">
-            <p>No quests yet. Sync scored PR evidence to generate missions.</p>
-            <div className="flex flex-wrap gap-2">
-              <Button asChild size="sm" variant="secondary">
-                <IntentPrefetchLink href="/dashboard/contributions">Open contributions</IntentPrefetchLink>
-              </Button>
-              <Button asChild size="sm" variant="ghost">
-                <IntentPrefetchLink href="/dashboard/settings">Open sync settings</IntentPrefetchLink>
-              </Button>
-            </div>
-          </div>
+          <CompactEmptyState
+            title="No quests yet"
+            description="Sync scored PR evidence to generate missions from real contribution signals."
+            primaryAction={{
+              label: "Open contributions",
+              href: "/dashboard/contributions",
+            }}
+            secondaryAction={{
+              label: "Open sync settings",
+              href: "/dashboard/settings",
+            }}
+          />
         ) : null}
         <ol role="list" className="space-y-3">
           {quests.slice(0, 3).map((quest, questIndex) => {

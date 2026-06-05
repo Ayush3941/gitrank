@@ -2,6 +2,9 @@
 
 ## 2026-06-05
 
+- Compact embedded empty states:
+  - added shared `CompactEmptyState` for card-level empty lanes that should not mount a full-page empty card.
+  - dashboard quest/report lanes and public-profile badge, skill, timeline, repository, and best-PR lanes now share the same accessible note, decorative icon, compact heading, and recovery-link pattern.
 - Frontend cleanup:
   - pruned unused exported helpers/types from preference, formatting, metrics, evidence-chip, PR-report API, AI-insight, refresh-feedback, and shared model modules.
   - removed obsolete manual installation/review/issue sync client wrappers after the settings operator panel cleanup left no UI caller.
