@@ -12,6 +12,7 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { RarityBadge } from "@/components/shared/RarityBadge";
 import { RouteLoadingState } from "@/components/shared/RouteLoadingState";
+import { RelativeTime } from "@/components/shared/RelativeTime";
 import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { StaleState } from "@/components/shared/StaleState";
 import { Button } from "@/components/ui/button";
@@ -28,7 +29,6 @@ import {
 import {
   formatNumber,
   formatPluralCount,
-  formatRelativeDays,
   formatSignedNumber,
   formatSignedXp,
   formatXp,
@@ -219,7 +219,17 @@ export function PublicProfilePageClient({
     <div className="stable-scroll-scope space-y-6">
       {data.isStale ? (
         <StaleState
-          message={`This profile snapshot was refreshed ${formatRelativeDays(data.refreshedAt)}.`}
+          message={(
+            <>
+              This profile snapshot was refreshed{" "}
+              <RelativeTime
+                value={data.refreshedAt}
+                fallback="at an unknown time"
+                exactLabel="Profile snapshot refreshed"
+              />
+              .
+            </>
+          )}
           updatedAt={data.refreshedAt}
           onRefresh={() => {
             void refetch();

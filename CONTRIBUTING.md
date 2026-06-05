@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 5, 2026)
 
+- Routed remaining JSX-capable stale/profile/onboarding freshness copy through shared semantic time components so relative refresh/sync labels expose valid `<time>` metadata and screen-reader exact timestamps.
 - Added shared `formatXpLabel` rendering for complete `number + XP` labels and routed dashboard, leaderboard, contribution, timeline, onboarding, profile, deterministic fallback, and evidence-chip XP copy through it.
 - Removed obsolete top-level dashboard route alias files (`/badges`, `/contributions`, `/leaderboard`, `/quests`, `/settings`) after confirming the canonical `/dashboard/*` routes own those pages; pruned unused sync mutation hook wrappers, the dead profile-sync API alias, and the unused dialog close export.
 - Hardened the workflow Make-target reference guard to use a here-string lookup instead of a `printf | rg -qx` pipeline, avoiding `pipefail` false failures when a valid target is found early.

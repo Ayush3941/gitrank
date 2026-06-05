@@ -1,12 +1,14 @@
 "use client";
 
 import { Clock3 } from "lucide-react";
+import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
+import { ExactTime } from "@/components/shared/ExactTime";
 import { Button } from "@/components/ui/button";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
-import { formatDateTime, normalizeDateTime } from "@/lib/formatters";
+import { normalizeDateTime } from "@/lib/formatters";
 import type { RefreshFeedback } from "@/lib/refresh-feedback";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 
@@ -22,7 +24,7 @@ export function StaleState({
   syncState = "stale",
   analyticsTarget,
 }: {
-  message: string;
+  message: ReactNode;
   reasonMessage?: string;
   updatedAt?: string;
   actionLabel?: string;
@@ -51,7 +53,6 @@ export function StaleState({
   }, [analyticsTarget]);
 
   const verifiedDateTime = normalizeDateTime(updatedAt);
-  const verifiedLabel = updatedAt ? formatDateTime(updatedAt) : "Unknown";
   const refreshBusy = isRefreshing || isRefreshPending;
   const label = syncState === "partially_synced" ? "Evidence pending" : "Data is stale";
   const helper =
@@ -105,11 +106,7 @@ export function StaleState({
             {reasonMessage ? <p className="text-sm text-amber-100">{reasonMessage}</p> : null}
             {verifiedDateTime ? (
               <p className="text-xs text-amber-100">
-                Last verified at{" "}
-                <time dateTime={verifiedDateTime}>
-                  {verifiedLabel}
-                </time>
-                .
+                Last verified at <ExactTime value={updatedAt} fallback="Unknown" />.
               </p>
             ) : null}
           </div>

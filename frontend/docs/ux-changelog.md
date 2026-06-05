@@ -2,6 +2,9 @@
 
 ## 2026-06-05
 
+- Semantic freshness copy:
+  - `StaleState` now accepts rich status content and uses shared exact-time rendering for verification timestamps.
+  - public-profile stale copy plus onboarding sync/reveal freshness copy now render shared semantic relative timestamps instead of plain relative-time strings.
 - XP-label consistency:
   - added shared `formatXpLabel` rendering for complete `number + XP` labels.
   - dashboard, leaderboard, contribution cards, timeline summaries, onboarding reveal copy, public-profile snippets, deterministic fallback narratives, and evidence chips now share one XP-label path.

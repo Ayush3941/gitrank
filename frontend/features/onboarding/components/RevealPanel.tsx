@@ -3,11 +3,12 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { RankBadge } from "@/components/shared/RankBadge";
 import { RarityBadge } from "@/components/shared/RarityBadge";
+import { RelativeTime } from "@/components/shared/RelativeTime";
 import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { Button } from "@/components/ui/button";
 import { OnboardingStepper } from "@/features/onboarding/components/OnboardingStepper";
 import { uniqueDisplayValues } from "@/lib/display-values";
-import { formatNumber, formatPluralCount, formatRelativeDays, formatXpLabel } from "@/lib/formatters";
+import { formatNumber, formatPluralCount, formatXpLabel } from "@/lib/formatters";
 import type { AbraInsightSource } from "@/lib/ai/abra-insights-types";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { formatAIInsightSourceLabel } from "@/lib/presentation/ai-insight-source";
@@ -88,7 +89,17 @@ export function RevealPanel({
               <p className="mt-2 leading-6">
                 Sync status is <span className="font-semibold text-white">{formatSyncStateLabel(effectiveSyncState)}</span>.
                 {" "}
-                {user.syncStatus.lastSyncedAt ? `Last sync ${formatRelativeDays(user.syncStatus.lastSyncedAt)}.` : ""}
+                {user.syncStatus.lastSyncedAt ? (
+                  <>
+                    Last sync{" "}
+                    <RelativeTime
+                      value={user.syncStatus.lastSyncedAt}
+                      fallback="time unavailable"
+                      exactLabel="Last sync time"
+                    />
+                    .
+                  </>
+                ) : null}
                 {evidenceRows > 0
                 ? ` This reveal includes ${formatPluralCount(evidenceRows, "persisted contribution evidence row")}.`
                 : " No scored contribution evidence is attached yet; merge one PR and re-sync to unlock deeper profile interpretation."}

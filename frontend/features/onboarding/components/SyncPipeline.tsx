@@ -6,13 +6,14 @@ import { ExactTime } from "@/components/shared/ExactTime";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { InlineNotice } from "@/components/shared/InlineNotice";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
+import { RelativeTime } from "@/components/shared/RelativeTime";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { OnboardingStepper } from "@/features/onboarding/components/OnboardingStepper";
 import { useRequestProfileSync } from "@/hooks/use-account-actions";
 import { useMyProfile } from "@/hooks/use-profile";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
-import { formatRelativeDays, toRatioPercent } from "@/lib/formatters";
+import { toRatioPercent } from "@/lib/formatters";
 import { deriveEffectiveSyncState } from "@/lib/presentation/sync-evidence";
 import { formatSyncStateLabel } from "@/lib/presentation/status-tone";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
@@ -211,7 +212,11 @@ export function SyncPipeline() {
           {data ? (
             <p className="text-sm text-muted">
               Sync · {formatSyncStateLabel(syncState)} • last refresh{" "}
-              {formatRelativeDays(data.refreshedAt)}
+              <RelativeTime
+                value={data.refreshedAt}
+                fallback="time unavailable"
+                exactLabel="Last profile refresh"
+              />
             </p>
           ) : null}
           {syncStartedAt ? (

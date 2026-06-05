@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import { RelativeTime } from "@/components/shared/RelativeTime";
 import { StaleState } from "@/components/shared/StaleState";
 
 describe("StaleState", () => {
@@ -17,6 +18,29 @@ describe("StaleState", () => {
     expect(screen.getByRole("status").getAttribute("aria-atomic")).toBe("true");
     const exactTime = screen.getByText((_content, element) => element?.tagName.toLowerCase() === "time");
     expect(exactTime.getAttribute("datetime")).toMatch(/2026-05-17T18:10:00/);
+  });
+
+  it("accepts semantic relative timestamp content in the status message", () => {
+    render(
+      <StaleState
+        message={(
+          <>
+            Profile snapshot refreshed{" "}
+            <RelativeTime
+              value="2026-05-17T18:10:00.000Z"
+              exactLabel="Profile snapshot refreshed"
+            />
+            .
+          </>
+        )}
+        updatedAt="2026-05-17T18:10:00.000Z"
+      />,
+    );
+
+    const status = screen.getByRole("status");
+    const relativeTime = status.querySelector("time");
+    expect(relativeTime?.getAttribute("datetime")).toBe("2026-05-17T18:10:00.000Z");
+    expect(status.textContent).toContain("Profile snapshot refreshed");
   });
 
   it("shows refresh feedback when refresh is requested", async () => {
