@@ -51,6 +51,9 @@ describe("PanelLoadingPlaceholder", () => {
     const status = screen.getByRole("status");
     expect(shell?.getAttribute("aria-busy")).toBe("true");
     expect(status.textContent).toBe("Loading contribution cards.");
+    expect(screen.getByText("Loading")).toBeTruthy();
+    expect(screen.getByText("contribution cards")).toBeTruthy();
+    expect(screen.queryByText("Loading contribution cards")).toBeNull();
     expect(container.querySelectorAll("[role='status']")).toHaveLength(1);
     expect(container.querySelectorAll(".neon-skeleton")).toHaveLength(3);
     expect(status.querySelector(".neon-skeleton")).toBeNull();

@@ -5,6 +5,7 @@
 - Panel loading placeholders:
   - added shared `PanelLoadingPlaceholder` for deferred and dynamic feature panels.
   - dashboard, contribution, badge, quest, leaderboard, public-profile, PR-report, and settings skeleton fallbacks now share one busy-state and live-announcement contract while preserving each panel's existing skeleton proportions.
+  - visible fallback copy now uses a shared `Loading` chip plus normalized target text instead of repeating `Loading ...` phrases inside every deferred panel.
 - Settings cleanup:
   - settings sync activity now renders loading through the shared `LoadingState` card instead of a one-off paragraph surface.
   - removed leftover empty local dashboard-alias directories from the working tree after the canonical `/dashboard/*` route cleanup.

@@ -34,9 +34,12 @@ export function PanelLoadingPlaceholder({
       <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {formatLoadingAnnouncement(loadingTarget)}
       </span>
-      <p className="text-xs font-medium text-primary" aria-hidden="true">
-        {label}
-      </p>
+      <div className="flex flex-wrap items-center gap-2" aria-hidden="true">
+        <span className="neon-chip neon-chip-info inline-flex rounded-full px-3 py-1 text-sm font-semibold">
+          Loading
+        </span>
+        <span className="text-sm font-semibold text-white">{loadingTarget}</span>
+      </div>
       {skeletons.map((skeleton, index) => (
         <div
           key={`${skeleton.className}-${index}`}

@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 5, 2026)
 
+- Refined shared panel loading placeholders so visible copy separates the state chip (`Loading`) from the normalized target text, matching the shared loading-card pattern and avoiding repeated `Loading ...` phrasing in deferred panel fallbacks.
 - Added shared `PanelLoadingPlaceholder` for deferred/dynamic feature panels and routed dashboard, contribution, badge, quest, leaderboard, profile, PR-report, and settings skeleton placeholders through it so loading surfaces share one busy-state and announcement contract.
 - Normalized the settings sync-activity loading state through the shared `LoadingState` primitive and removed leftover empty local dashboard-alias directories from the working tree after the canonical `/dashboard/*` routes were already in place.
 - Routed remaining JSX-capable stale/profile/onboarding freshness copy through shared semantic time components so relative refresh/sync labels expose valid `<time>` metadata and screen-reader exact timestamps.
