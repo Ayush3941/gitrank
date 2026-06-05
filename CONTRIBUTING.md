@@ -13,6 +13,7 @@ This document is intentionally detailed.
 - Added shared signed-XP formatting and routed PR battle-report overview, deterministic ledger, change-volume rows, score fallback rows, and penalty deltas through shared number formatters.
 - Routed public profile hero, skill summary, timeline, and best-PR number displays through shared number and XP formatters so public proof surfaces match dashboard/report numeric presentation.
 - Removed unused marketing and onboarding data barrel files after a static import reachability pass confirmed they were not imported by routes, components, hooks, libraries, or tests.
+- Added shared plural-count formatting and routed quest rewards, quest progress, onboarding reveal metrics, dashboard streak copy, public-profile repository snippets, and deterministic fallback summaries through shared numeric presentation helpers.
 
 ## Session Notes (June 4, 2026)
 

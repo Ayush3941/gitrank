@@ -25,7 +25,14 @@ import {
   deriveDeterministicArchetype,
   shouldRequestAbraInsights,
 } from "@/lib/ai/deterministic-identity-summary";
-import { formatNumber, formatRelativeDays, formatSignedNumber, formatSignedXp, formatXp } from "@/lib/formatters";
+import {
+  formatNumber,
+  formatPluralCount,
+  formatRelativeDays,
+  formatSignedNumber,
+  formatSignedXp,
+  formatXp,
+} from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { formatContributionStatusLabel } from "@/lib/presentation/contribution-status";
@@ -390,16 +397,16 @@ export function PublicProfilePageClient({
                             #{index + 1}
                           </span>
                           <div>
-                          <p className="break-anywhere font-medium text-white">{repository.name}</p>
-                          <p className="break-anywhere text-sm text-muted">
-                            {repository.contributionCount} scored contributions
-                            {repository.primarySkill ? ` • ${repository.primarySkill}` : ""}
-                          </p>
+                            <p className="break-anywhere font-medium text-white">{repository.name}</p>
+                            <p className="break-anywhere text-sm text-muted">
+                              {formatPluralCount(repository.contributionCount, "scored contribution")}
+                              {repository.primarySkill ? ` • ${repository.primarySkill}` : ""}
+                            </p>
                           </div>
                         </div>
                         <div className="text-right">
                           <p className="text-xs font-medium text-primary">XP</p>
-                          <p className="mt-1 text-lg font-semibold text-white">{repository.totalXp}</p>
+                          <p className="mt-1 text-lg font-semibold text-white">{formatXp(repository.totalXp)}</p>
                         </div>
                       </div>
                     </li>
@@ -562,7 +569,7 @@ function LiteBestPRSummary({
             <p className="mt-1 break-anywhere text-xs text-muted">
               {report.owner}/{report.repo} #{report.number} • {formatContributionStatusLabel(report.status)}
             </p>
-            <p className="mt-2 text-xs font-semibold text-primary">+{report.xpEarned} XP</p>
+            <p className="mt-2 text-xs font-semibold text-primary">{formatSignedXp(report.xpEarned)}</p>
           </li>
         ))}
       </ul>

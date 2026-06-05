@@ -7,7 +7,7 @@ import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { Button } from "@/components/ui/button";
 import { OnboardingStepper } from "@/features/onboarding/components/OnboardingStepper";
 import { uniqueDisplayValues } from "@/lib/display-values";
-import { formatRelativeDays } from "@/lib/formatters";
+import { formatNumber, formatPluralCount, formatRelativeDays, formatXp } from "@/lib/formatters";
 import type { AbraInsightSource } from "@/lib/ai/abra-insights-types";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { formatAIInsightSourceLabel } from "@/lib/presentation/ai-insight-source";
@@ -78,10 +78,10 @@ export function RevealPanel({
             This snapshot highlights recurring signals in {strongestSignalSummary} work.
           </p>
           <div className="mx-auto grid w-full max-w-4xl gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <RevealMetric label="Merged PRs" value={user.mergedPrCount.toLocaleString("en-US")} />
-            <RevealMetric label="Reviewed PRs" value={user.reviewedPrCount.toLocaleString("en-US")} />
-            <RevealMetric label="Unlocked badges" value={unlockedBadges.length.toLocaleString("en-US")} />
-            <RevealMetric label="Evidence rows" value={evidenceRows.toLocaleString("en-US")} />
+            <RevealMetric label="Merged PRs" value={formatNumber(user.mergedPrCount)} />
+            <RevealMetric label="Reviewed PRs" value={formatNumber(user.reviewedPrCount)} />
+            <RevealMetric label="Unlocked badges" value={formatNumber(unlockedBadges.length)} />
+            <RevealMetric label="Evidence rows" value={formatNumber(evidenceRows)} />
           </div>
             <div className="mx-auto max-w-3xl rounded-[var(--radius-universal)] border border-primary/24 bg-primary/10 px-4 py-3 text-left text-sm text-foreground">
               <p className="text-xs font-medium text-primary">Snapshot state</p>
@@ -90,7 +90,7 @@ export function RevealPanel({
                 {" "}
                 {user.syncStatus.lastSyncedAt ? `Last sync ${formatRelativeDays(user.syncStatus.lastSyncedAt)}.` : ""}
                 {evidenceRows > 0
-                ? ` This reveal includes ${evidenceRows} persisted contribution evidence row${evidenceRows === 1 ? "" : "s"}.`
+                ? ` This reveal includes ${formatPluralCount(evidenceRows, "persisted contribution evidence row")}.`
                 : " No scored contribution evidence is attached yet; merge one PR and re-sync to unlock deeper profile interpretation."}
               </p>
             </div>
@@ -104,7 +104,7 @@ export function RevealPanel({
         <div className="flex flex-wrap items-center justify-center gap-3">
           <RankBadge rank={user.level.rankTier} />
           <div className="neon-chip neon-chip-muted rounded-full px-4 py-2 text-sm text-muted">
-            {user.level.currentXp} / {user.level.nextLevelXp} XP
+            <span className="numeric-readout">{formatXp(user.level.currentXp)} / {formatXp(user.level.nextLevelXp)}</span> XP
           </div>
         </div>
         <div className="space-y-4">

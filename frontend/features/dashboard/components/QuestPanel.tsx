@@ -4,6 +4,7 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import { formatNumber, formatPluralCount, formatSignedXp } from "@/lib/formatters";
 import { buildEvidenceSignalChips } from "@/lib/presentation/evidence-signal";
 import type { Quest } from "@/types/gitrank";
 
@@ -51,12 +52,12 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
                       />
                     </div>
                     <div className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-sm text-primary">
-                      +{quest.rewardXp} XP
+                      <span className="numeric-readout">{formatSignedXp(quest.rewardXp)}</span>
                     </div>
                   </div>
                   <Progress className="mt-4" value={progress} aria-label={`${quest.title} quest progress`} />
                   <div className="mt-2 flex items-center justify-between text-xs text-muted">
-                    <span>{quest.progress} / {quest.goal}</span>
+                    <span className="numeric-readout">{formatNumber(quest.progress)} / {formatNumber(quest.goal)}</span>
                     <span>{quest.weakAreaTarget ? `Targets ${quest.weakAreaTarget}` : quest.cadence}</span>
                   </div>
                   <ul role="list" className="mt-3 flex flex-wrap gap-2">
@@ -70,7 +71,7 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
                     <li>
                       <span className="neon-chip neon-chip-muted inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs">
                         <Link2 className="h-3 w-3" aria-hidden="true" />
-                        {quest.linkedContributionIds.length} linked PRs
+                        <span className="numeric-readout">{formatPluralCount(quest.linkedContributionIds.length, "linked PR")}</span>
                       </span>
                     </li>
                   </ul>

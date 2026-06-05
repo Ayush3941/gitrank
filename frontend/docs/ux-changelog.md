@@ -21,6 +21,9 @@
 - Frontend source cleanup:
   - removed unused marketing and onboarding data barrels that were no longer imported by production routes, shared components, or tests.
   - kept actual marketing and onboarding UI copy owned by the active components instead of carrying parallel static lists.
+- Quest and reveal number consistency:
+  - quest rewards, progress counters, linked-evidence counts, dashboard streak copy, onboarding reveal metrics, and public-profile repository snippets now reuse shared number, XP, signed-XP, and plural-count formatting.
+  - deterministic identity and impact fallback summaries now share the same count formatting contract, including singular labels such as `1 evidence PR` and `1 active day`.
 
 ## 2026-06-04
 

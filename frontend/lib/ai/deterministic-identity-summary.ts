@@ -1,4 +1,5 @@
 import { uniqueDisplayValues } from "@/lib/display-values";
+import { formatNumber, formatPluralCount, formatXp } from "@/lib/formatters";
 
 export function shouldRequestAbraInsights({
   showAiSummaries,
@@ -67,7 +68,7 @@ export function buildDeterministicIdentitySummary({
     ? " This snapshot is currently marked stale and will sharpen after refresh."
     : "";
   if (mergedPrCount <= 0) {
-    return `${displayName} is currently ${rankTier} (Level ${level}) with ${totalXp.toLocaleString("en-US")} total XP and no merged PR evidence in the active ${trendWindowLabel} window yet. Connect fresh merged work to unlock stronger skill confidence, badge momentum, and clearer archetype movement.${staleNote}`;
+    return `${displayName} is currently ${rankTier} (Level ${formatNumber(level)}) with ${formatXp(totalXp)} total XP and no merged PR evidence in the active ${trendWindowLabel} window yet. Connect fresh merged work to unlock stronger skill confidence, badge momentum, and clearer archetype movement.${staleNote}`;
   }
-  return `${displayName} is currently ${rankTier} (Level ${level}) with ${totalXp.toLocaleString("en-US")} total XP from ${mergedPrCount} merged PRs across ${repositoriesTouched} repositories. Recent strength signals are concentrated around ${signalSummary}, with a current streak of ${streakDays} day${streakDays === 1 ? "" : "s"} in the ${trendWindowLabel} window.${staleNote}`;
+  return `${displayName} is currently ${rankTier} (Level ${formatNumber(level)}) with ${formatXp(totalXp)} total XP from ${formatPluralCount(mergedPrCount, "merged PR")} across ${formatPluralCount(repositoriesTouched, "repository", "repositories")}. Recent strength signals are concentrated around ${signalSummary}, with a current streak of ${formatPluralCount(streakDays, "day")} in the ${trendWindowLabel} window.${staleNote}`;
 }

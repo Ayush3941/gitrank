@@ -30,6 +30,7 @@ import {
   shouldRequestAbraInsights,
 } from "@/lib/ai/deterministic-identity-summary";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
+import { formatNumber, formatPluralCount } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { shouldShowProfileFreshnessPill } from "@/lib/presentation/sync-evidence";
@@ -311,10 +312,10 @@ export function DashboardPageClient() {
             </span>
           </div>
           <div className="numeric-readout text-3xl font-semibold tracking-tight">
-            {streak.currentStreakDays}d
+            {formatNumber(streak.currentStreakDays)}d
           </div>
           <p className="text-sm leading-6 text-muted">
-            Best {streak.bestStreakDays}d • {streak.activeDaysThisYear} active days this year
+            Best {formatNumber(streak.bestStreakDays)}d • {formatPluralCount(streak.activeDaysThisYear, "active day")} this year
           </p>
         </GlowCard>
         <StatCard

@@ -15,6 +15,7 @@ import {
   type AIProvider,
   type AIProviderConfig,
 } from "@/lib/ai/ai-provider-config";
+import { formatPluralCount, formatXp } from "@/lib/formatters";
 
 const CACHE_TTL_MS = 20 * 60 * 1000;
 const MAX_CONTRIBUTIONS = 8;
@@ -193,7 +194,9 @@ function inferArchetype(
 function buildIdentitySummary(input: AbraInsightsRequest, archetype: string): string {
   const profile = input.profile;
   const signal = profile.strongestSignals[0] ?? "backend";
-  return `${profile.displayName} currently profiles as a ${archetype}, with strongest evidence in ${signal}. ${profile.mergedPrCount} merged PRs have produced ${profile.totalXp} XP so far, with a ${profile.streakDays}-day contribution streak and ${profile.repositoriesTouched} repositories touched.`;
+  const mergedPrSummary = formatPluralCount(profile.mergedPrCount, "merged PR");
+  const mergedPrVerb = profile.mergedPrCount === 1 ? "has" : "have";
+  return `${profile.displayName} currently profiles as a ${archetype}, with strongest evidence in ${signal}. ${mergedPrSummary} ${mergedPrVerb} produced ${formatXp(profile.totalXp)} XP so far, with a contribution streak of ${formatPluralCount(profile.streakDays, "day")} and ${formatPluralCount(profile.repositoriesTouched, "repository", "repositories")} touched.`;
 }
 
 function fallbackContributionNarrative(input: AbraContributionInput): ContributionNarrative {

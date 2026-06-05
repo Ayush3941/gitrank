@@ -1,4 +1,5 @@
 import type { Contribution } from "@/types/gitrank";
+import { formatPluralCount } from "@/lib/formatters";
 
 type ContributionSummaryInput = Pick<
   Contribution,
@@ -40,7 +41,7 @@ export function buildDeterministicImpactSummary(
   const scopePhrase =
     input.changedFilesCount <= 1
       ? "a focused file scope"
-      : `${input.changedFilesCount.toLocaleString("en-US")} files`;
+      : formatPluralCount(input.changedFilesCount, "file");
   const impactTier =
     input.xpEarned >= 250 || input.impactScore >= 70
       ? "high-signal impact"

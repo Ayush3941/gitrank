@@ -14,6 +14,11 @@ export function formatXp(value: number) {
   return formatNumber(value);
 }
 
+export function formatPluralCount(value: number, singular: string, plural = `${singular}s`) {
+  const count = Number.isFinite(value) ? Math.round(value) : 0;
+  return `${formatNumber(count)} ${Math.abs(count) === 1 ? singular : plural}`;
+}
+
 export function formatSignedXp(value: number) {
   if (!Number.isFinite(value)) {
     return "0 XP";

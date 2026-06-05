@@ -34,6 +34,7 @@ import { useProfileSyncRuns } from "@/hooks/use-profile-sync-runs";
 import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
 import { useStaleSyncRefresh } from "@/hooks/use-stale-sync-refresh";
 import { useQuests } from "@/hooks/use-quests";
+import { formatNumber, formatSignedXp } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { shouldShowProfileFreshnessPill } from "@/lib/presentation/sync-evidence";
 import {
@@ -301,8 +302,8 @@ export function QuestsPageClient() {
                     </p>
                   </div>
                   <div className="grid gap-2 rounded-[var(--radius-universal)] border border-fuchsia-300/28 bg-fuchsia-400/10 px-4 py-3 text-sm text-fuchsia-100">
-                    <span className="inline-flex items-center gap-2"><Flame className="h-4 w-4" aria-hidden="true" /> Current streak: <span className="numeric-readout">{streak.currentStreakDays.toLocaleString("en-US")}d</span></span>
-                    <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4" aria-hidden="true" /> Best streak: <span className="numeric-readout">{streak.bestStreakDays.toLocaleString("en-US")}d</span></span>
+                    <span className="inline-flex items-center gap-2"><Flame className="h-4 w-4" aria-hidden="true" /> Current streak: <span className="numeric-readout">{formatNumber(streak.currentStreakDays)}d</span></span>
+                    <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4" aria-hidden="true" /> Best streak: <span className="numeric-readout">{formatNumber(streak.bestStreakDays)}d</span></span>
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -565,14 +566,14 @@ function MissionSpotlightCard({
             </span>
           </div>
           <span className="neon-chip neon-chip-info rounded-full px-2.5 py-1 text-xs font-semibold">
-            <span className="numeric-readout">+{quest.rewardXp.toLocaleString("en-US")} XP</span>
+            <span className="numeric-readout">{formatSignedXp(quest.rewardXp)}</span>
           </span>
         </div>
         <p className="text-sm text-muted">{quest.description}</p>
         <div className="space-y-1">
           <Progress value={progress} aria-label={`${quest.title} quest progress`} />
           <div className="flex items-center justify-between text-xs text-muted">
-            <span className="numeric-readout">{quest.progress.toLocaleString("en-US")} / {quest.goal.toLocaleString("en-US")}</span>
+            <span className="numeric-readout">{formatNumber(quest.progress)} / {formatNumber(quest.goal)}</span>
             <span className="numeric-readout">{progress}%</span>
           </div>
         </div>

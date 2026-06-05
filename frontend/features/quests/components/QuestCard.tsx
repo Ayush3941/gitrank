@@ -2,6 +2,7 @@ import { Flag, Gift, Link2 } from "lucide-react";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { Progress } from "@/components/ui/progress";
+import { formatNumber, formatPluralCount, formatSignedXp } from "@/lib/formatters";
 import { buildEvidenceSignalChips } from "@/lib/presentation/evidence-signal";
 import type { Quest } from "@/types/gitrank";
 
@@ -46,12 +47,12 @@ export function QuestCard({ quest }: { quest: Quest }) {
           ) : null}
         </div>
         <div className="neon-chip neon-chip-info rounded-[var(--radius-universal)] px-3 py-2 text-sm font-medium">
-          <span className="numeric-readout">+{quest.rewardXp.toLocaleString("en-US")} XP</span>
+          <span className="numeric-readout">{formatSignedXp(quest.rewardXp)}</span>
         </div>
       </div>
       <Progress value={progress} aria-label={`${quest.title} quest progress`} />
       <div className="flex items-center justify-between text-sm text-muted">
-        <span className="numeric-readout">{quest.progress.toLocaleString("en-US")} / {quest.goal.toLocaleString("en-US")}</span>
+        <span className="numeric-readout">{formatNumber(quest.progress)} / {formatNumber(quest.goal)}</span>
         <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusTone}`}>{quest.status}</span>
       </div>
       <ul role="list" className="flex flex-wrap gap-2">
@@ -65,7 +66,7 @@ export function QuestCard({ quest }: { quest: Quest }) {
         <li>
           <span className="neon-chip neon-chip-muted inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs">
             <Link2 className="h-3 w-3" aria-hidden="true" />
-            <span className="numeric-readout">{quest.linkedContributionIds.length.toLocaleString("en-US")} evidence PRs</span>
+            <span className="numeric-readout">{formatPluralCount(quest.linkedContributionIds.length, "evidence PR")}</span>
           </span>
         </li>
       </ul>

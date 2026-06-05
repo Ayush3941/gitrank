@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   formatDateTime,
   formatNumber,
+  formatPluralCount,
   formatRelativeDays,
   formatSignedNumber,
   formatSignedXp,
@@ -19,6 +20,14 @@ describe("number formatters", () => {
     expect(formatSignedXp(1200.4)).toBe("+1,200 XP");
     expect(formatSignedXp(-1200.4)).toBe("-1,200 XP");
     expect(formatSignedXp(Number.NaN)).toBe("0 XP");
+  });
+
+  it("formats plural count labels consistently", () => {
+    expect(formatPluralCount(1, "evidence PR")).toBe("1 evidence PR");
+    expect(formatPluralCount(2, "evidence PR")).toBe("2 evidence PRs");
+    expect(formatPluralCount(1, "repository", "repositories")).toBe("1 repository");
+    expect(formatPluralCount(1200, "repository", "repositories")).toBe("1,200 repositories");
+    expect(formatPluralCount(Number.NaN, "row")).toBe("0 rows");
   });
 });
 
