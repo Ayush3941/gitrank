@@ -2,6 +2,9 @@
 
 ## 2026-06-05
 
+- PR report processing state:
+  - moved rate-limit, deterministic-fallback, and AI-summary retry presentation into `ReportProcessingStateCard`.
+  - kept retry mutation ownership in the report page client while isolating the visible status card, CTA, and inline retry notice.
 - PR report structure:
   - moved the deterministic metrics ledger into `DeterministicMetricsLedgerCard`.
   - preserved the metric-note toggle and score-input grouping while reducing the main PR report page client surface.

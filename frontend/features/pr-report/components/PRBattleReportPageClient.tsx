@@ -13,7 +13,6 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { NewTabHint } from "@/components/shared/NewTabHint";
-import { InlineNotice } from "@/components/shared/InlineNotice";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { PanelLoadingPlaceholder } from "@/components/shared/PanelLoadingPlaceholder";
 import { RouteLoadingState } from "@/components/shared/RouteLoadingState";
@@ -36,6 +35,7 @@ import { formatEvidenceStatusLabel, toneForEvidenceStatus } from "@/lib/presenta
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import type { ApiSyncExecutionResponse } from "@/lib/api/account-api";
 import { DeterministicMetricsLedgerCard } from "@/features/pr-report/components/DeterministicMetricsLedgerCard";
+import { ReportProcessingStateCard } from "@/features/pr-report/components/ReportProcessingStateCard";
 
 const ScoreMatrixCard = dynamic(
   () =>
@@ -345,57 +345,16 @@ export function PRBattleReportPageClient({
         <DeterministicMetricsLedgerCard report={data} />
       </section>
       {reportStateGuidance ? (
-        <section className="render-opt-section">
-          <GlowCard className="space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-xs font-medium text-primary">Report processing state</p>
-              <span
-                className={
-                  reportStateGuidance.tone === "warning"
-                    ? "neon-chip neon-chip-warning rounded-full px-3 py-1 text-xs font-semibold"
-                    : "neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold"
-                }
-              >
-                {reportStateGuidance.label}
-              </span>
-            </div>
-            <p className="text-sm leading-6 text-muted">{reportStateGuidance.message}</p>
-            <div className="flex flex-wrap gap-2">
-              {canRetryAiSummary ? (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="secondary"
-                  disabled={runPullRequestSync.isPending}
-                  onClick={() => {
-                    void handleRetryAiSummary();
-                  }}
-                >
-                  {runPullRequestSync.isPending ? "Retrying..." : "Retry AI summary"}
-                </Button>
-              ) : null}
-              <Button asChild size="sm" variant="secondary">
-                <Link href={reportStateGuidance.href} prefetch={false}>
-                  {reportStateGuidance.cta}
-                </Link>
-              </Button>
-            </div>
-            <InlineNotice
-              message={retryNotice?.message}
-              variant={retryNotice?.tone ?? "info"}
-              placeholder="AI retry status"
-              minHeightClassName="min-h-7"
-              onDismiss={
-                retryNotice
-                  ? () => {
-                      setRetryNotice(null);
-                    }
-                  : undefined
-              }
-              dismissLabel="Dismiss retry status"
-            />
-          </GlowCard>
-        </section>
+        <ReportProcessingStateCard
+          guidance={reportStateGuidance}
+          canRetryAiSummary={canRetryAiSummary}
+          isRetrying={runPullRequestSync.isPending}
+          retryNotice={retryNotice}
+          onRetryAiSummary={handleRetryAiSummary}
+          onDismissRetryNotice={() => {
+            setRetryNotice(null);
+          }}
+        />
       ) : null}
       <section
         id="pr-report-summary"
