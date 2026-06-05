@@ -23,4 +23,24 @@ describe("ErrorState", () => {
     fireEvent.click(retry);
     expect(onRetry).toHaveBeenCalledTimes(1);
   });
+
+  it("can disable retry while a retry is already running", () => {
+    const onRetry = vi.fn();
+    render(
+      <ErrorState
+        title="Sync failed"
+        description="Retry is already active."
+        retryLabel="Retrying..."
+        retryDisabled
+        fallbackHref=""
+        onRetry={onRetry}
+      />,
+    );
+
+    const retry = screen.getByRole("button", { name: "Retrying..." });
+    expect(retry.hasAttribute("disabled")).toBe(true);
+
+    fireEvent.click(retry);
+    expect(onRetry).not.toHaveBeenCalled();
+  });
 });

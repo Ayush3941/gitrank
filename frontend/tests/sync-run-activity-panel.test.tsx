@@ -159,7 +159,8 @@ describe("SyncRunActivityPanel", () => {
 
     const alert = screen.getByRole("alert");
     const retry = screen.getByRole("button", { name: "Retry log fetch" });
-    expect(alert.textContent).toBe("Sync log fetch failed.");
+    expect(alert.textContent).toContain("Sync log unavailable");
+    expect(alert.textContent).toContain("Sync log fetch failed.");
     expect(alert.contains(retry)).toBe(false);
 
     fireEvent.click(retry);

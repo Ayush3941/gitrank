@@ -13,6 +13,7 @@ export function ErrorState({
   retryLabel = "Retry",
   fallbackLabel = "Open dashboard",
   onRetry,
+  retryDisabled = false,
   onFallback,
   fallbackHref = "/dashboard",
   analyticsTarget,
@@ -22,6 +23,7 @@ export function ErrorState({
   retryLabel?: string;
   fallbackLabel?: string;
   onRetry?: () => void;
+  retryDisabled?: boolean;
   onFallback?: () => void;
   fallbackHref?: string;
   analyticsTarget?: string;
@@ -69,7 +71,7 @@ export function ErrorState({
         <p className="text-sm text-muted">{description}</p>
       </div>
       <div className="flex flex-wrap gap-3">
-        <Button type="button" onClick={handleRetry}>
+        <Button type="button" onClick={handleRetry} disabled={retryDisabled}>
           <RotateCcw className="h-4 w-4" aria-hidden="true" />
           {retryLabel}
         </Button>

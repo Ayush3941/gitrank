@@ -5,6 +5,7 @@ import { useDeferredValue, useId, useMemo, useState } from "react";
 import { ControlSurface } from "@/components/shared/ControlSurface";
 import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { ErrorState } from "@/components/shared/ErrorState";
 import { ExactTime } from "@/components/shared/ExactTime";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { RelativeTime } from "@/components/shared/RelativeTime";
@@ -316,14 +317,14 @@ export function SyncRunActivityPanel({
       </ControlSurface>
 
       {isError ? (
-        <div className="neon-surface space-y-3 border-rose-300/28 px-4 py-3 text-sm text-rose-100">
-          <p role="alert" aria-atomic="true">{errorMessage || "Sync activity is temporarily unavailable."}</p>
-          <div className="flex flex-wrap gap-2">
-            <Button type="button" size="sm" variant="secondary" onClick={onRefresh} disabled={isRefreshing}>
-              {isRefreshing ? "Refreshing..." : "Retry log fetch"}
-            </Button>
-          </div>
-        </div>
+        <ErrorState
+          title="Sync log unavailable"
+          description={errorMessage || "Sync activity is temporarily unavailable."}
+          retryLabel={isRefreshing ? "Refreshing..." : "Retry log fetch"}
+          retryDisabled={isRefreshing}
+          fallbackHref=""
+          onRetry={onRefresh}
+        />
       ) : null}
 
       <ScrollableRegion

@@ -2,6 +2,9 @@
 
 ## 2026-06-05
 
+- Sync-log error state:
+  - settings sync-log fetch failures now render through shared `ErrorState` instead of a feature-local rose alert card.
+  - shared `ErrorState` retry actions can be disabled while retry work is already active.
 - Inline error notices:
   - shared `InlineNotice` now supports assertive alert-mode announcements.
   - settings account-action errors and onboarding sync-action errors use the shared notice surface instead of feature-local alert markup.
