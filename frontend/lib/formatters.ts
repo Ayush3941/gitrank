@@ -32,11 +32,43 @@ export function formatCompactNumber(value: number) {
   );
 }
 
+type DateValue = Date | string | undefined;
+
+function validDate(value: DateValue): Date | null {
+  if (!value) return null;
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date;
+}
+
+export function formatMonthDay(value: DateValue, fallback = "Date pending") {
+  const date = validDate(value);
+  if (!date) return fallback;
+  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(date);
+}
+
+export function formatUtcMonthDay(value: DateValue, fallback = "Date pending") {
+  const date = validDate(value);
+  if (!date) return fallback;
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  }).format(date);
+}
+
+export function formatMonthDayYear(value: DateValue, fallback = "Date pending") {
+  const date = validDate(value);
+  if (!date) return fallback;
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
+}
+
 export function formatDate(value?: string) {
-  if (!value) return "Never";
-  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(
-    new Date(value),
-  );
+  return formatMonthDay(value, "Never");
 }
 
 export function formatRelativeDays(value?: string) {
@@ -56,9 +88,8 @@ export function formatRelativeDays(value?: string) {
 }
 
 export function formatDateTime(value?: string, fallback = "Unknown") {
-  if (!value) return fallback;
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return fallback;
+  const date = validDate(value);
+  if (!date) return fallback;
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
@@ -68,13 +99,8 @@ export function formatDateTime(value?: string, fallback = "Unknown") {
 }
 
 export function normalizeDateTime(value?: string): string | null {
-  if (!value) {
-    return null;
-  }
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
+  const date = validDate(value);
+  if (!date) return null;
   return date.toISOString();
 }
 

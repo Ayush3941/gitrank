@@ -12,6 +12,7 @@ import {
 } from "@/lib/runtime/rank-tier-policy";
 import { normalizeSkillCategory as normalizeRuntimeSkillCategory } from "@/lib/runtime/skill-category-policy";
 import { leaderboardSeasonPolicy } from "@/lib/runtime/leaderboard-season-policy";
+import { formatUtcMonthDay } from "@/lib/formatters";
 
 export type LeaderboardTab =
   | "Global"
@@ -264,11 +265,7 @@ function seasonFromGeneratedAt(
 }
 
 function formatMonthDay(value: Date): string {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    timeZone: "UTC",
-  }).format(value);
+  return formatUtcMonthDay(value);
 }
 
 function divisionForTier(rankTier: RankTier): string {

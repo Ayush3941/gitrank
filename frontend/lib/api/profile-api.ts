@@ -29,6 +29,7 @@ import {
   normalizePRCategory,
 } from "@/lib/runtime/pr-category-policy";
 import { contributionDisplayConfig } from "@/lib/runtime/contribution-display-config";
+import { formatMonthDay } from "@/lib/formatters";
 import type { PullRequestAnalysis } from "@/types/gitrank";
 
 const DEFAULT_CSRF_COOKIE_NAME = frontendPolicy.csrfCookieName;
@@ -1042,9 +1043,7 @@ function humanizeKey(value: string): string {
 }
 
 function formatShortDate(value: string): string {
-  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(
-    new Date(value),
-  );
+  return formatMonthDay(value);
 }
 
 function splitRepositoryName(fullName: string): [string, string] {

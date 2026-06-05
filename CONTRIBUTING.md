@@ -14,6 +14,7 @@ This document is intentionally detailed.
 - Routed public profile hero, skill summary, timeline, and best-PR number displays through shared number and XP formatters so public proof surfaces match dashboard/report numeric presentation.
 - Removed unused marketing and onboarding data barrel files after a static import reachability pass confirmed they were not imported by routes, components, hooks, libraries, or tests.
 - Added shared plural-count formatting and routed quest rewards, quest progress, onboarding reveal metrics, dashboard streak copy, public-profile repository snippets, and deterministic fallback summaries through shared numeric presentation helpers.
+- Added shared month/day date-label helpers with explicit invalid-date fallbacks, then routed contribution cards, activity pulse labels, and profile/leaderboard API date labels away from local locale formatting.
 
 ## Session Notes (June 4, 2026)
 

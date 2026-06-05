@@ -24,6 +24,9 @@
 - Quest and reveal number consistency:
   - quest rewards, progress counters, linked-evidence counts, dashboard streak copy, onboarding reveal metrics, and public-profile repository snippets now reuse shared number, XP, signed-XP, and plural-count formatting.
   - deterministic identity and impact fallback summaries now share the same count formatting contract, including singular labels such as `1 evidence PR` and `1 active day`.
+- Date-label consistency:
+  - contribution cards, activity pulse labels, and profile/leaderboard API month-day labels now use shared date-label helpers instead of component-local locale formatting.
+  - invalid short-date values now resolve through explicit fallbacks such as `Date pending` or `Never` instead of relying on parser-dependent rendering.
 
 ## 2026-06-04
 

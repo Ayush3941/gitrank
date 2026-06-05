@@ -1,11 +1,15 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  formatDate,
   formatDateTime,
+  formatMonthDay,
+  formatMonthDayYear,
   formatNumber,
   formatPluralCount,
   formatRelativeDays,
   formatSignedNumber,
   formatSignedXp,
+  formatUtcMonthDay,
   formatXp,
   normalizeDateTime,
 } from "@/lib/formatters";
@@ -28,6 +32,26 @@ describe("number formatters", () => {
     expect(formatPluralCount(1, "repository", "repositories")).toBe("1 repository");
     expect(formatPluralCount(1200, "repository", "repositories")).toBe("1,200 repositories");
     expect(formatPluralCount(Number.NaN, "row")).toBe("0 rows");
+  });
+});
+
+describe("date label formatters", () => {
+  it("formats month-day and month-day-year labels with explicit fallbacks", () => {
+    expect(formatMonthDay("2026-05-17T18:05:00.000Z")).toMatch(/May/);
+    expect(formatMonthDay("not-a-date")).toBe("Date pending");
+    expect(formatMonthDay(undefined, "No date")).toBe("No date");
+    expect(formatMonthDayYear("2026-05-17T18:05:00.000Z")).toMatch(/2026/);
+    expect(formatMonthDayYear("not-a-date")).toBe("Date pending");
+  });
+
+  it("formats UTC month-day labels for backend-derived season windows", () => {
+    expect(formatUtcMonthDay(new Date("2026-05-17T23:30:00.000Z"))).toBe("May 17");
+    expect(formatUtcMonthDay("not-a-date")).toBe("Date pending");
+  });
+
+  it("keeps the legacy short date fallback contract", () => {
+    expect(formatDate(undefined)).toBe("Never");
+    expect(formatDate("not-a-date")).toBe("Never");
   });
 });
 

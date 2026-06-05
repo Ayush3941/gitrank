@@ -1,4 +1,5 @@
 import type { Contribution } from "@/types/gitrank";
+import { formatMonthDay, formatPluralCount } from "@/lib/formatters";
 
 export function ContributionPulseStrip({
   contributions,
@@ -87,10 +88,7 @@ function buildContributionPulse(contributions: Contribution[], days: number) {
     const count = counts.get(key) ?? 0;
     cells.push({
       key,
-      label: day.toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric",
-      }),
+      label: formatMonthDay(day),
       count,
       isToday: offset === 0,
     });
@@ -106,7 +104,7 @@ function startOfDay(date: Date): Date {
 }
 
 function formatContributionCount(count: number): string {
-  return `${count} contribution${count === 1 ? "" : "s"}`;
+  return formatPluralCount(count, "contribution");
 }
 
 function intensityClasses(count: number): string {

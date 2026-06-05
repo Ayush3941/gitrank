@@ -6,6 +6,7 @@ import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { NewTabHint } from "@/components/shared/NewTabHint";
 import type { ContributionNarrative } from "@/lib/ai/abra-insights-types";
+import { formatMonthDayYear } from "@/lib/formatters";
 import { formatContributionStatusLabel } from "@/lib/presentation/contribution-status";
 import {
   buildDeterministicImpactSummary,
@@ -242,15 +243,7 @@ function contributionSignalBand(signalIndex: number): ContributionSignalBand {
 }
 
 function formatContributionDate(value: string): string {
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return "Date pending";
-  }
-  return parsed.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  return formatMonthDayYear(value, "Date pending");
 }
 
 function AIPanel({
