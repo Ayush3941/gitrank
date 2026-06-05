@@ -2,7 +2,7 @@
 
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/cn";
-import { formatXp } from "@/lib/formatters";
+import { formatPercent, formatXp } from "@/lib/formatters";
 
 export function XPProgress({
   current,
@@ -21,7 +21,7 @@ export function XPProgress({
     <div className={cn("space-y-2", className)}>
       <Progress value={progress} aria-label={label} />
       <div className="flex items-center justify-between text-xs text-muted">
-        <span>{progress}% toward next level</span>
+        <span>{formatPercent(progress)} toward next level</span>
         <span>{formatXp(next)} XP target</span>
       </div>
     </div>

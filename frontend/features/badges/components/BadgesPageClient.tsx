@@ -43,6 +43,7 @@ import {
   deriveDeterministicArchetype,
   shouldRequestAbraInsights,
 } from "@/lib/ai/deterministic-identity-summary";
+import { formatPercent } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { shouldShowProfileFreshnessPill } from "@/lib/presentation/sync-evidence";
@@ -407,7 +408,7 @@ export function BadgesPageClient() {
                     <div>
                       <p className="text-lg font-semibold text-white">{nextUnlockTarget.name}</p>
                       <p className="mt-1 text-sm text-muted">
-                        {nextUnlockTarget.progress ?? 0}% complete • {nextUnlockTarget.rarity}
+                        {formatPercent(nextUnlockTarget.progress ?? 0)} complete • {nextUnlockTarget.rarity}
                       </p>
                     </div>
                     <Button asChild variant="secondary" size="sm">
@@ -627,7 +628,7 @@ export function BadgesPageClient() {
                     <li key={`${badge.id}-preview`} className="list-none rounded-[var(--radius-universal)] border border-fuchsia-300/20 bg-fuchsia-400/6 px-3 py-2">
                       <p className="text-sm font-semibold text-white">{badge.name}</p>
                       <p className="mt-1 text-xs text-muted">{badge.rarity}</p>
-                      <p className="mt-1 text-xs text-cyan-100">{badge.progress ?? 0}% complete</p>
+                      <p className="mt-1 text-xs text-cyan-100">{formatPercent(badge.progress ?? 0)} complete</p>
                     </li>
                   ))}
                 </ul>
@@ -656,7 +657,7 @@ export function BadgesPageClient() {
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="text-xs font-medium text-fuchsia-200">{badge.rarity}</p>
                         <span className="neon-chip neon-chip-info rounded-full px-2.5 py-1 text-xs font-semibold">
-                          {badge.progress ?? 0}% complete
+                          {formatPercent(badge.progress ?? 0)} complete
                         </span>
                       </div>
                       <h3 className="mt-2 text-base font-semibold text-white">{badge.name}</h3>
@@ -672,7 +673,7 @@ export function BadgesPageClient() {
                       <div className="mt-3 space-y-1">
                         <Progress value={badge.progress ?? 0} aria-label={`${badge.name} badge progress`} />
                         <p className="text-xs text-muted">
-                          {badge.progress ?? 0}% verified progress • {Math.max(0, 100 - (badge.progress ?? 0))}% remaining
+                          {formatPercent(badge.progress ?? 0)} verified progress • {formatPercent(100 - (badge.progress ?? 0))} remaining
                         </p>
                       </div>
                       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">

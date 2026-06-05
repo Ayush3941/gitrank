@@ -29,7 +29,7 @@ import {
   buildDeterministicImpactSummary,
   shouldUseDeterministicImpactSummary,
 } from "@/lib/presentation/deterministic-impact-summary";
-import { formatNumber, formatXp } from "@/lib/formatters";
+import { formatNumber, formatRatioPercent, formatXp } from "@/lib/formatters";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import { formatEvidenceStatusLabel, toneForEvidenceStatus } from "@/lib/presentation/status-tone";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
@@ -314,7 +314,7 @@ export function PRBattleReportPageClient({
             {typeof evidenceState.analysisConfidence === "number" ? (
               <li className="list-none">
                 <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
-                  confidence {Math.round(evidenceState.analysisConfidence * 100)}%
+                  confidence {formatRatioPercent(evidenceState.analysisConfidence)}
                 </span>
               </li>
             ) : null}
@@ -714,7 +714,7 @@ function formatConfidenceLabel(
   },
 ): string {
   if (typeof evidenceState.analysisConfidence === "number") {
-    return `${Math.round(evidenceState.analysisConfidence * 100)}%`;
+    return formatRatioPercent(evidenceState.analysisConfidence);
   }
   if (evidenceState.deterministicOnly) {
     return "Deterministic";

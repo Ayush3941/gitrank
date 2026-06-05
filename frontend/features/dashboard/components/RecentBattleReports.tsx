@@ -3,7 +3,7 @@ import { ClampedText } from "@/components/shared/ClampedText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { Button } from "@/components/ui/button";
-import { formatXp } from "@/lib/formatters";
+import { formatRatioPercent, formatXp } from "@/lib/formatters";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import type { PullRequestAnalysis } from "@/types/gitrank";
 
@@ -129,8 +129,7 @@ function confidenceLabel(report: PullRequestAnalysis): string {
   if (report.evidenceState.rateLimited) {
     return "Rate-limited mode";
   }
-  const confidence = Math.max(0, Math.min(100, Math.round(report.aiConfidence * 100)));
-  return `Confidence ${confidence}%`;
+  return `Confidence ${formatRatioPercent(report.aiConfidence)}`;
 }
 
 function reportEvidencePill(report: PullRequestAnalysis): { label: string; className: string } {

@@ -29,7 +29,7 @@ import {
   normalizePRCategory,
 } from "@/lib/runtime/pr-category-policy";
 import { contributionDisplayConfig } from "@/lib/runtime/contribution-display-config";
-import { formatMonthDay } from "@/lib/formatters";
+import { formatMonthDay, formatRatioPercent } from "@/lib/formatters";
 import type { PullRequestAnalysis } from "@/types/gitrank";
 
 const DEFAULT_CSRF_COOKIE_NAME = frontendPolicy.csrfCookieName;
@@ -445,7 +445,7 @@ function skillNote(skill: ApiSkillArea): string {
   const source = readableEvidenceSource(skill.evidence_source);
   const confidence =
     typeof skill.confidence === "number" && skill.confidence > 0
-      ? `, confidence ${Math.round(skill.confidence * 100)}%`
+      ? `, confidence ${formatRatioPercent(skill.confidence)}`
       : "";
   const state =
     skill.evidence_state && skill.evidence_state !== "fresh"

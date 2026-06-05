@@ -57,3 +57,6 @@ gitrank/docs/evidence/rollback-drill-*.txt
 gitrank/docs/evidence/database-restore-drill-*.txt
 gitrank/docs/evidence/rendered-k8s-*.yaml
 gitrank/docs/evidence/v2-completion-audit-*.txt
+!gitrank/docs/evidence/observability-live-template.txt
+!gitrank/docs/evidence/rollback-drill-template.txt
+!gitrank/docs/evidence/database-restore-drill-template.txt

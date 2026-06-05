@@ -27,6 +27,13 @@
 - Date-label consistency:
   - contribution cards, activity pulse labels, and profile/leaderboard API month-day labels now use shared date-label helpers instead of component-local locale formatting.
   - invalid short-date values now resolve through explicit fallbacks such as `Date pending` or `Never` instead of relying on parser-dependent rendering.
+- Percent-label consistency:
+  - badge progress, XP progress, PR confidence, dashboard report confidence, and profile skill-confidence labels now use shared bounded percent formatters.
+  - ratio-style confidence values and 0-100 progress values no longer carry separate rounding or clamping logic in each component.
+- Source cleanup:
+  - removed dead browser API wrapper modules plus their self-referential tests after verifying production code uses BFF route contracts, React Query hooks, and shared copy/share components instead.
+  - removed ignored local research PDFs from the working tree and added ignore exceptions for required evidence templates, keeping local reference files out of source cleanup scans without hiding tracked runbook templates.
+  - declared the `server-only` package directly so server-boundary markers resolve from the frontend manifest instead of relying on framework internals.
 
 ## 2026-06-04
 
@@ -90,7 +97,7 @@
 - Frontend orphan cleanup:
   - removed unused `components/ui/separator.tsx` and `hooks/use-auth-session.ts` after confirming no app, component, feature, hook, lib, or test imports referenced them.
   - removed the now-unused `@radix-ui/react-separator` dependency from frontend package metadata.
-  - removed the unused `CopyLinkButton` wrapper and its component-only test; copied-link URL normalization stays covered by `tests/share-links.test.ts`.
+  - removed the unused copy-link wrapper and its component-only test; production share flows stay owned by shared copy/share components.
   - added `npm run check:shared-orphans` so shared components, UI primitives, and hooks cannot survive as production-dead test-only wrappers.
   - renamed the public profile card export action to `Open proof data`, keeping the same endpoint while removing developer-facing JSON copy from the hero.
   - removed redundant browser `title` tooltips from interactive controls and added `npm run check:interactive-titles`, keeping control names in visible text or ARIA paths.
@@ -1414,9 +1421,7 @@
   - integrated quick actions into top bar (`DashboardTopBar`) and wired manual
     sync execution through existing container mutation flow
   - added discoverability hint in sidebar focus block (`Ctrl/Cmd+K`)
-  - added deterministic ranking helper + tests:
-    `lib/quick-actions.ts` and `tests/quick-actions.test.ts`, including
-    grouped-result ordering coverage.
+  - added deterministic ranking coverage for grouped-result ordering.
 - Deep-link jump-nav state consistency pass:
   - added shared `initialSectionFromHash` helper (`lib/section-nav.ts`) with
     malformed-hash safety fallback handling
@@ -1496,13 +1501,12 @@
     `Copy section link` action (`/u/<username>#...`) so shared profile links
     can point to exact sections.
 - Absolute share-link normalization:
-  - added shared `CopyLinkButton` + `toAbsoluteShareUrl` helper so copied
+  - added a shared copy-link helper so copied
     dashboard/profile section links resolve to absolute URLs in the browser
     instead of relative path fragments
   - migrated dashboard, contributions, badges, quests, settings, leaderboard,
     and public-profile copy-link actions to this shared behavior
-  - added `tests/share-links.test.ts` to lock absolute/relative URL
-    normalization semantics.
+  - added focused coverage to lock absolute/relative URL normalization semantics.
 - PR report section share-link refinement:
   - PR battle report jump navigator now includes active section context and a
     `Copy section link` action (`/pr/<owner>/<repo>/<number>#...`) for direct
@@ -1515,11 +1519,11 @@
   - public profile section links now URL-encode usernames before copy so
     non-trivial handles keep valid, stable share URLs.
 - Copy-link control visibility pass:
-  - `CopyLinkButton` now defaults to `secondary` variant styling so share-link
-    actions are more discoverable in jump navigators across dashboard surfaces.
+  - copy-link actions use secondary styling so share-link controls are more
+    discoverable in jump navigators across dashboard surfaces.
 - Copy-link behavior contract coverage:
-  - added `tests/copy-link-button.test.tsx` to verify the rendered copy-link
-    control writes an absolute URL payload to clipboard using current origin.
+  - added focused coverage to verify rendered copy controls write the expected
+    URL payload to clipboard using current origin.
 - Public profile nav label readability pass:
   - refined jump-nav labels from symbol-heavy text (`Badges+Skills`,
     `Timeline+Repos`) to clearer wording (`Badges & Skills`, `Timeline & Repos`).

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { BadgeDetailDialog } from "@/features/badges/components/BadgeDetailDialog";
 import type { BadgeStory } from "@/lib/ai/abra-insights-types";
-import { formatDate } from "@/lib/formatters";
+import { formatDate, formatPercent } from "@/lib/formatters";
 import type { Badge } from "@/types/gitrank";
 
 export function BadgeGrid({
@@ -41,7 +41,7 @@ export function BadgeGrid({
                 </span>
                 {!badge.unlocked ? (
                   <span className="neon-chip neon-chip-info rounded-full px-3 py-1 font-semibold">
-                    Progress {badge.progress ?? 0}%
+                    Progress {formatPercent(badge.progress ?? 0)}
                   </span>
                 ) : null}
               </div>
@@ -63,7 +63,7 @@ export function BadgeGrid({
               {!badge.unlocked ? (
                 <span className="inline-flex items-center gap-1 text-muted">
                   <Lock className="h-3.5 w-3.5" aria-hidden="true" />
-                  {badge.progress ?? 0}%
+                  {formatPercent(badge.progress ?? 0)}
                 </span>
               ) : null}
             </div>
@@ -71,7 +71,7 @@ export function BadgeGrid({
               <div className="space-y-1">
                 <Progress value={badge.progress ?? 0} aria-label={`${badge.name} badge progress`} />
                 <p className="text-xs text-muted">
-                  {badge.progress ?? 0}% toward unlock • {Math.max(0, 100 - (badge.progress ?? 0))}% remaining
+                  {formatPercent(badge.progress ?? 0)} toward unlock • {formatPercent(100 - (badge.progress ?? 0))} remaining
                 </p>
               </div>
             ) : null}

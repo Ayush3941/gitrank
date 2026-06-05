@@ -5,7 +5,9 @@ import {
   formatMonthDay,
   formatMonthDayYear,
   formatNumber,
+  formatPercent,
   formatPluralCount,
+  formatRatioPercent,
   formatRelativeDays,
   formatSignedNumber,
   formatSignedXp,
@@ -24,6 +26,15 @@ describe("number formatters", () => {
     expect(formatSignedXp(1200.4)).toBe("+1,200 XP");
     expect(formatSignedXp(-1200.4)).toBe("-1,200 XP");
     expect(formatSignedXp(Number.NaN)).toBe("0 XP");
+  });
+
+  it("formats percent labels with clamping and ratio conversion", () => {
+    expect(formatPercent(42.4)).toBe("42%");
+    expect(formatPercent(130)).toBe("100%");
+    expect(formatPercent(-5)).toBe("0%");
+    expect(formatPercent(Number.NaN, "Pending")).toBe("Pending");
+    expect(formatRatioPercent(0.756)).toBe("76%");
+    expect(formatRatioPercent(Number.NaN, "Pending")).toBe("Pending");
   });
 
   it("formats plural count labels consistently", () => {

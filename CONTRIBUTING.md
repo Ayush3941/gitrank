@@ -15,6 +15,11 @@ This document is intentionally detailed.
 - Removed unused marketing and onboarding data barrel files after a static import reachability pass confirmed they were not imported by routes, components, hooks, libraries, or tests.
 - Added shared plural-count formatting and routed quest rewards, quest progress, onboarding reveal metrics, dashboard streak copy, public-profile repository snippets, and deterministic fallback summaries through shared numeric presentation helpers.
 - Added shared month/day date-label helpers with explicit invalid-date fallbacks, then routed contribution cards, activity pulse labels, and profile/leaderboard API date labels away from local locale formatting.
+- Added shared percent and ratio-percent formatting helpers, then routed badge progress, XP progress, PR confidence, dashboard report confidence, and profile skill-confidence labels through one bounded display path.
+- Removed dead frontend client helpers and tests that were only self-referenced after the app moved to direct BFF route contracts, existing React Query hooks, and shared copy/share components.
+- Removed ignored local research PDF binaries from the working tree; durable research context remains in this file and `docs/research/README.md` documents where optional local copies belong.
+- Added explicit `.gitignore` exceptions for required evidence templates so tracked runbook templates are not misclassified as ignored local clutter.
+- Declared `server-only` as an explicit frontend dependency because server-boundary modules import it directly.
 
 ## Session Notes (June 4, 2026)
 
@@ -54,7 +59,7 @@ This document is intentionally detailed.
 ## Session Notes (June 2, 2026)
 
 - Removed unused frontend modules `components/ui/separator.tsx` and `hooks/use-auth-session.ts`; no production or test imports referenced them, and the unused `@radix-ui/react-separator` dependency was removed with the lockfile refreshed.
-- Removed the orphaned `CopyLinkButton` wrapper and its component-only test; production share flows already use `CopyTextButton`/`ShareProfileButton`, while `toAbsoluteShareUrl` remains covered directly.
+- Removed the orphaned copy-link wrapper and its component-only test; production share flows already use `CopyTextButton`/`ShareProfileButton`.
 - Added `npm run check:shared-orphans` and wired it into `scripts/check-repo-sync.sh`; shared components, UI primitives, and hooks now need a production import outside themselves or they should be removed instead of kept alive by isolated tests.
 - Public profile card exports now use the user-facing `Open proof data` label; `npm run check:copy-tone` blocks the old developer-facing JSON label from returning.
 - Markdown make-target verification now uses a deterministic here-string lookup instead of a `printf | rg` pipeline, avoiding false failures when `pipefail` observes SIGPIPE after a valid early match.
@@ -773,7 +778,7 @@ Verification snapshot (May 17, 2026):
 - `cd frontend && npm run check:backend-gateway-route-parity`
 - `cd frontend && npm run check:auth-service-route-parity`
 - `cd frontend && npm run check:bff-route-contract-coverage`
-- `cd frontend && npx vitest run tests/meta-services-route.test.ts tests/service-manifests-api.test.ts tests/meta-api.test.ts tests/public-profile-hero-card-link.test.ts`
+- `cd frontend && npx vitest run tests/meta-services-route.test.ts tests/public-profile-hero-card-link.test.ts`
 - `cd frontend && npm run check:no-production-mocks`
 - `cd frontend && npm run check:pr-category-policy`
 - `cd frontend && npm run check:contribution-dedup-policy`
