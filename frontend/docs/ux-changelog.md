@@ -2,6 +2,9 @@
 
 ## 2026-06-05
 
+- PR report structure:
+  - moved the deterministic metrics ledger into `DeterministicMetricsLedgerCard`.
+  - preserved the metric-note toggle and score-input grouping while reducing the main PR report page client surface.
 - Compact embedded empty states:
   - added shared `CompactEmptyState` for card-level empty lanes that should not mount a full-page empty card.
   - dashboard quest/report lanes and public-profile badge, skill, timeline, repository, and best-PR lanes now share the same accessible note, decorative icon, compact heading, and recovery-link pattern.
