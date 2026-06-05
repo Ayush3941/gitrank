@@ -1,5 +1,11 @@
 import "server-only";
 
+import {
+  copyHeaderIfPresent,
+  readOriginWithFallback,
+  readSetCookieHeaders,
+} from "@/lib/api/server-proxy";
+
 const gatewayBaseURL = readOriginWithFallback(["GITRANK_API_BASE_URL"], "http://localhost:8080");
 
 export async function proxyGateway(request: Request, path: string): Promise<Response> {
@@ -62,40 +68,4 @@ export async function proxyGateway(request: Request, path: string): Promise<Resp
 
 function buildGatewayURL(path: string): string {
   return new URL(path, `${gatewayBaseURL.replace(/\/$/, "")}/`).toString();
-}
-
-function readOriginWithFallback(envKeys: readonly string[], fallback: string): string {
-  const raw = readFirstNonEmptyEnv(envKeys) || fallback;
-  try {
-    return new URL(raw).origin;
-  } catch {
-    throw new Error(`${envKeys.join(" or ")} must be a valid absolute URL`);
-  }
-}
-
-function readFirstNonEmptyEnv(envKeys: readonly string[]): string {
-  for (const envKey of envKeys) {
-    const value = process.env[envKey]?.trim();
-    if (value) {
-      return value;
-    }
-  }
-  return "";
-}
-
-function copyHeaderIfPresent(headers: Headers, key: string, value: string | null) {
-  if (!value || value.trim().length === 0) {
-    return;
-  }
-  headers.set(key, value);
-}
-
-function readSetCookieHeaders(headers: Headers): string[] {
-  const cookieHeaders = headers as Headers & { getSetCookie?: () => string[] };
-  if (typeof cookieHeaders.getSetCookie === "function") {
-    return cookieHeaders.getSetCookie();
-  }
-
-  const fallback = headers.get("set-cookie");
-  return fallback ? [fallback] : [];
 }

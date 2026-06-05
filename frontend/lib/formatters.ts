@@ -43,6 +43,17 @@ export function formatDateTime(value?: string) {
   }).format(date);
 }
 
+export function normalizeDateTime(value?: string): string | null {
+  if (!value) {
+    return null;
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+  return date.toISOString();
+}
+
 export function formatTimeUntil(value?: string) {
   if (!value) return "Schedule unavailable";
   const timestamp = new Date(value).getTime();

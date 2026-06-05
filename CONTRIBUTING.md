@@ -17,6 +17,8 @@ This document is intentionally detailed.
 - Reworked PR report metric-ledger descriptions to use `aria-describedby` instead of hover-only `title` tooltips; collapsed notes remain screen-reader available and expanded notes render visibly through the existing metric-notes toggle.
 - Reworked `ProfileEvidenceStateChip` pending-state explanations to use `aria-describedby` and screen-reader-only text instead of browser tooltip titles across dashboard, contribution, badge, quest, leaderboard, and settings headers.
 - Removed synthetic `new Date()` freshness fallbacks from stale contribution, badge, quest, and leaderboard notices; when the backend has no refresh timestamp, UI now says the refresh time is unavailable instead of presenting local render time as verified evidence.
+- Extracted shared frontend server-proxy helpers for forwarded headers, set-cookie propagation, and backend origin fallback handling so auth, gateway, and OAuth route handlers stop carrying duplicate request plumbing.
+- Centralized ISO datetime normalization in `frontend/lib/formatters.ts` and reused it from shared freshness components instead of keeping component-local date validators.
 
 ## Session Notes (June 3, 2026)
 

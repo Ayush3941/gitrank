@@ -30,6 +30,12 @@
   - moved React Query devtools to `devDependencies` and kept the runtime loader disabled when `NODE_ENV=production`.
   - kept `NODE_ENV` as the only allowed non-public client build-mode key in `check:client-env-safety`; all other client env access must still use `NEXT_PUBLIC_*`.
   - added policy coverage for local-development visibility versus production/remote-host suppression.
+- Server proxy cleanup:
+  - extracted shared header forwarding, set-cookie propagation, and backend origin fallback helpers for frontend BFF proxies.
+  - removed duplicate helper code from auth, gateway, and OAuth route modules while preserving the same proxy behavior.
+- Timestamp helper cleanup:
+  - moved ISO datetime normalization into `formatters.ts`.
+  - reused the shared helper from `RelativeTime` and stale-state rendering so freshness components share one date-validity rule.
 
 ## 2026-06-03
 

@@ -1,4 +1,5 @@
 import { proxyAuth } from "@/lib/api/auth-server";
+import { readSetCookieHeaders } from "@/lib/api/server-proxy";
 
 export const dynamic = "force-dynamic";
 
@@ -42,14 +43,4 @@ export async function GET(request: Request) {
     headers.append("Set-Cookie", value);
   }
   return new Response(null, { status: 302, headers });
-}
-
-function readSetCookieHeaders(headers: Headers): string[] {
-  const cookieHeaders = headers as Headers & { getSetCookie?: () => string[] };
-  if (typeof cookieHeaders.getSetCookie === "function") {
-    return cookieHeaders.getSetCookie();
-  }
-
-  const fallback = headers.get("set-cookie");
-  return fallback ? [fallback] : [];
 }

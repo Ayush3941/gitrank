@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { formatDateTime, formatRelativeDays } from "@/lib/formatters";
+import { formatDateTime, formatRelativeDays, normalizeDateTime } from "@/lib/formatters";
 
 describe("formatRelativeDays", () => {
   afterEach(() => {
@@ -33,5 +33,16 @@ describe("formatDateTime", () => {
   it("returns Unknown for invalid values", () => {
     expect(formatDateTime("not-a-date")).toBe("Unknown");
     expect(formatDateTime(undefined)).toBe("Unknown");
+  });
+});
+
+describe("normalizeDateTime", () => {
+  it("returns an ISO timestamp for valid date values", () => {
+    expect(normalizeDateTime("2026-05-17T18:05:00.000Z")).toBe("2026-05-17T18:05:00.000Z");
+  });
+
+  it("returns null for missing or invalid values", () => {
+    expect(normalizeDateTime(undefined)).toBeNull();
+    expect(normalizeDateTime("not-a-date")).toBeNull();
   });
 });

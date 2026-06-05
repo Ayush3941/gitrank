@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
-import { formatDateTime } from "@/lib/formatters";
+import { formatDateTime, normalizeDateTime } from "@/lib/formatters";
 import type { RefreshFeedback } from "@/lib/refresh-feedback";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 
@@ -150,15 +150,4 @@ export function StaleState({
       ) : null}
     </GlowCard>
   );
-}
-
-function normalizeDateTime(value?: string): string | null {
-  if (!value) {
-    return null;
-  }
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return null;
-  }
-  return date.toISOString();
 }
