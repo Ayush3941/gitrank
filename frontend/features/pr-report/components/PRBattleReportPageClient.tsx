@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { ArrowRight, Award, ExternalLink, Swords } from "lucide-react";
+import { Award, ExternalLink } from "lucide-react";
 import { useId, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -34,6 +34,7 @@ import type { ApiSyncExecutionResponse } from "@/lib/api/account-api";
 import { DeterministicMetricsLedgerCard } from "@/features/pr-report/components/DeterministicMetricsLedgerCard";
 import { PRReportImpactSummaryCard } from "@/features/pr-report/components/PRReportImpactSummaryCard";
 import { PRReportOverviewCard } from "@/features/pr-report/components/PRReportOverviewCard";
+import { PRReportSuggestedQuestCard } from "@/features/pr-report/components/PRReportSuggestedQuestCard";
 import { ReportProcessingStateCard } from "@/features/pr-report/components/ReportProcessingStateCard";
 
 const ScoreMatrixCard = dynamic(
@@ -403,43 +404,12 @@ export function PRBattleReportPageClient({
         </div>
       </section>
       {data.suggestedQuestId ? (
-        <section className="render-opt-section">
-          <div className="space-y-4">
-            <h2 className="text-sm font-semibold text-white">Suggested next quest</h2>
-            <GlowCard className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
-                  <Swords className="h-3.5 w-3.5" aria-hidden="true" />
-                  Suggested next quest
-                </div>
-                <h2 className="mt-3 text-2xl font-semibold text-white">
-                  {suggestedQuest?.title ?? "Open the live quest board"}
-                </h2>
-                <p className="mt-2 text-sm text-muted">
-                  {suggestedQuest?.whyRecommended ??
-                    `Suggested quest key: ${data.suggestedQuestId}. The quest board resolves this against the latest profile evidence.`}
-                </p>
-                {suggestedQuestSignals.length ? (
-                  <ul role="list" className="mt-3 flex flex-wrap gap-2">
-                    {suggestedQuestSignals.map((signal, index) => (
-                      <li key={`${data.suggestedQuestId ?? "suggested-quest"}-${signal}-${index}`} className="list-none">
-                        <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
-                          {signal}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-              </div>
-              <Button asChild variant="secondary">
-                <Link href="/dashboard/quests" prefetch={false}>
-                  Open quests
-                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </Link>
-              </Button>
-            </GlowCard>
-          </div>
-        </section>
+        <PRReportSuggestedQuestCard
+          questId={data.suggestedQuestId}
+          title={suggestedQuest?.title}
+          whyRecommended={suggestedQuest?.whyRecommended}
+          signals={suggestedQuestSignals}
+        />
       ) : null}
     </div>
   );

@@ -2,6 +2,9 @@
 
 ## 2026-06-06
 
+- PR report suggested quest:
+  - moved quest CTA, recommendation copy, and signal-chip presentation into `PRReportSuggestedQuestCard`.
+  - kept suggested-quest lookup and evidence-signal selection in `PRBattleReportPageClient`.
 - PR report impact summary:
   - moved copy action, deterministic fallback notice, and expandable summary copy into `PRReportImpactSummaryCard`.
   - kept report fetch, retry, fallback reason mapping, and summary selection logic in `PRBattleReportPageClient`.
