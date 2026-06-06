@@ -2,28 +2,22 @@
 
 import dynamic from "next/dynamic";
 import {
-  Crown,
   Gem,
   Lock,
   Medal,
-  ShieldCheck,
-  Sparkles,
-  Trophy,
   Unlock,
 } from "lucide-react";
-import { startTransition, type ReactNode, useDeferredValue, useEffect, useId, useMemo, useRef, useState } from "react";
+import { startTransition, useDeferredValue, useEffect, useId, useMemo, useRef, useState } from "react";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlockNotice";
-import { GlowCard } from "@/components/shared/GlowCard";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
 import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { ControlSurface } from "@/components/shared/ControlSurface";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
-import { InlineNotice } from "@/components/shared/InlineNotice";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { PanelLoadingPlaceholder } from "@/components/shared/PanelLoadingPlaceholder";
@@ -32,6 +26,7 @@ import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { StaleState } from "@/components/shared/StaleState";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import { BadgesOverviewCard } from "@/features/badges/components/BadgesOverviewCard";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useBadges } from "@/hooks/use-badges";
@@ -362,74 +357,24 @@ export function BadgesPageClient() {
           />
         ) : null}
         {!isLoading && !isError && profile ? (
-          <GlowCard strong className="cyber-hero-shell relative overflow-hidden">
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-xl font-semibold text-white">Progress overview</h2>
-                  <p className="mt-1 text-sm text-muted">
-                    {(abraInsights.data?.archetype ?? fallbackArchetype)} track
-                  </p>
-                  <ExpandableText
-                    text={
-                      abraInsights.data?.identitySummary ||
-                      "Using deterministic badge guidance right now."
-                    }
-                    lines={2}
-                    minLengthForToggle={170}
-                    className="mt-2 max-w-3xl"
-                    textClassName="text-sm text-muted"
-                  />
-                </div>
-              </div>
-              <div className="grid gap-3 md:grid-cols-4">
-                <BadgeMetric label="Unlocked" value={unlockedCount} icon={<ShieldCheck className="h-4 w-4 text-cyan-200" aria-hidden="true" />} />
-                <BadgeMetric label="Completion" value={formatPercent(completionPercent)} icon={<Crown className="h-4 w-4 text-fuchsia-200" aria-hidden="true" />} />
-                <BadgeMetric label="Level" value={profile.user.level.currentLevel} icon={<Trophy className="h-4 w-4 text-violet-200" aria-hidden="true" />} />
-                <BadgeMetric label="Current streak" value={`${streak.currentStreakDays}d`} icon={<Sparkles className="h-4 w-4 text-emerald-200" aria-hidden="true" />} />
-              </div>
-              <div className="space-y-2">
-                <p className="text-xs font-medium text-cyan-200">Badge progress</p>
-                <Progress value={completionPercent} aria-label="Overall badge completion progress" />
-              </div>
-              <InlineNotice
-                message={unlockNotice}
-                placeholder="Badge update"
-                variant="success"
-                minHeightClassName="min-h-7"
-                onDismiss={() => {
-                  setUnlockNotice("");
-                }}
-                dismissLabel="Dismiss badge update"
-              />
-              {nextUnlockTarget ? (
-                <div className="neon-surface space-y-3 border border-primary/22 px-4 py-4">
-                  <p className="text-xs font-medium text-primary">Closest next unlock</p>
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="text-lg font-semibold text-white">{nextUnlockTarget.name}</p>
-                      <p className="mt-1 text-sm text-muted">
-                        {formatPercent(nextUnlockTarget.progress ?? 0)} complete • {nextUnlockTarget.rarity}
-                      </p>
-                    </div>
-                    <Button asChild variant="secondary" size="sm">
-                      <IntentPrefetchLink href={unlockRecoveryHref(nextUnlockTarget.unlockCondition)}>
-                        {unlockRecoveryLabel(nextUnlockTarget.unlockCondition)}
-                      </IntentPrefetchLink>
-                    </Button>
-                  </div>
-                  <ExpandableText
-                    text={nextUnlockTarget.unlockCondition}
-                    lines={3}
-                    minLengthForToggle={140}
-                    textClassName="text-sm text-muted"
-                    showMoreLabel="Read unlock path"
-                    showLessLabel="Hide unlock path"
-                  />
-                </div>
-              ) : null}
-            </div>
-          </GlowCard>
+          <BadgesOverviewCard
+            archetype={abraInsights.data?.archetype ?? fallbackArchetype}
+            identitySummary={
+              abraInsights.data?.identitySummary ||
+              "Using deterministic badge guidance right now."
+            }
+            unlockedCount={unlockedCount}
+            completionPercent={completionPercent}
+            level={profile.user.level.currentLevel}
+            streakDays={streak.currentStreakDays}
+            unlockNotice={unlockNotice}
+            nextUnlockTarget={nextUnlockTarget}
+            unlockRecoveryHref={unlockRecoveryHref}
+            unlockRecoveryLabel={unlockRecoveryLabel}
+            onDismissUnlockNotice={() => {
+              setUnlockNotice("");
+            }}
+          />
         ) : null}
       </section>
       <section
@@ -745,26 +690,6 @@ function unlockRecoveryLabel(condition: string): string {
     return "Open quests";
   }
   return "Open contributions";
-}
-
-function BadgeMetric({
-  label,
-  value,
-  icon,
-}: {
-  label: string;
-  value: number | string;
-  icon: ReactNode;
-}) {
-  return (
-    <div className="neon-metric rounded-[var(--radius-universal)] px-4 py-3">
-      <p className="text-xs font-medium text-muted">{label}</p>
-      <p className="mt-2 flex items-center gap-2 text-xl font-semibold text-white">
-        {value}
-        <span aria-hidden="true">{icon}</span>
-      </p>
-    </div>
-  );
 }
 
 function BadgeShelfPlaceholder({ label }: { label: string }) {

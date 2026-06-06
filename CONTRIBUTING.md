@@ -1,8 +1,12 @@
 # Contributing to GitRank
 
-Last reviewed: June 5, 2026
+Last reviewed: June 6, 2026
 
 This document is intentionally detailed.
+
+## Session Notes (June 6, 2026)
+
+- Split badge progress overview rendering into `BadgesOverviewCard`, moving ABRA/deterministic summary copy, progress metrics, unlock notices, and closest-next-unlock presentation out of the page client while keeping sync, filtering, and pagination state in the page.
 
 ## Session Notes (June 5, 2026)
 

@@ -1,5 +1,11 @@
 # Frontend UX Changelog
 
+## 2026-06-06
+
+- Badge progress overview:
+  - moved progress metrics, ABRA/deterministic summary copy, unlock notices, and closest-next-unlock presentation into `BadgesOverviewCard`.
+  - kept sync state, filtering, ABRA query construction, and badge shelf pagination in `BadgesPageClient`.
+
 ## 2026-06-05
 
 - PR report overview:
