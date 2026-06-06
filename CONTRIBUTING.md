@@ -6,7 +6,8 @@ This document is intentionally detailed.
 
 ## Session Notes (June 6, 2026)
 
-- Split PR report collapsed technical quick-read rendering into `PRReportTechnicalQuickReadCard`, moving score metric tiles out of `PRBattleReportPageClient` while keeping the technical disclosure state in the page.
+- Split PR report technical-breakdown disclosure rendering into `PRReportTechnicalBreakdownSection`, keeping lazy score panels, evidence signals, badge rewards, and collapsed quick-read presentation together while leaving report fetch/retry orchestration in `PRBattleReportPageClient`.
+- Split PR report collapsed technical quick-read rendering into `PRReportTechnicalQuickReadCard`, moving score metric tiles out of `PRBattleReportPageClient` while keeping the same metric values and shared card styling.
 - Split PR report badge-reward rendering into `PRReportBadgeRewardsCard`, moving reward header, badge cards, and badge evidence chips out of `PRBattleReportPageClient` while keeping badge de-duplication in the page.
 - Split PR report suggested-quest rendering into `PRReportSuggestedQuestCard`, moving quest CTA, recommendation copy, and signal-chip presentation out of `PRBattleReportPageClient` while keeping quest signal selection in the page.
 - Split PR report impact-summary rendering into `PRReportImpactSummaryCard`, moving copy action, deterministic fallback notice, and expandable summary copy out of `PRBattleReportPageClient` while leaving report fetch, retry, and summary selection logic in the page.

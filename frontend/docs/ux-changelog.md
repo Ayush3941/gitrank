@@ -2,9 +2,12 @@
 
 ## 2026-06-06
 
+- PR report technical breakdown:
+  - moved disclosure state, lazy technical panels, evidence-signal expansion, badge rewards, and quick-read fallback into `PRReportTechnicalBreakdownSection`.
+  - kept report loading, retry, summary selection, and top-level section ordering in `PRBattleReportPageClient`.
 - PR report technical quick read:
   - moved collapsed score metric tiles into `PRReportTechnicalQuickReadCard`.
-  - kept technical breakdown disclosure state and expanded-panel composition in `PRBattleReportPageClient`.
+  - kept the same metric values and shared card styling while making the collapsed view reusable inside the technical section.
 - PR report badge rewards:
   - moved reward header, badge cards, and badge evidence chips into `PRReportBadgeRewardsCard`.
   - kept badge unlock de-duplication in `PRBattleReportPageClient`.
