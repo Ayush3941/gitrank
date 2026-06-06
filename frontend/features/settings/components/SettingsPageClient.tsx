@@ -1,15 +1,11 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
-import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
-import { GlowCard } from "@/components/shared/GlowCard";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { PanelLoadingPlaceholder } from "@/components/shared/PanelLoadingPlaceholder";
 import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
 import { RouteLoadingState } from "@/components/shared/RouteLoadingState";
 import { Button } from "@/components/ui/button";
@@ -54,6 +50,7 @@ import {
   SettingsPublicProfileCard,
   type SettingsPublicProfilePrivacyKey,
 } from "@/features/settings/components/SettingsPublicProfileCard";
+import { SettingsRepositoryVisibilitySection } from "@/features/settings/components/SettingsRepositoryVisibilitySection";
 import { SettingsSyncActivitySection } from "@/features/settings/components/SettingsSyncActivitySection";
 
 type BackedPrivacyKey = SettingsPublicProfilePrivacyKey | "reducedGamification";
@@ -66,16 +63,6 @@ const SETTINGS_SECTION_LINKS = [
   { id: "settings-repositories", label: "Repositories" },
   { id: "settings-data-controls", label: "Data" },
 ];
-
-const PrivacyRepositoryToggleList = dynamic(
-  () =>
-    import("@/features/settings/components/PrivacyRepositoryToggleList").then(
-      (mod) => mod.PrivacyRepositoryToggleList,
-    ),
-  {
-    loading: () => <SettingsPanelPlaceholder label="Loading repository visibility controls" />,
-  },
-);
 
 export function SettingsPageClient() {
   const { data, isLoading, isError, isFetching, refetch } = useMyProfile();
@@ -176,7 +163,6 @@ export function SettingsPageClient() {
     exportAccount.isPending ||
     accountLinkStart.isPending;
   const pendingRepository = updateRepositoryVisibility.variables?.fullName ?? null;
-  const hiddenRepositoryCount = data.user.repositories.filter((repository) => repository.visibility !== "Public").length;
   const syncRunsError = sanitizeUserFacingError(
     (syncRunsQuery.error as Error | null)?.message || "",
     "settings-sync-runs",
@@ -418,29 +404,17 @@ export function SettingsPageClient() {
         id="settings-repositories"
         data-scroll-target="true"
       >
-        <DeferUntilVisible fallback={<SettingsPanelPlaceholder label="Loading repository controls" />}>
-          <GlowCard className="space-y-4">
-            <div>
-              <p className="text-xs font-medium text-primary">Repository privacy</p>
-              <h2 className="mt-2 text-xl font-semibold text-white">Repository visibility</h2>
-            </div>
-            <p className="text-sm text-muted">
-              {data.user.repositories.length} repositories{hiddenRepositoryCount > 0 ? ` · ${hiddenRepositoryCount} hidden` : ""}
-            </p>
-            <PrivacyRepositoryToggleList
-              repositories={data.user.repositories}
-              pendingRepository={pendingRepository}
-              onToggle={
-                (repository, checked) =>
-                  updateRepositoryVisibility.mutate({
-                    fullName: repository.name,
-                    visibility: checked ? "Public" : "Hidden",
-                    reason: repository.reason,
-                  })
-              }
-            />
-          </GlowCard>
-        </DeferUntilVisible>
+        <SettingsRepositoryVisibilitySection
+          repositories={data.user.repositories}
+          pendingRepository={pendingRepository}
+          onRepositoryVisibilityChange={(repository, checked) => {
+            updateRepositoryVisibility.mutate({
+              fullName: repository.name,
+              visibility: checked ? "Public" : "Hidden",
+              reason: repository.reason,
+            });
+          }}
+        />
       </section>
 
       <section
@@ -472,17 +446,4 @@ function downloadJSON(payload: unknown, filename: string) {
   anchor.click();
   anchor.remove();
   URL.revokeObjectURL(url);
-}
-
-function SettingsPanelPlaceholder({ label }: { label: string }) {
-  return (
-    <PanelLoadingPlaceholder
-      label={label}
-      surface="plain"
-      skeletons={[
-        { className: "h-9 w-1/2" },
-        { className: "h-24 w-full" },
-      ]}
-    />
-  );
 }

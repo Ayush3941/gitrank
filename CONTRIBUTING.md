@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 6, 2026)
 
+- Split settings repository visibility presentation into `SettingsRepositoryVisibilitySection`, moving the deferred repository privacy card and lazy `PrivacyRepositoryToggleList` boundary out of `SettingsPageClient` while keeping repository mutation ownership in the page.
 - Split settings data export/deletion controls into `SettingsDataControlsCard`, keeping account mutation handlers in `SettingsPageClient` while moving destructive-action copy and button presentation into a dedicated card.
 - Split public-profile privacy switches into `SettingsPublicProfileCard`, keeping switch labels, save/error announcement wiring, and privacy mutation callbacks out of `SettingsPageClient`.
 - Split the settings sync-activity disclosure wrapper into `SettingsSyncActivitySection`, moving sync-log summary chips, attention auto-expansion, and the lazy `SyncRunActivityPanel` boundary out of `SettingsPageClient`.

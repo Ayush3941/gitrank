@@ -2,6 +2,9 @@
 
 ## 2026-06-06
 
+- Settings repository visibility:
+  - moved the deferred repository privacy card and lazy `PrivacyRepositoryToggleList` boundary into `SettingsRepositoryVisibilitySection`.
+  - kept repository visibility mutation ownership in `SettingsPageClient`.
 - Settings data controls:
   - moved export/delete buttons, destructive-action copy, and pending labels into `SettingsDataControlsCard`.
   - kept account export/deletion mutation handlers and redirect behavior in `SettingsPageClient`.
