@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { ContributionList } from "@/features/contributions/components/ContributionList";
-import type { Contribution } from "@/types/gitrank";
+import { buildContribution } from "@/tests/helpers/contribution-fixture";
 
 describe("ContributionList", () => {
   it("exposes contribution signal meters with bounded progress semantics", () => {
@@ -17,41 +17,3 @@ describe("ContributionList", () => {
     expect(meter.getAttribute("aria-valuetext")).toBe("Rising signal, 63 of 100");
   });
 });
-
-function buildContribution(overrides: Partial<Contribution> = {}): Contribution {
-  return {
-    id: overrides.id ?? "contribution-1",
-    scoreEventId: overrides.scoreEventId ?? "score-event-1",
-    scoreVersion: overrides.scoreVersion ?? "v1alpha1",
-    formulaVersion: overrides.formulaVersion ?? "v1alpha1",
-    pullRequestId: overrides.pullRequestId ?? "pull-request-1",
-    analysisId: overrides.analysisId ?? "analysis-1",
-    evidenceState: overrides.evidenceState ?? "complete",
-    evidenceMissing: overrides.evidenceMissing ?? [],
-    reportEvidenceStatus: overrides.reportEvidenceStatus ?? "complete",
-    reportAnalysisSource: overrides.reportAnalysisSource ?? "deterministic",
-    reportStale: overrides.reportStale ?? false,
-    owner: overrides.owner ?? "octo",
-    repo: overrides.repo ?? "gitrank",
-    number: overrides.number ?? 42,
-    title: overrides.title ?? "Semantic signal",
-    status: overrides.status ?? "merged",
-    category: overrides.category ?? "Backend",
-    difficultyScore: overrides.difficultyScore ?? 50,
-    impactScore: overrides.impactScore ?? 80,
-    reviewDepthScore: overrides.reviewDepthScore ?? 60,
-    testSignalScore: overrides.testSignalScore ?? 50,
-    repoWeight: overrides.repoWeight ?? 1,
-    antiSpamMultiplier: overrides.antiSpamMultiplier ?? 1,
-    xpEarned: overrides.xpEarned ?? 180,
-    additions: overrides.additions ?? 120,
-    deletions: overrides.deletions ?? 20,
-    changedFilesCount: overrides.changedFilesCount ?? 4,
-    mergedAt: overrides.mergedAt ?? "2026-05-25T00:00:00.000Z",
-    maintainerReviewed: overrides.maintainerReviewed ?? true,
-    linkedIssue: overrides.linkedIssue ?? true,
-    ciPassed: overrides.ciPassed ?? true,
-    aiSummary: overrides.aiSummary ?? "Deterministic summary.",
-    evidenceSignals: overrides.evidenceSignals ?? ["backend"],
-  };
-}

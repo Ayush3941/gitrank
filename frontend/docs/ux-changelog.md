@@ -2,6 +2,9 @@
 
 ## 2026-06-06
 
+- Contribution cards:
+  - moved contribution card empty states, lazy list loading, and "show more" controls into `ContributionsCardsSection`.
+  - kept filter/search/sort state, export behavior, and visible-card count ownership in `ContributionsPageClient`.
 - Badge locked paths:
   - moved locked-path preview, detail cards, progress copy, and path CTAs into `BadgesLockedPathsSection`.
   - centralized badge unlock recovery links in `badge-unlock-route.ts` so overview and locked-path cards use the same rule.

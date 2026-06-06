@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 6, 2026)
 
+- Split contribution card rendering into `ContributionsCardsSection`, moving the lazy `ContributionList` boundary, empty-state copy, and pagination controls out of `ContributionsPageClient` while keeping filters, export, and visible-count state in the page.
 - Split badge locked-path presentation into `BadgesLockedPathsSection` and centralized badge unlock recovery routing in `frontend/lib/presentation/badge-unlock-route.ts`, keeping badge pagination and disclosure state in `BadgesPageClient`.
 - Split settings repository visibility presentation into `SettingsRepositoryVisibilitySection`, moving the deferred repository privacy card and lazy `PrivacyRepositoryToggleList` boundary out of `SettingsPageClient` while keeping repository mutation ownership in the page.
 - Split settings data export/deletion controls into `SettingsDataControlsCard`, keeping account mutation handlers in `SettingsPageClient` while moving destructive-action copy and button presentation into a dedicated card.

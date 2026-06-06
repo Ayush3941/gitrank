@@ -1,19 +1,17 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { startTransition, useDeferredValue, useEffect, useId, useMemo, useState } from "react";
 import { Download, LayoutList, Rows3 } from "lucide-react";
-import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlockNotice";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { InlineNotice } from "@/components/shared/InlineNotice";
 import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { PanelLoadingPlaceholder } from "@/components/shared/PanelLoadingPlaceholder";
 import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
 import { RouteLoadingState } from "@/components/shared/RouteLoadingState";
 import { StaleState } from "@/components/shared/StaleState";
+import { ContributionsCardsSection } from "@/features/contributions/components/ContributionsCardsSection";
 import { ContributionFilters } from "@/features/contributions/components/ContributionFilters";
 import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useContributions } from "@/hooks/use-contributions";
@@ -57,16 +55,6 @@ import {
 } from "@/lib/runtime/contribution-filter-policy";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import type { Contribution } from "@/types/gitrank";
-
-const ContributionList = dynamic(
-  () =>
-    import("@/features/contributions/components/ContributionList").then(
-      (mod) => mod.ContributionList,
-    ),
-  {
-    loading: () => <ContributionListPlaceholder />,
-  },
-);
 
 const CONTRIBUTION_SEARCH_DEBOUNCE_MS = 220;
 const CONTRIBUTIONS_SECTION_LINKS = [
@@ -472,65 +460,27 @@ export function ContributionsPageClient() {
           contextNote="Categories reflect your recent PR work and help choose the next lane."
         />
       </section>
-      <section
-        id="contributions-cards"
-        data-scroll-target="true"
-        className="render-opt-section space-y-4"
-      >
-        {filteredRows.length === 0 ? (
-          <EmptyState
-            eyebrow={isFilteredNoResults ? "Filter results" : "Contribution evidence"}
-            title={
-              isFilteredNoResults
-                ? "No contributions match current filters."
-                : "No merged PRs found yet."
-            }
-            description={
-              isFilteredNoResults
-                ? "Reset filters or widen search."
-                : "Keep this page open while auto-sync loads recent PR evidence."
-            }
-            actionLabel={isFilteredNoResults ? "Reset filters" : "Open sync settings"}
-            actionHref={isFilteredNoResults ? undefined : "/dashboard/settings"}
-            onAction={isFilteredNoResults ? handleResetFilters : undefined}
-            analyticsTarget={isFilteredNoResults ? "contributions:empty-filtered" : "contributions:empty"}
-          />
-        ) : null}
-        {filteredRows.length ? (
-          <div className="space-y-4">
-            <div id={contributionCardsRegionId}>
-              <ContributionList
-                items={visibleRows}
-                narratives={abraInsights.data?.contributionNarratives}
-                isBusy={isFiltering}
-                totalCount={filteredRows.length}
-                startPosition={1}
-                useLiteCards={useLiteCards}
-                showDetails={effectiveShowCardDetails}
-              />
-            </div>
-            <div className="flex flex-wrap items-center justify-end gap-3">
-              {hasMoreRows ? (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  aria-controls={contributionCardsRegionId}
-                  aria-label={`Show ${Math.min(cardPageSize, remainingRows)} more contribution cards. ${remainingRows} remaining.`}
-                  onClick={() => {
-                    startTransition(() => {
-                      setVisibleCardCount((current) =>
-                        Math.min(filteredRows.length, current + cardPageSize),
-                      );
-                    });
-                  }}
-                >
-                  Show more cards ({remainingRows} left)
-                </Button>
-              ) : null}
-            </div>
-          </div>
-        ) : null}
-      </section>
+      <ContributionsCardsSection
+        regionId={contributionCardsRegionId}
+        filteredRows={filteredRows}
+        visibleRows={visibleRows}
+        narratives={abraInsights.data?.contributionNarratives}
+        isFiltering={isFiltering}
+        isFilteredNoResults={isFilteredNoResults}
+        hasMoreRows={hasMoreRows}
+        remainingRows={remainingRows}
+        cardPageSize={cardPageSize}
+        useLiteCards={useLiteCards}
+        showDetails={effectiveShowCardDetails}
+        onResetFilters={handleResetFilters}
+        onShowMoreRows={() => {
+          startTransition(() => {
+            setVisibleCardCount((current) =>
+              Math.min(filteredRows.length, current + cardPageSize),
+            );
+          });
+        }}
+      />
     </div>
   );
 }
@@ -607,18 +557,4 @@ function toCSVCell(value: string | number | boolean): string {
 
 function formatCSVDate(value: string): string {
   return formatDateTime(value, "");
-}
-
-function ContributionListPlaceholder() {
-  return (
-    <PanelLoadingPlaceholder
-      label="Loading contribution cards"
-      minHeightClassName="min-h-[18rem]"
-      skeletons={[
-        { className: "h-9 w-1/2" },
-        { className: "h-24 w-full" },
-        { className: "h-24 w-full" },
-      ]}
-    />
-  );
 }
