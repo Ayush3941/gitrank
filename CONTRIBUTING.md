@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 6, 2026)
 
+- Moved PR report summary labels, fallback guidance, retry notice copy, badge de-duplication, and signal-tier derivation into `frontend/features/pr-report/lib/pr-report-presentation.ts`; `PRBattleReportPageClient` now consumes a single presentation model while focused unit coverage locks the extracted behavior.
 - Split PR report technical-breakdown disclosure rendering into `PRReportTechnicalBreakdownSection`, keeping lazy score panels, evidence signals, badge rewards, and collapsed quick-read presentation together while leaving report fetch/retry orchestration in `PRBattleReportPageClient`.
 - Split PR report collapsed technical quick-read rendering into `PRReportTechnicalQuickReadCard`, moving score metric tiles out of `PRBattleReportPageClient` while keeping the same metric values and shared card styling.
 - Split PR report badge-reward rendering into `PRReportBadgeRewardsCard`, moving reward header, badge cards, and badge evidence chips out of `PRBattleReportPageClient` while keeping badge de-duplication in the page.

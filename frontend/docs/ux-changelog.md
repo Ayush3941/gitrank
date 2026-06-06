@@ -2,6 +2,9 @@
 
 ## 2026-06-06
 
+- PR report presentation model:
+  - moved report summary labels, fallback guidance, retry notice copy, badge de-duplication, suggested-quest chips, and signal-tier derivation into `frontend/features/pr-report/lib/pr-report-presentation.ts`.
+  - added direct unit coverage for rate-limited guidance, repeated badge rewards, and retry outcome notices.
 - PR report technical breakdown:
   - moved disclosure state, lazy technical panels, evidence-signal expansion, badge rewards, and quick-read fallback into `PRReportTechnicalBreakdownSection`.
   - kept report loading, retry, summary selection, and top-level section ordering in `PRBattleReportPageClient`.

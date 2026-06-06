@@ -4,10 +4,8 @@ import dynamic from "next/dynamic";
 import { useId, useState } from "react";
 import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { PanelLoadingPlaceholder } from "@/components/shared/PanelLoadingPlaceholder";
-import {
-  PRReportBadgeRewardsCard,
-  type PRReportBadgeReward,
-} from "@/features/pr-report/components/PRReportBadgeRewardsCard";
+import { PRReportBadgeRewardsCard } from "@/features/pr-report/components/PRReportBadgeRewardsCard";
+import type { PRReportBadgeReward } from "@/features/pr-report/lib/pr-report-presentation";
 import { PRReportTechnicalQuickReadCard } from "@/features/pr-report/components/PRReportTechnicalQuickReadCard";
 import type { PullRequestAnalysis } from "@/types/gitrank";
 

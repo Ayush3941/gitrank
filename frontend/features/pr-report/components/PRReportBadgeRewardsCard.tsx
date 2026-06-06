@@ -2,16 +2,8 @@
 
 import { Award } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
+import type { PRReportBadgeReward } from "@/features/pr-report/lib/pr-report-presentation";
 import { buildEvidenceSignalChips } from "@/lib/presentation/evidence-signal";
-
-export type PRReportBadgeReward = {
-  key: string;
-  name: string;
-  description?: string;
-  rule?: string;
-  ruleVersion?: string;
-  evidenceSignals: string[];
-};
 
 export function PRReportBadgeRewardsCard({
   badges,

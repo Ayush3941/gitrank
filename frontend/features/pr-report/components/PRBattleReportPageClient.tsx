@@ -18,21 +18,18 @@ import {
   formatContributionStatusLabel,
   toneForContributionStatus,
 } from "@/lib/presentation/contribution-status";
-import { buildEvidenceSignalChips } from "@/lib/presentation/evidence-signal";
-import {
-  buildDeterministicImpactSummary,
-  shouldUseDeterministicImpactSummary,
-} from "@/lib/presentation/deterministic-impact-summary";
-import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import { formatEvidenceStatusLabel, toneForEvidenceStatus } from "@/lib/presentation/status-tone";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
-import type { ApiSyncExecutionResponse } from "@/lib/api/account-api";
 import { DeterministicMetricsLedgerCard } from "@/features/pr-report/components/DeterministicMetricsLedgerCard";
 import { PRReportImpactSummaryCard } from "@/features/pr-report/components/PRReportImpactSummaryCard";
 import { PRReportOverviewCard } from "@/features/pr-report/components/PRReportOverviewCard";
 import { PRReportSuggestedQuestCard } from "@/features/pr-report/components/PRReportSuggestedQuestCard";
 import { PRReportTechnicalBreakdownSection } from "@/features/pr-report/components/PRReportTechnicalBreakdownSection";
 import { ReportProcessingStateCard } from "@/features/pr-report/components/ReportProcessingStateCard";
+import {
+  buildPRReportPresentation,
+  buildRetryAiSummaryNotice,
+} from "@/features/pr-report/lib/pr-report-presentation";
 
 const PR_REPORT_SECTION_LINKS = [
   { id: "pr-report-overview", label: "Overview" },
@@ -100,49 +97,7 @@ export function PRBattleReportPageClient({
   const reportData = data;
   const suggestedQuest = data.suggestedQuest;
   const evidenceState = data.evidenceState;
-  const sanitizedReportSummary = sanitizeReportSummary(data.contribution.aiSummary);
-  const reportSummary = shouldUseDeterministicImpactSummary(sanitizedReportSummary)
-    ? buildDeterministicImpactSummary(data.contribution)
-    : sanitizedReportSummary;
-  const evidenceAnchored = evidenceState.status === "complete" || evidenceState.status === "deterministic_only";
-  const fallbackReason = extractFallbackReason(data.contribution.evidenceSignals);
-  const fallbackDetail = fallbackReason ? formatFallbackReason(fallbackReason) : null;
-  const summarySectionLabel = buildSummarySectionLabel({
-    status: evidenceState.status,
-    deterministicOnly: evidenceState.deterministicOnly,
-    fallbackDetail,
-  });
-  const hasPersistedScoreEvidence =
-    !evidenceState.missingEvidence.includes("score_event") || data.contribution.xpEarned > 0;
-  const uniqueBadgeUnlocks = deduplicateBadgeUnlocks(data.badgeUnlocks);
-  const suggestedQuestSignals = suggestedQuest ? buildEvidenceSignalChips(suggestedQuest.evidenceSignals, 3) : [];
-  const evidenceReasonSummary = summarizeEvidenceReasons(
-    evidenceState.reasons,
-    evidenceAnchored,
-    hasPersistedScoreEvidence,
-  );
-  const reportStateGuidance = buildReportStateGuidance({
-    status: evidenceState.status,
-    deterministicOnly: evidenceState.deterministicOnly,
-    hasPersistedScoreEvidence,
-    fallbackDetail,
-  });
-  const canRetryAiSummary = shouldShowAiSummaryRetry({
-    status: evidenceState.status,
-    deterministicOnly: evidenceState.deterministicOnly,
-    aiFallback: evidenceState.aiFallback,
-    rateLimited: evidenceState.rateLimited,
-  });
-  const showEvidenceReasonSummary =
-    Boolean(evidenceReasonSummary) &&
-    (!evidenceAnchored ||
-      evidenceReasonSummary?.toLowerCase() !== "deterministic evidence is available now.");
-  const signalTier =
-    data.contribution.xpEarned >= 250
-      ? "High signal"
-      : data.contribution.xpEarned >= 100
-        ? "Medium signal"
-        : "Early signal";
+  const presentation = buildPRReportPresentation(data);
 
   async function handleRetryAiSummary() {
     setRetryNotice(null);
@@ -215,12 +170,12 @@ export function PRBattleReportPageClient({
       <section id="pr-report-overview" data-scroll-target="true" className="render-opt-section">
         <PRReportOverviewCard
           report={data}
-          signalTier={signalTier}
-          evidenceAnchored={evidenceAnchored}
-          hasPersistedScoreEvidence={hasPersistedScoreEvidence}
-          fallbackDetail={fallbackDetail}
-          evidenceReasonSummary={evidenceReasonSummary}
-          showEvidenceReasonSummary={showEvidenceReasonSummary}
+          signalTier={presentation.signalTier}
+          evidenceAnchored={presentation.evidenceAnchored}
+          hasPersistedScoreEvidence={presentation.hasPersistedScoreEvidence}
+          fallbackDetail={presentation.fallbackDetail}
+          evidenceReasonSummary={presentation.evidenceReasonSummary}
+          showEvidenceReasonSummary={presentation.showEvidenceReasonSummary}
         />
       </section>
       <section
@@ -230,10 +185,10 @@ export function PRBattleReportPageClient({
       >
         <DeterministicMetricsLedgerCard report={data} />
       </section>
-      {reportStateGuidance ? (
+      {presentation.reportStateGuidance ? (
         <ReportProcessingStateCard
-          guidance={reportStateGuidance}
-          canRetryAiSummary={canRetryAiSummary}
+          guidance={presentation.reportStateGuidance}
+          canRetryAiSummary={presentation.canRetryAiSummary}
           isRetrying={runPullRequestSync.isPending}
           retryNotice={retryNotice}
           onRetryAiSummary={handleRetryAiSummary}
@@ -248,311 +203,23 @@ export function PRBattleReportPageClient({
         className="render-opt-section"
       >
         <PRReportImpactSummaryCard
-          label={summarySectionLabel}
-          summary={reportSummary}
-          fallbackDetail={fallbackDetail}
+          label={presentation.summarySectionLabel}
+          summary={presentation.reportSummary}
+          fallbackDetail={presentation.fallbackDetail}
         />
       </section>
       <PRReportTechnicalBreakdownSection
         report={data}
-        badgeRewards={uniqueBadgeUnlocks}
+        badgeRewards={presentation.uniqueBadgeUnlocks}
       />
       {data.suggestedQuestId ? (
         <PRReportSuggestedQuestCard
           questId={data.suggestedQuestId}
           title={suggestedQuest?.title}
           whyRecommended={suggestedQuest?.whyRecommended}
-          signals={suggestedQuestSignals}
+          signals={presentation.suggestedQuestSignals}
         />
       ) : null}
     </div>
   );
-}
-
-function buildSummarySectionLabel({
-  status,
-  deterministicOnly,
-  fallbackDetail,
-}: {
-  status: string;
-  deterministicOnly: boolean;
-  fallbackDetail: string | null;
-}): string {
-  if (fallbackDetail) {
-    return "Impact summary (deterministic fallback)";
-  }
-  if (deterministicOnly || status === "deterministic_only") {
-    return "Impact summary (deterministic)";
-  }
-  return "Impact summary (ChatGPT)";
-}
-
-function extractFallbackReason(signals: string[]): string | null {
-  for (const signal of signals) {
-    if (!signal.startsWith("fallback_reason=")) {
-      continue;
-    }
-    const value = signal.slice("fallback_reason=".length).trim();
-    return value.length > 0 ? value : null;
-  }
-  return null;
-}
-
-function formatFallbackReason(reason: string): string {
-  const normalized = reason.trim().toLowerCase();
-  const map: Record<string, string> = {
-    ai_rate_limited: "rate limited",
-    ai_quota_exceeded: "quota exceeded",
-    ai_auth_failed: "auth failed",
-    ai_invalid_request: "invalid request",
-    ai_provider_error: "provider error",
-    ai_transport_error: "network issue",
-    ai_empty_response: "empty response",
-    ai_empty_summary: "empty summary",
-    ai_invalid_response: "invalid response",
-    ai_guardrail_rejected: "guardrail rejected",
-    ai_validation_failed: "validation failed",
-    ai_request_failed: "request failed",
-  };
-  return map[normalized] ?? normalized.replaceAll("_", " ");
-}
-
-function summarizeEvidenceReasons(
-  reasons: string[],
-  evidenceAnchored: boolean,
-  hasPersistedScoreEvidence: boolean,
-): string | null {
-  if (!reasons.length) {
-    return null;
-  }
-  const normalized = reasons
-    .map((reason) =>
-      normalizeEvidenceReason(reason, evidenceAnchored, hasPersistedScoreEvidence),
-    )
-    .filter((reason): reason is string => Boolean(reason));
-  if (!normalized.length) {
-    return null;
-  }
-  return normalized.slice(0, 2).join(" · ");
-}
-
-function normalizeEvidenceReason(
-  reason: string,
-  evidenceAnchored: boolean,
-  hasPersistedScoreEvidence: boolean,
-): string | null {
-  const normalized = reason.trim().toLowerCase();
-  const evidenceReady = evidenceAnchored || hasPersistedScoreEvidence;
-  if (!normalized) {
-    return null;
-  }
-  if (normalized.includes("analysis: unknown") || normalized.includes("missing analysis")) {
-    return evidenceReady
-      ? "Deterministic evidence is available now."
-      : "AI analysis is still processing.";
-  }
-  if (normalized.includes("analysis is deterministic-only; no ai enrichment is attached")) {
-    return "Deterministic report is available now.";
-  }
-  if (normalized.includes("analysis has not been persisted")) {
-    return evidenceReady
-      ? "Deterministic evidence is available now."
-      : "AI analysis is still processing.";
-  }
-  if (normalized.includes("report is stale until analysis and scoring both complete")) {
-    return evidenceReady ? null : "Report refresh is pending the next scoring replay.";
-  }
-  if (normalized.includes("report snapshot is stale")) {
-    return evidenceReady ? null : "Report refresh is pending the next scoring replay.";
-  }
-  if (normalized.includes("fallback reason")) {
-    return null;
-  }
-  return reason;
-}
-
-function shouldShowAiSummaryRetry({
-  status,
-  deterministicOnly,
-  aiFallback,
-  rateLimited,
-}: {
-  status: string;
-  deterministicOnly: boolean;
-  aiFallback: boolean;
-  rateLimited: boolean;
-}): boolean {
-  if (rateLimited || aiFallback || deterministicOnly) {
-    return true;
-  }
-  const normalizedStatus = status.trim().toLowerCase();
-  return (
-    normalizedStatus === "rate_limited" ||
-    normalizedStatus === "ai_fallback" ||
-    normalizedStatus === "deterministic_only"
-  );
-}
-
-function buildRetryAiSummaryNotice(result: ApiSyncExecutionResponse): {
-  tone: "success" | "warning";
-  message: string;
-} {
-  const status = result.status.trim().toLowerCase();
-  if (status === "partial") {
-    return {
-      tone: "warning",
-      message:
-        "Retry executed with partial upstream data. Deterministic score stays active while AI enrichment retries.",
-    };
-  }
-  if (status === "queued") {
-    return {
-      tone: "success",
-      message:
-        "Retry queued. Keep this report open for a moment while enrichment catches up.",
-    };
-  }
-  return {
-    tone: "success",
-    message:
-      "Retry executed. This report will refresh with AI text after scoring and persistence settle.",
-  };
-}
-
-function buildReportStateGuidance({
-  status,
-  deterministicOnly,
-  hasPersistedScoreEvidence,
-  fallbackDetail,
-}: {
-  status: string;
-  deterministicOnly: boolean;
-  hasPersistedScoreEvidence: boolean;
-  fallbackDetail?: string | null;
-}):
-  | {
-      tone: "warning" | "info";
-      label: string;
-      message: string;
-      cta: string;
-      href: string;
-    }
-  | null {
-  if (status === "complete") {
-    return null;
-  }
-
-  if (status === "rate_limited") {
-    return {
-      tone: "warning",
-      label: "Rate limited",
-      message:
-        "ChatGPT hit provider limits. Deterministic scoring is still valid; retry later for enriched text.",
-      cta: "Open settings",
-      href: "/dashboard/settings",
-    };
-  }
-
-  if (status === "ai_fallback") {
-    return {
-      tone: "warning",
-      label: "Deterministic fallback",
-      message: fallbackDetail
-        ? `ChatGPT response failed (${fallbackDetail}). Deterministic evidence is serving this report.`
-        : "ChatGPT response failed. Deterministic evidence is serving this report.",
-      cta: "Open settings",
-      href: "/dashboard/settings",
-    };
-  }
-
-  if (status === "stale" || status === "incomplete") {
-    return {
-      tone: "warning",
-      label: "Refresh pending",
-      message:
-        "This report is behind the latest sync. Reopen it after sync settles.",
-      cta: "Open settings",
-      href: "/dashboard/settings",
-    };
-  }
-
-  if (status === "deterministic_only" || deterministicOnly || hasPersistedScoreEvidence) {
-    return {
-      tone: "info",
-      label: "Deterministic mode",
-      message:
-        "Only deterministic analysis is available right now. ChatGPT enrichment may appear after retries.",
-      cta: "View contributions",
-      href: "/dashboard/contributions",
-    };
-  }
-
-  return {
-    tone: "warning",
-    label: "Processing",
-    message:
-      "Report data is still processing. Reopen after sync and scoring complete.",
-    cta: "Open settings",
-    href: "/dashboard/settings",
-  };
-}
-
-function deduplicateBadgeUnlocks(
-  badges: {
-    key: string;
-    name: string;
-    description?: string;
-    rule?: string;
-    ruleVersion?: string;
-    evidenceSignals: string[];
-  }[],
-) {
-  const byName = new Map<
-    string,
-    {
-      key: string;
-      name: string;
-      description?: string;
-      rule?: string;
-      ruleVersion?: string;
-      evidenceSignals: string[];
-    }
-  >();
-
-  for (const badge of badges) {
-    const normalizedName = badge.name.trim().toLowerCase();
-    const existing = byName.get(normalizedName);
-    if (!existing) {
-      byName.set(normalizedName, {
-        ...badge,
-        evidenceSignals: uniqueStrings(badge.evidenceSignals),
-      });
-      continue;
-    }
-    byName.set(normalizedName, {
-      ...existing,
-      key: existing.key || badge.key,
-      name: existing.name || badge.name,
-      description: existing.description || badge.description,
-      rule: existing.rule || badge.rule,
-      ruleVersion: existing.ruleVersion || badge.ruleVersion,
-      evidenceSignals: uniqueStrings([...existing.evidenceSignals, ...badge.evidenceSignals]),
-    });
-  }
-
-  return Array.from(byName.values());
-}
-
-function uniqueStrings(values: string[]): string[] {
-  const seen = new Set<string>();
-  const output: string[] = [];
-  for (const value of values) {
-    const normalized = value.trim().toLowerCase();
-    if (!normalized || seen.has(normalized)) {
-      continue;
-    }
-    seen.add(normalized);
-    output.push(value);
-  }
-  return output;
 }
