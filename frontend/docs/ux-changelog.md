@@ -2,6 +2,9 @@
 
 ## 2026-06-06
 
+- Settings sync-run results:
+  - moved loading, empty, filtered-empty, run-row status chips, durations, and disclosure details into `SyncRunActivityResults`.
+  - kept row construction, search state, status filter state, and expanded-detail state in `SyncRunActivityPanel`.
 - Settings sync-run filters:
   - moved sync-run search, status segmented control, live result count, and reset action into `SyncRunActivityFilters`.
   - updated the segmented-filter consistency guard so it audits the extracted filter component instead of the parent panel.

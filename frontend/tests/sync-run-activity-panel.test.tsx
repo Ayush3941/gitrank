@@ -261,7 +261,7 @@ describe("SyncRunActivityPanel", () => {
 
     fireEvent.click(screen.getByRole("radio", { name: "Partial" }));
     expect(screen.queryByText("No sync runs match this filter.")).toBeNull();
-    expect(screen.getByText(/octocat\s*•\s*user/i)).toBeTruthy();
+    expect(screen.getByText(/octocat,\s*user/i)).toBeTruthy();
   });
 
   it("surfaces failure telemetry for failed runs", () => {
