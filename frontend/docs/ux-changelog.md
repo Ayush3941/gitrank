@@ -2,6 +2,9 @@
 
 ## 2026-06-06
 
+- PR report impact summary:
+  - moved copy action, deterministic fallback notice, and expandable summary copy into `PRReportImpactSummaryCard`.
+  - kept report fetch, retry, fallback reason mapping, and summary selection logic in `PRBattleReportPageClient`.
 - Settings sync-run results:
   - moved loading, empty, filtered-empty, run-row status chips, durations, and disclosure details into `SyncRunActivityResults`.
   - kept row construction, search state, status filter state, and expanded-detail state in `SyncRunActivityPanel`.

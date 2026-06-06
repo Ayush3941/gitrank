@@ -6,8 +6,6 @@ import { ArrowRight, Award, ExternalLink, Swords } from "lucide-react";
 import { useId, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
-import { ExpandableText } from "@/components/shared/ExpandableText";
-import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
@@ -34,6 +32,7 @@ import { formatEvidenceStatusLabel, toneForEvidenceStatus } from "@/lib/presenta
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import type { ApiSyncExecutionResponse } from "@/lib/api/account-api";
 import { DeterministicMetricsLedgerCard } from "@/features/pr-report/components/DeterministicMetricsLedgerCard";
+import { PRReportImpactSummaryCard } from "@/features/pr-report/components/PRReportImpactSummaryCard";
 import { PRReportOverviewCard } from "@/features/pr-report/components/PRReportOverviewCard";
 import { ReportProcessingStateCard } from "@/features/pr-report/components/ReportProcessingStateCard";
 
@@ -283,30 +282,11 @@ export function PRBattleReportPageClient({
         data-scroll-target="true"
         className="render-opt-section"
       >
-        <GlowCard className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs font-medium text-primary">{summarySectionLabel}</p>
-            <CopyTextButton
-              text={reportSummary}
-              label="Copy impact summary"
-              copiedLabel="Summary copied"
-              analyticsTarget="pr-report/ai-summary"
-              size="sm"
-              variant="ghost"
-            />
-          </div>
-          {fallbackDetail ? (
-            <p className="rounded-full border border-amber-400/24 bg-amber-400/10 px-3 py-1.5 text-xs text-amber-100">
-              ChatGPT unavailable ({fallbackDetail}). Showing deterministic summary.
-            </p>
-          ) : null}
-          <ExpandableText
-            text={reportSummary}
-            lines={5}
-            minLengthForToggle={260}
-            textClassName="break-anywhere text-base leading-8 text-muted"
-          />
-        </GlowCard>
+        <PRReportImpactSummaryCard
+          label={summarySectionLabel}
+          summary={reportSummary}
+          fallbackDetail={fallbackDetail}
+        />
       </section>
       <section
         id="pr-report-technical"

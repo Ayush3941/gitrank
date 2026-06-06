@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 6, 2026)
 
+- Split PR report impact-summary rendering into `PRReportImpactSummaryCard`, moving copy action, deterministic fallback notice, and expandable summary copy out of `PRBattleReportPageClient` while leaving report fetch, retry, and summary selection logic in the page.
 - Split settings sync-run result rendering into `SyncRunActivityResults`, moving loading, empty, filtered-empty, row status chips, durations, and disclosure details out of `SyncRunActivityPanel` while keeping row construction and filter state in the panel.
 - Split settings sync-run filter rendering into `SyncRunActivityFilters`, moving search, status segmented control, live result count, and reset action out of `SyncRunActivityPanel`; updated the segmented-filter guard to audit the extracted filter component.
 - Split settings sync-run summary rendering into `SyncRunActivitySummary`, moving refresh controls, last-attempt chips, and health summary copy out of `SyncRunActivityPanel` while keeping search, status filtering, result scrolling, and details state in the panel.
