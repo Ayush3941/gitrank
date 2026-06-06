@@ -2,6 +2,9 @@
 
 ## 2026-06-06
 
+- Settings sync-run summary:
+  - moved refresh controls, last-attempt chips, and health summary copy into `SyncRunActivitySummary`.
+  - kept search, status filtering, result scrolling, and details expansion state in `SyncRunActivityPanel`.
 - Badge progress overview:
   - moved progress metrics, ABRA/deterministic summary copy, unlock notices, and closest-next-unlock presentation into `BadgesOverviewCard`.
   - kept sync state, filtering, ABRA query construction, and badge shelf pagination in `BadgesPageClient`.
