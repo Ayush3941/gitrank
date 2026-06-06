@@ -9,6 +9,10 @@ import { InlineNotice } from "@/components/shared/InlineNotice";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { formatPercent } from "@/lib/formatters";
+import {
+  badgeUnlockRecoveryHref,
+  badgeUnlockRecoveryLabel,
+} from "@/lib/presentation/badge-unlock-route";
 import type { Badge } from "@/types/gitrank";
 
 export function BadgesOverviewCard({
@@ -20,8 +24,6 @@ export function BadgesOverviewCard({
   streakDays,
   unlockNotice,
   nextUnlockTarget,
-  unlockRecoveryHref,
-  unlockRecoveryLabel,
   onDismissUnlockNotice,
 }: {
   archetype: string;
@@ -32,8 +34,6 @@ export function BadgesOverviewCard({
   streakDays: number;
   unlockNotice: string;
   nextUnlockTarget: Badge | null;
-  unlockRecoveryHref: (condition: string) => string;
-  unlockRecoveryLabel: (condition: string) => string;
   onDismissUnlockNotice: () => void;
 }) {
   return (
@@ -97,8 +97,8 @@ export function BadgesOverviewCard({
                 </p>
               </div>
               <Button asChild variant="secondary" size="sm">
-                <IntentPrefetchLink href={unlockRecoveryHref(nextUnlockTarget.unlockCondition)}>
-                  {unlockRecoveryLabel(nextUnlockTarget.unlockCondition)}
+                <IntentPrefetchLink href={badgeUnlockRecoveryHref(nextUnlockTarget.unlockCondition)}>
+                  {badgeUnlockRecoveryLabel(nextUnlockTarget.unlockCondition)}
                 </IntentPrefetchLink>
               </Button>
             </div>

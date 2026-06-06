@@ -8,7 +8,6 @@ import {
   Unlock,
 } from "lucide-react";
 import { startTransition, useDeferredValue, useEffect, useId, useMemo, useRef, useState } from "react";
-import { ExpandableText } from "@/components/shared/ExpandableText";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
@@ -24,8 +23,8 @@ import { PanelLoadingPlaceholder } from "@/components/shared/PanelLoadingPlaceho
 import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { StaleState } from "@/components/shared/StaleState";
-import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import { BadgesLockedPathsSection } from "@/features/badges/components/BadgesLockedPathsSection";
 import { BadgesOverviewCard } from "@/features/badges/components/BadgesOverviewCard";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useRunUserSync } from "@/hooks/use-account-actions";
@@ -39,7 +38,7 @@ import {
   deriveDeterministicArchetype,
   shouldRequestAbraInsights,
 } from "@/lib/ai/deterministic-identity-summary";
-import { formatPercent, toRatioPercent } from "@/lib/formatters";
+import { toRatioPercent } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { shouldShowProfileFreshnessPill } from "@/lib/presentation/sync-evidence";
@@ -369,8 +368,6 @@ export function BadgesPageClient() {
             streakDays={streak.currentStreakDays}
             unlockNotice={unlockNotice}
             nextUnlockTarget={nextUnlockTarget}
-            unlockRecoveryHref={unlockRecoveryHref}
-            unlockRecoveryLabel={unlockRecoveryLabel}
             onDismissUnlockNotice={() => {
               setUnlockNotice("");
             }}
@@ -543,153 +540,30 @@ export function BadgesPageClient() {
           ) : null}
         </div>
       </section>
-      <section
-        id="badges-locked"
-        data-scroll-target="true"
-        className="render-opt-section space-y-3"
-      >
-        {!isLoading && !isError ? (
-          <>
-          <div className="neon-surface flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-universal)] px-4 py-3">
-            <h2 className="text-sm font-semibold text-white">
-              Locked paths ({lockedBadges.length})
-            </h2>
-            <DisclosureToggle
-              id={badgesLockedToggleId}
-              controlsId={badgesLockedRegionId}
-              expanded={showLockedBadges}
-              onToggle={() => {
-                setShowLockedBadges((current) => !current);
-              }}
-              collapsedLabel="Show details"
-              expandedLabel="Hide details"
-            />
-          </div>
-          {!showLockedBadges ? (
-            lockedBadgePreview.length > 0 ? (
-              <div className="neon-surface rounded-[var(--radius-universal)] border border-fuchsia-300/18 px-4 py-4">
-                <p className="text-xs font-medium text-fuchsia-200">Upcoming unlock queue</p>
-                <ul role="list" className="mt-3 grid gap-2 md:grid-cols-3">
-                  {lockedBadgePreview.map((badge) => (
-                    <li key={`${badge.id}-preview`} className="list-none rounded-[var(--radius-universal)] border border-fuchsia-300/20 bg-fuchsia-400/6 px-3 py-2">
-                      <p className="text-sm font-semibold text-white">{badge.name}</p>
-                      <p className="mt-1 text-xs text-muted">{badge.rarity}</p>
-                      <p className="mt-1 text-xs text-cyan-100">{formatPercent(badge.progress ?? 0)} complete</p>
-                    </li>
-                  ))}
-                </ul>
-                <p className="mt-3 text-xs text-muted">
-                  Expand to view full unlock conditions and path links.
-                </p>
-              </div>
-            ) : (
-              <div className="neon-surface rounded-[var(--radius-universal)] border-dashed border-fuchsia-300/32 px-4 py-4 text-sm text-muted">
-                No locked badge definitions are returned by this snapshot.
-              </div>
-            )
-          ) : null}
-          <div
-            id={badgesLockedRegionId}
-            role="region"
-            aria-labelledby={badgesLockedToggleId}
-            hidden={!showLockedBadges}
-            className="neon-surface rounded-[var(--radius-universal)] border border-fuchsia-300/24 p-3"
-          >
-            {lockedBadges.length > 0 ? (
-              <>
-                <ul role="list" className="grid gap-3 md:grid-cols-3">
-                  {visibleLockedBadges.map((badge) => (
-                    <li key={badge.id} className="render-opt-card neon-surface rounded-[var(--radius-universal)] border-dashed border-fuchsia-300/32 px-4 py-4">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-xs font-medium text-fuchsia-200">{badge.rarity}</p>
-                        <span className="neon-chip neon-chip-info rounded-full px-2.5 py-1 text-xs font-semibold">
-                          {formatPercent(badge.progress ?? 0)} complete
-                        </span>
-                      </div>
-                      <h3 className="mt-2 text-base font-semibold text-white">{badge.name}</h3>
-                      <ExpandableText
-                        text={badge.unlockCondition}
-                        lines={3}
-                        minLengthForToggle={120}
-                        className="mt-2"
-                        textClassName="text-sm text-muted"
-                        showMoreLabel="Expand condition"
-                        showLessLabel="Collapse condition"
-                      />
-                      <div className="mt-3 space-y-1">
-                        <Progress value={badge.progress ?? 0} aria-label={`${badge.name} badge progress`} />
-                        <p className="text-xs text-muted">
-                          {formatPercent(badge.progress ?? 0)} verified progress • {formatPercent(100 - (badge.progress ?? 0))} remaining
-                        </p>
-                      </div>
-                      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                        <p className="text-xs text-cyan-100">
-                          Next move: {unlockRecoveryLabel(badge.unlockCondition)}
-                        </p>
-                        <Button asChild variant="ghost" size="sm">
-                          <IntentPrefetchLink href={unlockRecoveryHref(badge.unlockCondition)}>Open path</IntentPrefetchLink>
-                        </Button>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-                {hasMoreLockedBadges ? (
-                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-xs text-muted">{remainingLockedBadges} locked paths remaining</p>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => {
-                        startTransition(() => {
-                          setVisibleLockedCount((current) =>
-                            Math.min(lockedBadgesSorted.length, current + lockedBadgePageSize),
-                          );
-                        });
-                      }}
-                    >
-                      Show more locked paths
-                    </Button>
-                  </div>
-                ) : null}
-              </>
-            ) : (
-              <div className="neon-surface rounded-[var(--radius-universal)] border-dashed border-fuchsia-300/32 px-4 py-4 text-sm text-muted">
-                No locked badge definitions are returned by this snapshot.
-              </div>
-            )}
-          </div>
-          </>
-        ) : null}
-      </section>
+      <BadgesLockedPathsSection
+        lockedBadges={lockedBadges}
+        lockedBadgePreview={lockedBadgePreview}
+        visibleLockedBadges={visibleLockedBadges}
+        hasMoreLockedBadges={hasMoreLockedBadges}
+        remainingLockedBadges={remainingLockedBadges}
+        showLockedBadges={showLockedBadges}
+        isLoading={isLoading}
+        isError={isError}
+        regionId={badgesLockedRegionId}
+        toggleId={badgesLockedToggleId}
+        onToggleLockedBadges={() => {
+          setShowLockedBadges((current) => !current);
+        }}
+        onShowMoreLockedBadges={() => {
+          startTransition(() => {
+            setVisibleLockedCount((current) =>
+              Math.min(lockedBadgesSorted.length, current + lockedBadgePageSize),
+            );
+          });
+        }}
+      />
     </div>
   );
-}
-
-function unlockRecoveryHref(condition: string): string {
-  const text = condition.toLowerCase();
-  if (
-    text.includes("streak")
-    || text.includes("weekly")
-    || text.includes("daily")
-    || text.includes("quest")
-  ) {
-    return "/dashboard/quests";
-  }
-  return "/dashboard/contributions";
-}
-
-function unlockRecoveryLabel(condition: string): string {
-  const text = condition.toLowerCase();
-  if (
-    text.includes("streak")
-    || text.includes("weekly")
-    || text.includes("daily")
-    || text.includes("quest")
-  ) {
-    return "Open quests";
-  }
-  return "Open contributions";
 }
 
 function BadgeShelfPlaceholder({ label }: { label: string }) {

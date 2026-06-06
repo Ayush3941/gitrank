@@ -2,6 +2,9 @@
 
 ## 2026-06-06
 
+- Badge locked paths:
+  - moved locked-path preview, detail cards, progress copy, and path CTAs into `BadgesLockedPathsSection`.
+  - centralized badge unlock recovery links in `badge-unlock-route.ts` so overview and locked-path cards use the same rule.
 - Settings repository visibility:
   - moved the deferred repository privacy card and lazy `PrivacyRepositoryToggleList` boundary into `SettingsRepositoryVisibilitySection`.
   - kept repository visibility mutation ownership in `SettingsPageClient`.
