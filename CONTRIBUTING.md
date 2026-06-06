@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 5, 2026)
 
+- Split PR report overview rendering into `PRReportOverviewCard`, moving XP, evidence-state chips, confidence, and compact PR identity metrics out of the page client.
 - Split settings display-preference rendering into `SettingsDisplayPreferencesCard`, moving local theme/text tuning disclosure and display notice state out of the page client while keeping preference hooks in the page.
 - Split settings GitHub-account action rendering into `SettingsAccountCard`, keeping sync, relink, logout, and disconnect mutation ownership in the page client while reducing account-card markup noise.
 - Split PR report processing-state and AI-summary retry rendering into `ReportProcessingStateCard`, preserving retry feedback while reducing the page client surface.

@@ -2,6 +2,9 @@
 
 ## 2026-06-05
 
+- PR report overview:
+  - moved the top PR identity, XP, evidence-state, category, file-count, confidence, and evidence-reason summary into `PRReportOverviewCard`.
+  - kept report fetch, AI retry, and section orchestration in the page client while reducing overview markup pressure.
 - Settings display preferences:
   - moved reduced-gamification, display-shortcut, theme, text-scale, and display notice rendering into `SettingsDisplayPreferencesCard`.
   - kept preference hooks and privacy mutation ownership in the page client while moving local disclosure state into the card.
