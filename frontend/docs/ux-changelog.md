@@ -2,6 +2,9 @@
 
 ## 2026-06-06
 
+- PR report badge rewards:
+  - moved reward header, badge cards, and badge evidence chips into `PRReportBadgeRewardsCard`.
+  - kept badge unlock de-duplication in `PRBattleReportPageClient`.
 - PR report suggested quest:
   - moved quest CTA, recommendation copy, and signal-chip presentation into `PRReportSuggestedQuestCard`.
   - kept suggested-quest lookup and evidence-signal selection in `PRBattleReportPageClient`.

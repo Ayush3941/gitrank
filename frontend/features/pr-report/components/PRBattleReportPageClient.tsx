@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { Award, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { useId, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -33,6 +33,7 @@ import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import type { ApiSyncExecutionResponse } from "@/lib/api/account-api";
 import { DeterministicMetricsLedgerCard } from "@/features/pr-report/components/DeterministicMetricsLedgerCard";
 import { PRReportImpactSummaryCard } from "@/features/pr-report/components/PRReportImpactSummaryCard";
+import { PRReportBadgeRewardsCard } from "@/features/pr-report/components/PRReportBadgeRewardsCard";
 import { PRReportOverviewCard } from "@/features/pr-report/components/PRReportOverviewCard";
 import { PRReportSuggestedQuestCard } from "@/features/pr-report/components/PRReportSuggestedQuestCard";
 import { ReportProcessingStateCard } from "@/features/pr-report/components/ReportProcessingStateCard";
@@ -326,46 +327,7 @@ export function PRBattleReportPageClient({
                 <EvidenceSignalsCard report={data} />
               </div>
             </section>
-            {uniqueBadgeUnlocks.length ? (
-              <section className="render-opt-section">
-                <div className="space-y-4">
-                  <h2 className="text-sm font-semibold text-white">
-                    Badge rewards ({uniqueBadgeUnlocks.length})
-                  </h2>
-                  <GlowCard className="space-y-4">
-                    <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-xs font-semibold text-emerald-100">
-                      <Award className="h-3.5 w-3.5" aria-hidden="true" />
-                      Rewards unlocked
-                    </div>
-                    <ul role="list" className="grid gap-3 md:grid-cols-2">
-                      {uniqueBadgeUnlocks.map((badge, index) => {
-                        const badgeSignals = buildEvidenceSignalChips(badge.evidenceSignals, 3);
-                        return (
-                          <li key={`${badge.key}-${index}`} className="list-none render-opt-card neon-surface rounded-[var(--radius-universal)] p-4">
-                            <p className="text-lg font-semibold text-white">{badge.name}</p>
-                            {badge.description ? <p className="mt-2 text-sm text-muted">{badge.description}</p> : null}
-                            <p className="mt-3 text-xs text-emerald-100">
-                              Rule {badge.ruleVersion ?? badge.rule ?? "persisted badge evidence"}
-                            </p>
-                            {badgeSignals.length ? (
-                              <ul role="list" className="mt-3 flex flex-wrap gap-2">
-                                {badgeSignals.map((signal, signalIndex) => (
-                                  <li key={`${badge.key}-${signal}-${signalIndex}`} className="list-none">
-                                    <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
-                                      {signal}
-                                    </span>
-                                  </li>
-                                ))}
-                              </ul>
-                            ) : null}
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </GlowCard>
-                </div>
-              </section>
-            ) : null}
+            <PRReportBadgeRewardsCard badges={uniqueBadgeUnlocks} />
           </div>
           ) : (
           <GlowCard className="space-y-4">
