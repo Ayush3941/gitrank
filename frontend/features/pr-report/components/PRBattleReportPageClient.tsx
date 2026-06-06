@@ -7,7 +7,6 @@ import { useId, useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
-import { GlowCard } from "@/components/shared/GlowCard";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { NewTabHint } from "@/components/shared/NewTabHint";
@@ -36,6 +35,7 @@ import { PRReportImpactSummaryCard } from "@/features/pr-report/components/PRRep
 import { PRReportBadgeRewardsCard } from "@/features/pr-report/components/PRReportBadgeRewardsCard";
 import { PRReportOverviewCard } from "@/features/pr-report/components/PRReportOverviewCard";
 import { PRReportSuggestedQuestCard } from "@/features/pr-report/components/PRReportSuggestedQuestCard";
+import { PRReportTechnicalQuickReadCard } from "@/features/pr-report/components/PRReportTechnicalQuickReadCard";
 import { ReportProcessingStateCard } from "@/features/pr-report/components/ReportProcessingStateCard";
 
 const ScoreMatrixCard = dynamic(
@@ -330,38 +330,7 @@ export function PRBattleReportPageClient({
             <PRReportBadgeRewardsCard badges={uniqueBadgeUnlocks} />
           </div>
           ) : (
-          <GlowCard className="space-y-4">
-            <p className="text-xs font-medium text-primary">Quick read</p>
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              <div className="neon-surface rounded-[var(--radius-universal)] px-4 py-3">
-                <p className="text-xs text-muted">Difficulty</p>
-                <p className="mt-1 text-sm font-semibold text-white">
-                  {data.contribution.difficultyScore}
-                </p>
-              </div>
-              <div className="neon-surface rounded-[var(--radius-universal)] px-4 py-3">
-                <p className="text-xs text-muted">Impact</p>
-                <p className="mt-1 text-sm font-semibold text-white">
-                  {data.contribution.impactScore}
-                </p>
-              </div>
-              <div className="neon-surface rounded-[var(--radius-universal)] px-4 py-3">
-                <p className="text-xs text-muted">Review depth</p>
-                <p className="mt-1 text-sm font-semibold text-white">
-                  {data.contribution.reviewDepthScore}
-                </p>
-              </div>
-              <div className="neon-surface rounded-[var(--radius-universal)] px-4 py-3">
-                <p className="text-xs text-muted">Test signal</p>
-                <p className="mt-1 text-sm font-semibold text-white">
-                  {data.contribution.testSignalScore}
-                </p>
-              </div>
-            </div>
-            <p className="text-xs text-muted">
-              Open details for full math, evidence signals, and badge rewards.
-            </p>
-          </GlowCard>
+          <PRReportTechnicalQuickReadCard contribution={data.contribution} />
           )}
         </div>
       </section>

@@ -2,6 +2,9 @@
 
 ## 2026-06-06
 
+- PR report technical quick read:
+  - moved collapsed score metric tiles into `PRReportTechnicalQuickReadCard`.
+  - kept technical breakdown disclosure state and expanded-panel composition in `PRBattleReportPageClient`.
 - PR report badge rewards:
   - moved reward header, badge cards, and badge evidence chips into `PRReportBadgeRewardsCard`.
   - kept badge unlock de-duplication in `PRBattleReportPageClient`.
