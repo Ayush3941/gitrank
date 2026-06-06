@@ -2,6 +2,9 @@
 
 ## 2026-06-06
 
+- Settings data controls:
+  - moved export/delete buttons, destructive-action copy, and pending labels into `SettingsDataControlsCard`.
+  - kept account export/deletion mutation handlers and redirect behavior in `SettingsPageClient`.
 - Settings public profile privacy:
   - moved the public-profile switch list, save indicator, and mutation error linkage into `SettingsPublicProfileCard`.
   - kept privacy mutation ownership in `SettingsPageClient` while removing the one-off inline settings section.

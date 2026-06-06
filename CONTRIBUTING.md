@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 6, 2026)
 
+- Split settings data export/deletion controls into `SettingsDataControlsCard`, keeping account mutation handlers in `SettingsPageClient` while moving destructive-action copy and button presentation into a dedicated card.
 - Split public-profile privacy switches into `SettingsPublicProfileCard`, keeping switch labels, save/error announcement wiring, and privacy mutation callbacks out of `SettingsPageClient`.
 - Split the settings sync-activity disclosure wrapper into `SettingsSyncActivitySection`, moving sync-log summary chips, attention auto-expansion, and the lazy `SyncRunActivityPanel` boundary out of `SettingsPageClient`.
 - Moved PR report summary labels, fallback guidance, retry notice copy, badge de-duplication, and signal-tier derivation into `frontend/features/pr-report/lib/pr-report-presentation.ts`; `PRBattleReportPageClient` now consumes a single presentation model while focused unit coverage locks the extracted behavior.

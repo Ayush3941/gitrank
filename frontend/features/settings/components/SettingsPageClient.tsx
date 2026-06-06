@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
-import { Download, Trash2 } from "lucide-react";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
@@ -49,6 +48,7 @@ import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import { useThemePreference } from "@/hooks/use-theme-preference";
 import { SettingsAccountCard } from "@/features/settings/components/SettingsAccountCard";
+import { SettingsDataControlsCard } from "@/features/settings/components/SettingsDataControlsCard";
 import { SettingsDisplayPreferencesCard } from "@/features/settings/components/SettingsDisplayPreferencesCard";
 import {
   SettingsPublicProfileCard,
@@ -448,35 +448,13 @@ export function SettingsPageClient() {
         id="settings-data-controls"
         data-scroll-target="true"
       >
-        <GlowCard className="space-y-4">
-          <div>
-            <p className="text-xs font-medium text-primary">Data controls</p>
-            <h2 className="mt-2 text-xl font-semibold text-white">Data export and deletion</h2>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Button
-              variant="secondary"
-              className="w-full justify-center"
-              disabled={isActing}
-              onClick={handleExportAccountData}
-            >
-              <Download className="h-4 w-4" aria-hidden="true" />
-              {exportAccount.isPending ? "Exporting..." : "Export data"}
-            </Button>
-          </div>
-          <div className="space-y-2 rounded-[var(--radius-universal)] border border-rose-300/24 bg-rose-500/8 px-3 py-3">
-            <p className="text-xs text-rose-100">Delete wipes synced PR history, score events, badges, profile state, and signs you out. Next login starts from a fresh account state.</p>
-            <Button
-              variant="danger"
-              className="w-full justify-center"
-              disabled={isActing}
-              onClick={handleDeleteAccount}
-            >
-              <Trash2 className="h-4 w-4" aria-hidden="true" />
-              {deleteAccount.isPending ? "Deleting account..." : "Delete account"}
-            </Button>
-          </div>
-        </GlowCard>
+        <SettingsDataControlsCard
+          isActing={isActing}
+          isExportPending={exportAccount.isPending}
+          isDeletePending={deleteAccount.isPending}
+          onExportAccountData={handleExportAccountData}
+          onDeleteAccount={handleDeleteAccount}
+        />
       </section>
     </div>
   );
