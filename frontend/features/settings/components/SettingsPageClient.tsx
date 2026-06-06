@@ -1,10 +1,9 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Download, Trash2 } from "lucide-react";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
-import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
@@ -45,15 +44,14 @@ import {
   isGitHubAppInstallationBlocked,
   selectLatestActionableSyncRunOutcome,
 } from "@/features/settings/lib/sync-run-diagnostics";
-import { syncRunStatusLabelWithMetrics } from "@/features/settings/lib/sync-run-status";
 import { shouldShowProfileFreshnessPill } from "@/lib/presentation/sync-evidence";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
-import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import { useThemePreference } from "@/hooks/use-theme-preference";
 import { SettingsAccountCard } from "@/features/settings/components/SettingsAccountCard";
 import { SettingsDisplayPreferencesCard } from "@/features/settings/components/SettingsDisplayPreferencesCard";
+import { SettingsSyncActivitySection } from "@/features/settings/components/SettingsSyncActivitySection";
 
 type BackedPrivacyKey =
   | "publicProfileEnabled"
@@ -78,16 +76,6 @@ const PrivacyRepositoryToggleList = dynamic(
     ),
   {
     loading: () => <SettingsPanelPlaceholder label="Loading repository visibility controls" />,
-  },
-);
-
-const SyncRunActivityPanel = dynamic(
-  () =>
-    import("@/features/settings/components/SyncRunActivityPanel").then(
-      (mod) => mod.SyncRunActivityPanel,
-    ),
-  {
-    loading: () => <SettingsPanelPlaceholder label="Loading sync activity" />,
   },
 );
 
@@ -498,155 +486,6 @@ export function SettingsPageClient() {
         </GlowCard>
       </section>
     </div>
-  );
-}
-
-function SettingsSyncActivitySection({
-  runs,
-  lastUpdatedAt,
-  lastAttemptedAt,
-  lastSuccessfulAt,
-  isLoading,
-  isRefreshing,
-  isError,
-  errorMessage,
-  onRefresh,
-}: {
-  runs: ApiSyncRunRecord[];
-  lastUpdatedAt: string | undefined;
-  lastAttemptedAt: string | undefined;
-  lastSuccessfulAt: string | undefined;
-  isLoading: boolean;
-  isRefreshing: boolean;
-  isError: boolean;
-  errorMessage: string;
-  onRefresh: () => void;
-}) {
-  const [expanded, setExpanded] = useState(false);
-  const [autoExpandedFromAttention, setAutoExpandedFromAttention] = useState(false);
-  const syncActivityToggleId = useId();
-  const syncActivityDetailsId = useId();
-
-  const summary = useMemo(() => {
-    let completed = 0;
-    let running = 0;
-    let queued = 0;
-    let partial = 0;
-    let failed = 0;
-    for (const run of runs) {
-      const status = syncRunStatusLabelWithMetrics(run.status, run.metrics);
-      if (status === "Completed") {
-        completed += 1;
-      } else if (status === "Running") {
-        running += 1;
-      } else if (status === "Queued") {
-        queued += 1;
-      } else if (status === "Partial") {
-        partial += 1;
-      } else if (status === "Failed") {
-        failed += 1;
-      }
-    }
-    return { completed, running, queued, partial, failed };
-  }, [runs]);
-
-  const attentionLabel =
-    summary.failed > 0
-      ? `${summary.failed} failed`
-      : summary.partial > 0
-        ? `${summary.partial} partial`
-        : summary.running > 0 || summary.queued > 0
-          ? `${summary.running + summary.queued} active`
-          : "Healthy";
-  const hasAttention = summary.failed > 0 || summary.partial > 0;
-
-  useEffect(() => {
-    if (!hasAttention || autoExpandedFromAttention) {
-      return;
-    }
-    const timer = window.setTimeout(() => {
-      setExpanded(true);
-      setAutoExpandedFromAttention(true);
-    }, 0);
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [autoExpandedFromAttention, hasAttention]);
-
-  return (
-    <GlowCard className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-xs font-medium text-primary">Sync history</p>
-          <h2 className="mt-2 text-xl font-semibold text-white">Sync activity</h2>
-          <p className="mt-2 text-sm text-muted">
-            Review recent runs, errors, and GitHub fetch outcomes.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <span
-            className={
-              summary.failed > 0 || summary.partial > 0
-                ? "neon-chip neon-chip-warning inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
-                : summary.running > 0 || summary.queued > 0
-                  ? "neon-chip neon-chip-info inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
-                  : "neon-chip neon-chip-success inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
-            }
-          >
-            {attentionLabel}
-          </span>
-          <DisclosureToggle
-            id={syncActivityToggleId}
-            controlsId={syncActivityDetailsId}
-            expanded={expanded}
-            onToggle={() => {
-              setExpanded((current) => !current);
-            }}
-            collapsedLabel="Show details"
-            expandedLabel="Hide details"
-            iconClassName="h-4 w-4"
-          />
-        </div>
-      </div>
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-          Runs {runs.length}
-        </span>
-        <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-          Completed {summary.completed}
-        </span>
-        <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-          Active {summary.running + summary.queued}
-        </span>
-        <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-          Partial {summary.partial}
-        </span>
-        <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-          Failed {summary.failed}
-        </span>
-      </div>
-      <div
-        id={syncActivityDetailsId}
-        role="region"
-        aria-labelledby={syncActivityToggleId}
-        hidden={!expanded}
-        className="block"
-      >
-        {expanded ? (
-          <SyncRunActivityPanel
-            runs={runs}
-            lastUpdatedAt={lastUpdatedAt}
-            lastAttemptedAt={lastAttemptedAt}
-            lastSuccessfulAt={lastSuccessfulAt}
-            isLoading={isLoading}
-            isRefreshing={isRefreshing}
-            isError={isError}
-            errorMessage={errorMessage}
-            onRefresh={onRefresh}
-          />
-        ) : null}
-      </div>
-    </GlowCard>
   );
 }
 
