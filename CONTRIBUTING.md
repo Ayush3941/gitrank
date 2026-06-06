@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 6, 2026)
 
+- Split settings sync-run filter rendering into `SyncRunActivityFilters`, moving search, status segmented control, live result count, and reset action out of `SyncRunActivityPanel`; updated the segmented-filter guard to audit the extracted filter component.
 - Split settings sync-run summary rendering into `SyncRunActivitySummary`, moving refresh controls, last-attempt chips, and health summary copy out of `SyncRunActivityPanel` while keeping search, status filtering, result scrolling, and details state in the panel.
 - Split badge progress overview rendering into `BadgesOverviewCard`, moving ABRA/deterministic summary copy, progress metrics, unlock notices, and closest-next-unlock presentation out of the page client while keeping sync, filtering, and pagination state in the page.
 

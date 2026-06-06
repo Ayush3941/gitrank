@@ -2,16 +2,17 @@
 
 import { AlertTriangle, CheckCircle2, Clock3, XCircle } from "lucide-react";
 import { useDeferredValue, useId, useMemo, useState } from "react";
-import { ControlSurface } from "@/components/shared/ControlSurface";
 import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { ExactTime } from "@/components/shared/ExactTime";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { ScrollableRegion } from "@/components/shared/ScrollableRegion";
-import { SearchInputWithClear } from "@/components/shared/SearchInputWithClear";
-import { SegmentedControl } from "@/components/shared/SegmentedControl";
-import { Button } from "@/components/ui/button";
+import {
+  SyncRunActivityFilters,
+  type SyncRunStatusCounts,
+  type SyncRunStatusFilter,
+} from "@/features/settings/components/SyncRunActivityFilters";
 import { SyncRunActivitySummary } from "@/features/settings/components/SyncRunActivitySummary";
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
@@ -26,16 +27,6 @@ import {
   selectLatestActionableSyncRunOutcome,
 } from "@/features/settings/lib/sync-run-diagnostics";
 
-const SYNC_RUN_STATUS_FILTERS = ["All", "Completed", "Partial", "Queued", "Running", "Failed"] as const;
-type SyncRunStatusFilter = (typeof SYNC_RUN_STATUS_FILTERS)[number];
-type SyncRunStatusCounts = {
-  all: number;
-  completed: number;
-  partial: number;
-  queued: number;
-  running: number;
-  failed: number;
-};
 type SyncRunRow = {
   id: string;
   run: ApiSyncRunRecord;
@@ -45,15 +36,6 @@ type SyncRunRow = {
   safeLastError: string | null;
   metricsSummary: string;
   outcomeInsight: string;
-};
-
-const SYNC_RUN_STATUS_META: Record<SyncRunStatusFilter, { countKey: keyof SyncRunStatusCounts }> = {
-  All: { countKey: "all" },
-  Completed: { countKey: "completed" },
-  Partial: { countKey: "partial" },
-  Queued: { countKey: "queued" },
-  Running: { countKey: "running" },
-  Failed: { countKey: "failed" },
 };
 
 export function SyncRunActivityPanel({
@@ -204,63 +186,19 @@ export function SyncRunActivityPanel({
         summaryInsight={showLatestSummaryInsight ? latestActionableOutcome.message : null}
         onRefresh={onRefresh}
       />
-      <ControlSurface as="section">
-        <p id={filterStatusId} role="status" aria-live="polite" aria-atomic="true" className="sr-only">
-          {`${filteredRows.length} of ${statusCounts.all} runs`}
-        </p>
-        <div className="space-y-3">
-          <SearchInputWithClear
-            value={search}
-            onChange={(value) => {
-              setSearch(value);
-            }}
-            onClear={handleClearSearch}
-            placeholder="Search run subject, mode, or error"
-            ariaLabel="Search sync runs"
-            ariaDescribedBy={filterStatusId}
-            ariaControls={syncRunsRegionId}
-            clearButtonLabel="Clear sync run search"
-            inputClassName="pl-11 pr-11"
-          />
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-primary">Run status</p>
-            <SegmentedControl
-              options={SYNC_RUN_STATUS_FILTERS.map((status) => {
-                const meta = SYNC_RUN_STATUS_META[status];
-                return {
-                  value: status,
-                  label: status,
-                  count: statusCounts[meta.countKey],
-                  minWidthClassName: "min-w-[6.75rem] sm:min-w-[8rem]",
-                };
-              })}
-              value={statusFilter}
-              onValueChange={(next) => {
-                setStatusFilter(next);
-              }}
-              ariaLabel="Sync run status filter"
-              ariaDescribedBy={filterStatusId}
-              ariaControls={syncRunsRegionId}
-              controlIdPrefix="sync-run-status-filter"
-              wrap
-            />
-          </div>
-          {canReset ? (
-            <div className="flex justify-end">
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                onClick={handleResetFilters}
-                aria-controls={syncRunsRegionId}
-                className="px-3"
-              >
-                Reset filters
-              </Button>
-            </div>
-          ) : null}
-        </div>
-      </ControlSurface>
+      <SyncRunActivityFilters
+        search={search}
+        statusFilter={statusFilter}
+        statusCounts={statusCounts}
+        filteredCount={filteredRows.length}
+        canReset={canReset}
+        filterStatusId={filterStatusId}
+        resultsRegionId={syncRunsRegionId}
+        onSearchChange={setSearch}
+        onSearchClear={handleClearSearch}
+        onStatusFilterChange={setStatusFilter}
+        onResetFilters={handleResetFilters}
+      />
 
       {isError ? (
         <ErrorState

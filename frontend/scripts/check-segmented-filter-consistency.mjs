@@ -8,7 +8,7 @@ const filterFiles = [
   "features/leaderboard/components/LeaderboardPageClient.tsx",
   "features/quests/components/QuestsPageClient.tsx",
   "features/badges/components/BadgesPageClient.tsx",
-  "features/settings/components/SyncRunActivityPanel.tsx",
+  "features/settings/components/SyncRunActivityFilters.tsx",
   "features/settings/components/PrivacyRepositoryToggleList.tsx",
 ];
 

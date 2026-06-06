@@ -2,6 +2,9 @@
 
 ## 2026-06-06
 
+- Settings sync-run filters:
+  - moved sync-run search, status segmented control, live result count, and reset action into `SyncRunActivityFilters`.
+  - updated the segmented-filter consistency guard so it audits the extracted filter component instead of the parent panel.
 - Settings sync-run summary:
   - moved refresh controls, last-attempt chips, and health summary copy into `SyncRunActivitySummary`.
   - kept search, status filtering, result scrolling, and details expansion state in `SyncRunActivityPanel`.
