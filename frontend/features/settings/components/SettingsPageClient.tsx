@@ -14,7 +14,6 @@ import { PanelLoadingPlaceholder } from "@/components/shared/PanelLoadingPlaceho
 import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
 import { RouteLoadingState } from "@/components/shared/RouteLoadingState";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import {
   useDeleteMyAccount,
   useExportMyAccountData,
@@ -51,14 +50,13 @@ import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import { useThemePreference } from "@/hooks/use-theme-preference";
 import { SettingsAccountCard } from "@/features/settings/components/SettingsAccountCard";
 import { SettingsDisplayPreferencesCard } from "@/features/settings/components/SettingsDisplayPreferencesCard";
+import {
+  SettingsPublicProfileCard,
+  type SettingsPublicProfilePrivacyKey,
+} from "@/features/settings/components/SettingsPublicProfileCard";
 import { SettingsSyncActivitySection } from "@/features/settings/components/SettingsSyncActivitySection";
 
-type BackedPrivacyKey =
-  | "publicProfileEnabled"
-  | "showExactPRs"
-  | "showAiSummaries"
-  | "showLeaderboardParticipation"
-  | "reducedGamification";
+type BackedPrivacyKey = SettingsPublicProfilePrivacyKey | "reducedGamification";
 
 const SETTINGS_SECTION_LINKS = [
   { id: "settings-account", label: "Account" },
@@ -386,17 +384,12 @@ export function SettingsPageClient() {
         id="settings-public-profile"
         data-scroll-target="true"
       >
-        <SettingSection
-          title="Public profile"
-          saving={isSaving}
+        <SettingsPublicProfileCard
+          privacy={currentSettings}
+          isSaving={isSaving}
           disabled={isSaving}
           errorMessage={mutationError}
-          rows={[
-            ["Enable public profile", currentSettings.publicProfileEnabled, (checked) => handlePrivacyToggle("publicProfileEnabled", checked)],
-            ["Show exact PRs", currentSettings.showExactPRs, (checked) => handlePrivacyToggle("showExactPRs", checked)],
-            ["Show AI summaries", currentSettings.showAiSummaries, (checked) => handlePrivacyToggle("showAiSummaries", checked)],
-            ["Show leaderboard participation", currentSettings.showLeaderboardParticipation, (checked) => handlePrivacyToggle("showLeaderboardParticipation", checked)],
-          ]}
+          onPrivacyChange={handlePrivacyToggle}
         />
       </section>
 
@@ -489,54 +482,6 @@ export function SettingsPageClient() {
   );
 }
 
-function SettingSection({
-  title,
-  rows,
-  saving,
-  disabled,
-  errorMessage,
-}: {
-  title: string;
-  rows: Array<[string, boolean, (checked: boolean) => void]>;
-  saving?: boolean;
-  disabled?: boolean;
-  errorMessage?: string;
-}) {
-  return (
-    <GlowCard className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-xl font-semibold text-white">{title}</h2>
-        {saving ? <p className="text-sm text-primary">Saving…</p> : null}
-      </div>
-      {errorMessage ? (
-        <p id={`${toControlID(title)}-error`} role="alert" aria-atomic="true" className="text-sm text-rose-200">
-          {errorMessage}
-        </p>
-      ) : null}
-      <ul className="space-y-3">
-        {rows.map(([label, checked, onCheckedChange], index) => {
-          const controlID = `${toControlID(title)}-${toControlID(label)}-${index}`;
-          return (
-          <li key={`${label}-${index}`} className="list-none neon-surface flex items-center justify-between gap-4 rounded-[var(--radius-universal)] px-4 py-4">
-            <label className="text-sm text-muted" htmlFor={controlID}>
-              {label}
-            </label>
-            <Switch
-              id={controlID}
-              checked={checked}
-              disabled={disabled}
-              onCheckedChange={onCheckedChange}
-              aria-invalid={errorMessage ? true : undefined}
-              aria-describedby={errorMessage ? `${toControlID(title)}-error` : undefined}
-            />
-          </li>
-          );
-        })}
-      </ul>
-    </GlowCard>
-  );
-}
-
 function downloadJSON(payload: unknown, filename: string) {
   const blob = new Blob([JSON.stringify(payload, null, 2)], {
     type: "application/json",
@@ -549,13 +494,6 @@ function downloadJSON(payload: unknown, filename: string) {
   anchor.click();
   anchor.remove();
   URL.revokeObjectURL(url);
-}
-
-function toControlID(value: string): string {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
 }
 
 function SettingsPanelPlaceholder({ label }: { label: string }) {

@@ -2,6 +2,9 @@
 
 ## 2026-06-06
 
+- Settings public profile privacy:
+  - moved the public-profile switch list, save indicator, and mutation error linkage into `SettingsPublicProfileCard`.
+  - kept privacy mutation ownership in `SettingsPageClient` while removing the one-off inline settings section.
 - Settings sync activity:
   - moved sync-log summary chips, disclosure state, attention auto-expansion, and lazy panel loading into `SettingsSyncActivitySection`.
   - kept account actions, profile refresh, and top-level settings composition in `SettingsPageClient`.
