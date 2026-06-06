@@ -2,6 +2,9 @@
 
 ## 2026-06-05
 
+- Settings display preferences:
+  - moved reduced-gamification, display-shortcut, theme, text-scale, and display notice rendering into `SettingsDisplayPreferencesCard`.
+  - kept preference hooks and privacy mutation ownership in the page client while moving local disclosure state into the card.
 - Settings account card:
   - moved GitHub-account action buttons, sync status, App-install blocker copy, and account notices into `SettingsAccountCard`.
   - kept sync, relink, logout, and disconnect mutation behavior in the page client so the extracted component remains presentation-owned.

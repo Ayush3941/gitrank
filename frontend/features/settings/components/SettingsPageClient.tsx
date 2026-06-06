@@ -2,8 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useId, useMemo, useState } from "react";
-import { Download, Palette, Trash2 } from "lucide-react";
-import { BrandLogo } from "@/components/shared/BrandLogo";
+import { Download, Trash2 } from "lucide-react";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -11,7 +10,6 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
-import { InlineNotice } from "@/components/shared/InlineNotice";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { PanelLoadingPlaceholder } from "@/components/shared/PanelLoadingPlaceholder";
 import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
@@ -41,7 +39,6 @@ import {
 } from "@/hooks/use-display-shortcuts-enabled";
 import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
 import {
-  type TextScalePreference,
   useTextScalePreference,
 } from "@/hooks/use-text-scale-preference";
 import {
@@ -54,8 +51,9 @@ import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/statu
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
-import { type ThemePreference, useThemePreference } from "@/hooks/use-theme-preference";
+import { useThemePreference } from "@/hooks/use-theme-preference";
 import { SettingsAccountCard } from "@/features/settings/components/SettingsAccountCard";
+import { SettingsDisplayPreferencesCard } from "@/features/settings/components/SettingsDisplayPreferencesCard";
 
 type BackedPrivacyKey =
   | "publicProfileEnabled"
@@ -63,67 +61,6 @@ type BackedPrivacyKey =
   | "showAiSummaries"
   | "showLeaderboardParticipation"
   | "reducedGamification";
-
-const THEME_OPTIONS: Array<{
-  value: ThemePreference;
-  label: string;
-  description: string;
-  swatchClassName: string;
-}> = [
-  {
-    value: "neon",
-    label: "Neon grid",
-    description: "Bold glow and vivid HUD accents.",
-    swatchClassName: "from-cyan-300 via-fuchsia-300 to-emerald-300",
-  },
-  {
-    value: "cyberpunk",
-    label: "Cyberpunk matrix",
-    description: "Pink highlights, amber rails, dark steel surfaces.",
-    swatchClassName: "from-pink-300 via-orange-300 to-lime-300",
-  },
-  {
-    value: "midnight",
-    label: "Midnight contrast",
-    description: "Balanced readability on dark surfaces.",
-    swatchClassName: "from-sky-300 via-indigo-300 to-violet-300",
-  },
-  {
-    value: "terminal",
-    label: "Terminal pulse",
-    description: "Sharper terminal-style contrast.",
-    swatchClassName: "from-emerald-200 via-teal-200 to-fuchsia-300",
-  },
-  {
-    value: "aurora",
-    label: "Aurora clarity",
-    description: "Softer glow with stronger text contrast.",
-    swatchClassName: "from-teal-200 via-cyan-200 to-blue-300",
-  },
-  {
-    value: "high-contrast",
-    label: "High contrast",
-    description: "Maximum text clarity with low visual noise.",
-    swatchClassName: "from-slate-100 via-cyan-200 to-slate-100",
-  },
-];
-
-const TEXT_SCALE_OPTIONS: Array<{
-  value: TextScalePreference;
-  label: string;
-  description: string;
-}> = [
-  {
-    value: "default",
-    label: "Default text",
-    description: "Balanced density at standard UI scale.",
-  },
-  {
-    value: "large",
-    label: "Large text",
-    description: "Larger body and UI text.",
-  },
-];
 
 const SETTINGS_SECTION_LINKS = [
   { id: "settings-account", label: "Account" },
@@ -173,10 +110,6 @@ export function SettingsPageClient() {
   useAccountGamificationPreference(data);
   const [actionNotice, setActionNotice] = useState("");
   const [actionNoticeVariant, setActionNoticeVariant] = useState<"info" | "success" | "warning" | "error">("info");
-  const [displayNotice, setDisplayNotice] = useState("");
-  const [showDisplayTuning, setShowDisplayTuning] = useState(false);
-  const displayTuningToggleId = useId();
-  const displayTuningPanelId = useId();
   const profileUser = data?.user;
   const currentSettings = data?.user.privacy ?? null;
   const syncRuns = useMemo(
@@ -193,8 +126,6 @@ export function SettingsPageClient() {
   );
   const appInstallationBlocked = isGitHubAppInstallationBlocked(latestSyncOutcome);
   const displaySyncState = appInstallationBlocked ? "failed" : syncStateForDisplay;
-  const activeTheme = THEME_OPTIONS.find((option) => option.value === theme) ?? THEME_OPTIONS[0];
-  const activeTextScale = TEXT_SCALE_OPTIONS.find((option) => option.value === textScale) ?? TEXT_SCALE_OPTIONS[0];
 
   useEffect(() => {
     if (!actionNotice) {
@@ -207,26 +138,6 @@ export function SettingsPageClient() {
       window.clearTimeout(timer);
     };
   }, [actionNotice]);
-
-  useEffect(() => {
-    if (!displayNotice) {
-      return;
-    }
-    const timer = window.setTimeout(() => {
-      setDisplayNotice("");
-    }, 4200);
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [displayNotice]);
-
-  function handleResetDisplayPreferences() {
-    clearThemePreference();
-    setTextScale("default");
-    setDisplayNotice(
-      "Display preferences reset. Theme now follows your system theme preference and text scale is Default.",
-    );
-  }
 
   if (isLoading) {
     return (
@@ -506,166 +417,19 @@ export function SettingsPageClient() {
         id="settings-display-preferences"
         data-scroll-target="true"
       >
-        <GlowCard className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="max-w-2xl">
-              <div className="inline-flex rounded-[var(--radius-universal)] bg-primary/12 p-3 text-primary">
-                <BrandLogo size={20} className="h-5 w-5" />
-              </div>
-              <p className="mt-4 text-xs font-medium text-primary">Display preference</p>
-              <h2 className="mt-2 text-xl font-semibold text-white">Reduced gamification</h2>
-              <p className="mt-2 text-sm leading-6 text-muted">
-                Reduce visual effects. Scores and privacy stay unchanged.
-              </p>
-            </div>
-            <Switch
-              id="reduced-gamification"
-              aria-label="Reduced gamification"
-              checked={currentSettings.reducedGamification}
-              disabled={isSaving}
-              onCheckedChange={(checked) => handlePrivacyToggle("reducedGamification", checked)}
-            />
-          </div>
-            <div className="cyber-divider" />
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div className="max-w-2xl">
-                  <p className="text-xs font-medium text-primary">Keyboard controls</p>
-                <h3 className="mt-2 text-lg font-semibold text-white">Display shortcuts</h3>
-                <p className="mt-2 text-sm leading-6 text-muted">
-                  Enable theme and text-size shortcuts outside text inputs.
-                </p>
-              </div>
-              <Switch
-                id="display-shortcuts-enabled"
-                aria-label="Enable display shortcuts"
-                checked={displayShortcutsEnabled}
-                onCheckedChange={setDisplayShortcutsEnabled}
-              />
-            </div>
-            <div className="cyber-divider" />
-            <div className="space-y-3">
-              <div className="inline-flex items-center gap-2">
-                <Palette className="h-4 w-4 text-primary" aria-hidden="true" />
-                <p className="text-sm font-semibold text-white">Theme + text tuning</p>
-              </div>
-              <div className="neon-surface rounded-[var(--radius-universal)] px-4 py-3">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <p className="text-sm text-muted">
-                    {activeTheme.label} · {activeTextScale.label} · {themeSource === "system" ? "System" : "Manual"}
-                  </p>
-                  <DisclosureToggle
-                    id={displayTuningToggleId}
-                    controlsId={displayTuningPanelId}
-                    expanded={showDisplayTuning}
-                    onToggle={() => {
-                      setShowDisplayTuning((current) => !current);
-                    }}
-                    collapsedLabel="Display tuning"
-                    expandedLabel="Hide tuning"
-                    iconClassName="h-4 w-4"
-                  />
-                </div>
-              </div>
-              <div
-                id={displayTuningPanelId}
-                role="region"
-                aria-labelledby={displayTuningToggleId}
-                hidden={!showDisplayTuning}
-                className="space-y-4"
-              >
-                <div className="space-y-3">
-                  <p className="text-xs font-medium text-primary">Visual theme</p>
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    {THEME_OPTIONS.map((option) => (
-                      <Button
-                        key={option.value}
-                        type="button"
-                        size="sm"
-                        variant={theme === option.value ? "default" : "secondary"}
-                        className="h-auto justify-between px-4 py-3 text-left"
-                        onClick={() => setTheme(option.value)}
-                        aria-pressed={theme === option.value}
-                      >
-                        <span className="flex flex-col items-start gap-1">
-                          <span className="inline-flex items-center gap-2">
-                            <span
-                              className={`h-2.5 w-5 rounded-full bg-gradient-to-r ${option.swatchClassName}`}
-                              aria-hidden="true"
-                            />
-                            <span>{option.label}</span>
-                          </span>
-                          <span className="text-xs text-muted">{option.description}</span>
-                        </span>
-                        {theme === option.value ? (
-                          <span className="rounded-full border border-emerald-300/30 bg-emerald-300/18 px-2 py-0.5 text-xs font-semibold text-emerald-50">
-                            Active
-                          </span>
-                        ) : null}
-                      </Button>
-                    ))}
-                  </div>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    className="justify-start"
-                    onClick={clearThemePreference}
-                    disabled={themeSource === "system"}
-                  >
-                    {themeSource === "system" ? "Following system theme" : "Follow system theme"}
-                  </Button>
-                </div>
-                <div className="cyber-divider" />
-                <div className="space-y-3">
-                  <p className="text-xs font-medium text-primary">Text scale</p>
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    {TEXT_SCALE_OPTIONS.map((option) => (
-                      <Button
-                        key={option.value}
-                        type="button"
-                        size="sm"
-                        variant={textScale === option.value ? "default" : "secondary"}
-                        className="h-auto justify-between px-4 py-3 text-left"
-                        onClick={() => setTextScale(option.value)}
-                        aria-pressed={textScale === option.value}
-                      >
-                        <span className="flex flex-col items-start">
-                          <span>{option.label}</span>
-                          <span className="text-xs text-muted">{option.description}</span>
-                        </span>
-                        {textScale === option.value ? (
-                          <span className="rounded-full border border-emerald-300/30 bg-emerald-300/18 px-2 py-0.5 text-xs font-semibold text-emerald-50">
-                            Active
-                          </span>
-                        ) : null}
-                      </Button>
-                    ))}
-                  </div>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    className="justify-start"
-                    onClick={handleResetDisplayPreferences}
-                  >
-                    Reset display preferences
-                  </Button>
-                </div>
-              </div>
-            </div>
-            <InlineNotice
-              message={displayNotice}
-              placeholder="Display update"
-              variant="info"
-              minHeightClassName="min-h-7"
-              onDismiss={() => {
-                setDisplayNotice("");
-              }}
-              dismissLabel="Dismiss display update"
-            />
-          </div>
-        </GlowCard>
+        <SettingsDisplayPreferencesCard
+          reducedGamification={currentSettings.reducedGamification}
+          isSaving={isSaving}
+          displayShortcutsEnabled={displayShortcutsEnabled}
+          theme={theme}
+          themeSource={themeSource}
+          textScale={textScale}
+          onReducedGamificationChange={(checked) => handlePrivacyToggle("reducedGamification", checked)}
+          onDisplayShortcutsEnabledChange={setDisplayShortcutsEnabled}
+          onThemeChange={setTheme}
+          onClearThemePreference={clearThemePreference}
+          onTextScaleChange={setTextScale}
+        />
       </section>
 
       <section
