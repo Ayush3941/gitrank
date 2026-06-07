@@ -1,5 +1,11 @@
 # Frontend UX Changelog
 
+## 2026-06-07
+
+- Public profile repositories:
+  - moved top repository ranking, empty state, and XP/skill summary rows into `PublicProfileRepositoriesCard`.
+  - kept public profile data loading, timeline rendering, and section layout ownership in `PublicProfilePageClient`.
+
 ## 2026-06-06
 
 - Quest missions:

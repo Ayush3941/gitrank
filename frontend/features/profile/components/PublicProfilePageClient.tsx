@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 import { useMemo } from "react";
-import { Award } from "lucide-react";
 import { CompactEmptyState } from "@/components/shared/CompactEmptyState";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -20,6 +19,7 @@ import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { useProfile } from "@/hooks/use-profile";
 import { PublicProfileHero } from "@/features/profile/components/PublicProfileHero";
+import { PublicProfileRepositoriesCard } from "@/features/profile/components/PublicProfileRepositoriesCard";
 import type { SkillNode } from "@/types/gitrank";
 import {
   buildDeterministicIdentitySummary,
@@ -28,7 +28,6 @@ import {
 } from "@/lib/ai/deterministic-identity-summary";
 import {
   formatNumber,
-  formatPluralCount,
   formatSignedNumber,
   formatSignedXp,
   formatXp,
@@ -381,56 +380,7 @@ export function PublicProfilePageClient({
               </DeferUntilVisible>
             )}
           </GlowCard>
-          <GlowCard className="space-y-5">
-            <div className="inline-flex rounded-[var(--radius-universal)] bg-primary/12 p-3 text-primary">
-              <Award className="h-5 w-5" aria-hidden="true" />
-            </div>
-            <div>
-              <p className="text-xs font-medium text-primary">Repositories</p>
-              <h2 className="mt-2 text-xl font-semibold text-white">Top repositories</h2>
-            </div>
-            <div className="space-y-3">
-              {data.topRepositories.length === 0 ? (
-                <CompactEmptyState
-                  title="No repository signal yet"
-                  description="Repository signal appears here after more scored PR evidence is synced."
-                  primaryAction={{
-                    label: "Open contributions",
-                    href: "/dashboard/contributions",
-                    prefetchMode: "never",
-                  }}
-                />
-              ) : (
-                <ul role="list" className="space-y-3">
-                  {data.topRepositories.slice(0, 3).map((repository, index) => (
-                    <li
-                      key={`${repository.name}-${repository.contributionCount}-${repository.totalXp}`}
-                      className="render-opt-card neon-surface rounded-[var(--radius-universal)] px-4 py-3"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-start gap-3">
-                          <span className="neon-chip neon-chip-muted inline-flex min-w-10 justify-center rounded-full px-2 py-1 text-xs font-semibold">
-                            #{index + 1}
-                          </span>
-                          <div>
-                            <p className="break-anywhere font-medium text-white">{repository.name}</p>
-                            <p className="break-anywhere text-sm text-muted">
-                              {formatPluralCount(repository.contributionCount, "scored contribution")}
-                              {repository.primarySkill ? ` • ${repository.primarySkill}` : ""}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-xs font-medium text-primary">XP</p>
-                          <p className="mt-1 text-lg font-semibold text-white">{formatXp(repository.totalXp)}</p>
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </GlowCard>
+          <PublicProfileRepositoriesCard repositories={data.topRepositories} />
         </div>
       </section>
     </div>

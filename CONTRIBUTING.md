@@ -1,8 +1,12 @@
 # Contributing to GitRank
 
-Last reviewed: June 6, 2026
+Last reviewed: June 7, 2026
 
 This document is intentionally detailed.
+
+## Session Notes (June 7, 2026)
+
+- Split public-profile top repository rendering into `PublicProfileRepositoriesCard`, moving repository ranking, empty state, and XP/skill summary presentation out of `PublicProfilePageClient`.
 
 ## Session Notes (June 6, 2026)
 
