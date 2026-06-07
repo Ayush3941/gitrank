@@ -2,6 +2,9 @@
 
 ## 2026-06-07
 
+- Public profile timeline:
+  - moved timeline shell, empty evidence routing, constrained-network summary, deferred chart loading, and timeline placeholder into `PublicProfileTimelineCard`.
+  - kept the public profile page focused on passing normalized profile evidence and layout composition.
 - Public profile skills:
   - moved skill map shell, empty evidence routing, constrained-network summary, and deferred radar chart loading into `PublicProfileSkillCard`.
   - kept skill normalization in `PublicProfilePageClient` so upstream evidence preparation remains separate from presentation.

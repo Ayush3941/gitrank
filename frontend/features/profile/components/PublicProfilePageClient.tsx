@@ -20,31 +20,17 @@ import { PublicProfileBadgesCard } from "@/features/profile/components/PublicPro
 import { PublicProfileHero } from "@/features/profile/components/PublicProfileHero";
 import { PublicProfileRepositoriesCard } from "@/features/profile/components/PublicProfileRepositoriesCard";
 import { PublicProfileSkillCard } from "@/features/profile/components/PublicProfileSkillCard";
+import { PublicProfileTimelineCard } from "@/features/profile/components/PublicProfileTimelineCard";
 import {
   buildDeterministicIdentitySummary,
   deriveDeterministicArchetype,
   shouldRequestAbraInsights,
 } from "@/lib/ai/deterministic-identity-summary";
-import {
-  formatSignedNumber,
-  formatSignedXp,
-  formatXp,
-  formatXpLabel,
-} from "@/lib/formatters";
+import { formatSignedXp } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { formatContributionStatusLabel } from "@/lib/presentation/contribution-status";
 import { deduplicateSkillNodes } from "@/lib/presentation/skill-normalization";
-
-const TimelineChart = dynamic(
-  () =>
-    import("@/components/shared/TimelineChart").then(
-      (mod) => mod.TimelineChart,
-    ),
-  {
-    loading: () => <PublicLanePlaceholder label="Loading timeline" />,
-  },
-);
 
 const BestPRsPanel = dynamic(
   () =>
@@ -284,90 +270,14 @@ export function PublicProfilePageClient({
         aria-label="Timeline and repositories"
       >
         <div className="grid gap-6 xl:grid-cols-[1.08fr,0.92fr]">
-          <GlowCard className="space-y-5">
-            <div>
-              <p className="text-xs font-medium text-primary">Timeline</p>
-              <h2 className="mt-2 text-xl font-semibold text-white">XP timeline</h2>
-              <p className="mt-1 text-sm text-muted">{data.trendWindowLabel}</p>
-            </div>
-            {data.user.xpTimeline.length === 0 ? (
-              <CompactEmptyState
-                title="No timeline signal yet"
-                description="Timeline signal appears here after more scored history is synced."
-                primaryAction={{
-                  label: "Open contributions",
-                  href: "/dashboard/contributions",
-                  prefetchMode: "never",
-                }}
-              />
-            ) : constrainedNetwork ? (
-              <LiteTimelineSummary timeline={data.user.xpTimeline} />
-            ) : (
-              <DeferUntilVisible fallback={<PublicLanePlaceholder label="Loading timeline" />}>
-                <TimelineChart data={data.user.xpTimeline} />
-              </DeferUntilVisible>
-            )}
-          </GlowCard>
+          <PublicProfileTimelineCard
+            timeline={data.user.xpTimeline}
+            trendWindowLabel={data.trendWindowLabel}
+            constrainedNetwork={constrainedNetwork}
+          />
           <PublicProfileRepositoriesCard repositories={data.topRepositories} />
         </div>
       </section>
-    </div>
-  );
-}
-
-function LiteTimelineSummary({
-  timeline,
-}: {
-  timeline: Array<{ label: string; xp: number }>;
-}) {
-  if (timeline.length === 0) {
-    return (
-      <CompactEmptyState
-        title="No timeline signal yet"
-        description="Timeline signal appears here after more scored history is synced."
-      />
-    );
-  }
-
-  const recent = timeline.slice(-6);
-  const first = recent[0];
-  const latest = recent[recent.length - 1];
-  const previous = recent.length > 1 ? recent[recent.length - 2] : null;
-  const delta = previous ? latest.xp - previous.xp : 0;
-  const windowDelta = latest.xp - first.xp;
-  const momentumLabel = delta > 0 ? "Rising" : delta < 0 ? "Cooling" : "Flat";
-
-  return (
-    <div className="space-y-3">
-      <div className="neon-surface rounded-[var(--radius-universal)] px-4 py-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-xs text-muted">Latest XP snapshot</p>
-          <span className="neon-chip neon-chip-muted rounded-full px-2.5 py-1 text-xs font-semibold">
-            {momentumLabel}
-          </span>
-        </div>
-        <p className="mt-1 text-lg font-semibold text-white">
-          {formatXpLabel(latest.xp)}
-        </p>
-        <p className="mt-1 text-xs text-muted">
-          {latest.label}
-          {previous ? ` • ${formatSignedNumber(delta)} vs previous` : ""}
-        </p>
-        <p className="mt-1 text-xs text-muted">
-          Recent window change: {formatSignedXp(windowDelta)}
-        </p>
-      </div>
-      <ul role="list" className="space-y-2">
-        {recent.map((point, index) => (
-          <li
-            key={`${point.label}-${index}`}
-            className="neon-surface flex items-center justify-between gap-3 rounded-[var(--radius-universal)] px-4 py-2.5"
-          >
-            <p className="text-sm text-muted">{point.label}</p>
-            <p className="text-sm font-semibold text-white">{formatXp(point.xp)}</p>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }
