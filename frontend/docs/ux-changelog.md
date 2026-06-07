@@ -2,6 +2,9 @@
 
 ## 2026-06-07
 
+- Public profile skills:
+  - moved skill map shell, empty evidence routing, constrained-network summary, and deferred radar chart loading into `PublicProfileSkillCard`.
+  - kept skill normalization in `PublicProfilePageClient` so upstream evidence preparation remains separate from presentation.
 - Public profile badges:
   - moved top badge rarity chips, expandable badge descriptions, and empty quest routing into `PublicProfileBadgesCard`.
   - kept badge de-duplication and unlocked badge selection in `PublicProfilePageClient` so data ownership stays with the page.
