@@ -1,6 +1,5 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import {
   ArrowRight,
   CalendarClock,
@@ -12,8 +11,6 @@ import {
   Sparkles,
 } from "lucide-react";
 import { startTransition, useDeferredValue, useId, useMemo, useState } from "react";
-import { EmptyState } from "@/components/shared/EmptyState";
-import { ErrorState } from "@/components/shared/ErrorState";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
 import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlockNotice";
 import { GlowCard } from "@/components/shared/GlowCard";
@@ -21,9 +18,7 @@ import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { ControlSurface } from "@/components/shared/ControlSurface";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
-import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { PanelLoadingPlaceholder } from "@/components/shared/PanelLoadingPlaceholder";
 import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { StaleState } from "@/components/shared/StaleState";
@@ -35,6 +30,10 @@ import { useProfileSyncRuns } from "@/hooks/use-profile-sync-runs";
 import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
 import { useStaleSyncRefresh } from "@/hooks/use-stale-sync-refresh";
 import { useQuests } from "@/hooks/use-quests";
+import {
+  QuestsMissionsSection,
+  type QuestGroupMap,
+} from "@/features/quests/components/QuestsMissionsSection";
 import { formatNumber, formatSignedXp, toRatioPercent } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { shouldShowProfileFreshnessPill } from "@/lib/presentation/sync-evidence";
@@ -62,16 +61,6 @@ const QUESTS_SECTION_LINKS = [
   { id: "quests-spotlight", label: "Spotlight" },
   { id: "quests-missions", label: "Missions" },
 ];
-
-const QuestCard = dynamic(
-  () =>
-    import("@/features/quests/components/QuestCard").then(
-      (mod) => mod.QuestCard,
-    ),
-  {
-    loading: () => <QuestPanelPlaceholder />,
-  },
-);
 
 export function QuestsPageClient() {
   const questsMissionsRegionId = useId();
@@ -119,12 +108,12 @@ export function QuestsPageClient() {
   const streak = summarizeContributionStreak(contributionRows);
   const dayOfYear = dayOfYearUTC(new Date());
   const dayProgress = toRatioPercent(dayOfYear / 365);
-  const questMap = {
+  const questMap: QuestGroupMap = {
     Daily: quests.filter((quest) => quest.cadence === "Daily"),
     Weekly: quests.filter((quest) => quest.cadence === "Weekly"),
     "Long-term": quests.filter((quest) => quest.cadence === "Long-term"),
     "Skill-based": quests.filter((quest) => quest.cadence === "Skill-based"),
-  } as const;
+  };
   const todayQuest = selectQuestSpotlight(
     questMap.Daily.length > 0 ? questMap.Daily : quests,
   );
@@ -351,80 +340,29 @@ export function QuestsPageClient() {
             </div>
           ) : null}
         </section>
-        <section id="quests-missions" data-scroll-target="true" className="render-opt-section space-y-4">
-          {isLoading ? <LoadingState message="Quest lanes" /> : null}
-          {isError ? (
-            <ErrorState
-              title="Quest engine unavailable"
-              description="Quest recommendations are unavailable right now. Retry or open sync settings."
-              onRetry={() => {
-                void refetch();
-              }}
-              fallbackLabel="Open sync settings"
-              fallbackHref="/dashboard/settings"
-              analyticsTarget="quests:error"
-            />
-          ) : null}
-          {!isLoading && !isError && quests.length === 0 ? (
-            <EmptyState
-              eyebrow="Quest generation"
-              title="No quests ready yet."
-              description="Sync and complete scored contributions to unlock quests."
-              actionLabel="Open sync settings"
-              actionHref="/dashboard/settings"
-              analyticsTarget="quests:empty"
-            />
-          ) : null}
-          {!isLoading && !isError && data ? (
-            visibleGroups.map((group) => {
-              const grouped = questMap[group];
-              const visibleCount = visibleGroupCounts[group] ?? questGroupPageSize;
-              const visibleGroup = grouped.slice(0, visibleCount);
-              const hasMoreInGroup = grouped.length > visibleGroup.length;
-              const remainingInGroup = Math.max(0, grouped.length - visibleGroup.length);
-
-              return (
-                <section
-                  key={group}
-                  className="space-y-4"
-                >
-                  <h3 className="text-sm font-semibold text-white">
-                    {labelForGroup(group)} ({grouped.length})
-                  </h3>
-                  <div>
-                    <ul role="list" className="grid gap-4 xl:grid-cols-2">
-                      {visibleGroup.map((quest, index) => (
-                        <li key={`${quest.id}-${index}`} className="list-none">
-                          <QuestCard quest={quest} />
-                        </li>
-                      ))}
-                    </ul>
-                    {hasMoreInGroup ? (
-                      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                        <p className="text-xs text-muted">{remainingInGroup} missions remaining</p>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => {
-                            startTransition(() => {
-                              setVisibleGroupCounts((current) => ({
-                                ...current,
-                                [group]: Math.min(grouped.length, (current[group] ?? questGroupPageSize) + questGroupPageSize),
-                              }));
-                            });
-                          }}
-                        >
-                          Show more missions
-                        </Button>
-                      </div>
-                    ) : null}
-                  </div>
-                </section>
-              );
-            })
-          ) : null}
-        </section>
+        <QuestsMissionsSection
+          quests={quests}
+          visibleGroups={visibleGroups}
+          questMap={questMap}
+          visibleGroupCounts={visibleGroupCounts}
+          questGroupPageSize={questGroupPageSize}
+          isLoading={isLoading}
+          isError={isError}
+          onRetry={() => {
+            void refetch();
+          }}
+          onShowMoreGroup={(group, totalCount) => {
+            startTransition(() => {
+              setVisibleGroupCounts((current) => ({
+                ...current,
+                [group]: Math.min(
+                  totalCount,
+                  (current[group] ?? questGroupPageSize) + questGroupPageSize,
+                ),
+              }));
+            });
+          }}
+        />
       </div>
     </div>
   );
@@ -434,13 +372,6 @@ function dayOfYearUTC(date: Date): number {
   const start = Date.UTC(date.getUTCFullYear(), 0, 0);
   const current = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
   return Math.floor((current - start) / 86_400_000);
-}
-
-function labelForGroup(group: Quest["cadence"]): string {
-  if (group === "Daily") return "Today's Quest";
-  if (group === "Weekly") return "Weekly Challenge";
-  if (group === "Long-term") return "Long-Term Contributor Journey";
-  return "Skill-based Missions";
 }
 
 function recoveryHrefForGroup(group: Quest["cadence"]): string {
@@ -605,16 +536,4 @@ function questStatusMeta(status: Quest["status"]): { label: string; className: s
     label: "Active",
     className: "mt-2 inline-flex neon-chip neon-chip-info rounded-full px-2.5 py-1 text-xs font-semibold",
   };
-}
-
-function QuestPanelPlaceholder() {
-  return (
-    <PanelLoadingPlaceholder
-      label="Loading quest card"
-      skeletons={[
-        { className: "h-9 w-2/5" },
-        { className: "h-24 w-full" },
-      ]}
-    />
-  );
 }

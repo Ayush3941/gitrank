@@ -2,6 +2,9 @@
 
 ## 2026-06-06
 
+- Quest missions:
+  - moved mission loading/error/empty states, grouped quest cards, and "show more" controls into `QuestsMissionsSection`.
+  - kept cadence filters, sync state, and visible-group count ownership in `QuestsPageClient`.
 - Contribution cards:
   - moved contribution card empty states, lazy list loading, and "show more" controls into `ContributionsCardsSection`.
   - kept filter/search/sort state, export behavior, and visible-card count ownership in `ContributionsPageClient`.

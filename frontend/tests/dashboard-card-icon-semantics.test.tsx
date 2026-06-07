@@ -4,7 +4,8 @@ import { describe, expect, it, vi } from "vitest";
 import { CurrentLeagueCard } from "@/features/dashboard/components/CurrentLeagueCard";
 import { QuestPanel } from "@/features/dashboard/components/QuestPanel";
 import { RecentBattleReports } from "@/features/dashboard/components/RecentBattleReports";
-import type { PullRequestAnalysis, Quest, UserProfile } from "@/types/gitrank";
+import { buildQuest } from "@/tests/helpers/quest-fixture";
+import type { PullRequestAnalysis, UserProfile } from "@/types/gitrank";
 
 vi.mock("next/link", () => ({
   default: ({ href, children }: { href: string; children: ReactNode }) => (
@@ -50,21 +51,6 @@ function buildLeagueUser(): UserProfile {
       },
     },
   } as unknown as UserProfile;
-}
-
-function buildQuest(): Quest {
-  return {
-    id: "quest-1",
-    title: "Land reviewed work",
-    description: "Complete one reviewed contribution.",
-    rewardXp: 120,
-    progress: 0,
-    goal: 1,
-    weakAreaTarget: "Review",
-    cadence: "Weekly",
-    evidenceSignals: ["review_depth=0"],
-    linkedContributionIds: [],
-  } as unknown as Quest;
 }
 
 function buildReport(): PullRequestAnalysis {
