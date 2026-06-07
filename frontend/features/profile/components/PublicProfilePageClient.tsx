@@ -5,12 +5,10 @@ import { useMemo } from "react";
 import { CompactEmptyState } from "@/components/shared/CompactEmptyState";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
-import { ExpandableText } from "@/components/shared/ExpandableText";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { PanelLoadingPlaceholder } from "@/components/shared/PanelLoadingPlaceholder";
-import { RarityBadge } from "@/components/shared/RarityBadge";
 import { RouteLoadingState } from "@/components/shared/RouteLoadingState";
 import { RelativeTime } from "@/components/shared/RelativeTime";
 import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
@@ -18,6 +16,7 @@ import { StaleState } from "@/components/shared/StaleState";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { useProfile } from "@/hooks/use-profile";
+import { PublicProfileBadgesCard } from "@/features/profile/components/PublicProfileBadgesCard";
 import { PublicProfileHero } from "@/features/profile/components/PublicProfileHero";
 import { PublicProfileRepositoriesCard } from "@/features/profile/components/PublicProfileRepositoriesCard";
 import type { SkillNode } from "@/types/gitrank";
@@ -272,41 +271,7 @@ export function PublicProfilePageClient({
         aria-label="Badges and skills"
       >
         <div className="grid gap-6 xl:grid-cols-[1fr,1fr]">
-          <GlowCard className="space-y-5">
-            <div>
-              <p className="text-xs font-medium text-primary">Badges</p>
-              <h2 className="mt-2 text-xl font-semibold text-white">Top badges</h2>
-            </div>
-            {unlockedBadges.length > 0 ? (
-              <ul role="list" className="grid gap-3 sm:grid-cols-2">
-                {unlockedBadges.slice(0, 3).map((badge) => (
-                  <li key={badge.id} className="render-opt-card neon-surface rounded-[var(--radius-universal)] p-4">
-                    <RarityBadge rarity={badge.rarity} />
-                    <h3 className="mt-3 text-lg font-medium text-white">{badge.name}</h3>
-                    <ExpandableText
-                      text={badge.description}
-                      lines={3}
-                      minLengthForToggle={120}
-                      className="mt-2"
-                      textClassName="text-sm text-muted"
-                      showMoreLabel="More"
-                      showLessLabel="Less"
-                    />
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <CompactEmptyState
-                title="No badge unlocks yet"
-                description="Badge unlocks appear here as scored contributions land."
-                primaryAction={{
-                  label: "Open quests",
-                  href: "/dashboard/quests",
-                  prefetchMode: "never",
-                }}
-              />
-            )}
-          </GlowCard>
+          <PublicProfileBadgesCard badges={unlockedBadges} />
           <GlowCard className="space-y-5">
             <div>
               <p className="text-xs font-medium text-primary">Skills</p>

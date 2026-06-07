@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 7, 2026)
 
+- Split public-profile top badge rendering into `PublicProfileBadgesCard`, keeping badge rarity, expandable descriptions, and empty quest routing out of `PublicProfilePageClient`.
 - Split public-profile top repository rendering into `PublicProfileRepositoriesCard`, moving repository ranking, empty state, and XP/skill summary presentation out of `PublicProfilePageClient`.
 
 ## Session Notes (June 6, 2026)

@@ -2,6 +2,9 @@
 
 ## 2026-06-07
 
+- Public profile badges:
+  - moved top badge rarity chips, expandable badge descriptions, and empty quest routing into `PublicProfileBadgesCard`.
+  - kept badge de-duplication and unlocked badge selection in `PublicProfilePageClient` so data ownership stays with the page.
 - Public profile repositories:
   - moved top repository ranking, empty state, and XP/skill summary rows into `PublicProfileRepositoriesCard`.
   - kept public profile data loading, timeline rendering, and section layout ownership in `PublicProfilePageClient`.
