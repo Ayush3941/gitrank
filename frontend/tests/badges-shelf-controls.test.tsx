@@ -1,10 +1,10 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import {
-  BadgesShelfControls,
-  type BadgeRarityFilter,
-  type BadgeVisibilityFilter,
-} from "@/features/badges/components/BadgesShelfControls";
+import { BadgesShelfControls } from "@/features/badges/components/BadgesShelfControls";
+import type {
+  BadgeRarityFilter,
+  BadgeVisibilityFilter,
+} from "@/features/badges/lib/badge-shelf-model";
 
 describe("BadgesShelfControls", () => {
   it("renders counts and routes visibility filter changes", () => {

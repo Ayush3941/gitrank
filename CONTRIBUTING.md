@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 8, 2026)
 
+- Moved badge shelf filtering, de-duplication, locked-path sorting, pagination slices, completion percent, and filter-state counting into `badge-shelf-model`, keeping `BadgesPageClient` focused on state wiring and section composition.
 - Extracted settings account-action orchestration into `useSettingsAccountActions`, moving sync refresh, relink, sign-out, disconnect, export, delete, notice timers, and export filename construction out of `SettingsPageClient`.
 - Centralized ABRA insight request projection in `buildAbraInsightsRequest`, replacing repeated profile/contribution/badge mapping across dashboard, contributions, badges, public profile, and onboarding clients while preserving each page's gating and evidence limits.
 - Split quest spotlight rendering into `QuestsSpotlightSection` and moved spotlight ranking/progress logic into `quest-spotlight`, keeping quest data loading and selected spotlight ownership in `QuestsPageClient`.

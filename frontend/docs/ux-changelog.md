@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Badge shelf:
+  - moved de-duplication, shelf filtering, locked-path sorting, pagination slices, completion percent, and filter-state counts into `badge-shelf-model`.
+  - kept `BadgesPageClient` focused on React state, sync notices, and composing the badge overview, shelf, and locked-path sections.
 - Settings account actions:
   - moved profile refresh, relink, sign-out, disconnect, export, delete, notice timeout, and JSON download orchestration into `useSettingsAccountActions`.
   - kept `SettingsPageClient` responsible for page layout and privacy/repository settings while account and data-control cards receive action state from the hook.

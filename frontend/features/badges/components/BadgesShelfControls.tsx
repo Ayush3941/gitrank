@@ -10,10 +10,10 @@ import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
 import { ControlSurface } from "@/components/shared/ControlSurface";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
-import type { BadgeRarity } from "@/types/gitrank";
-
-export type BadgeRarityFilter = BadgeRarity | "All";
-export type BadgeVisibilityFilter = "All" | "Unlocked" | "Locked";
+import type {
+  BadgeRarityFilter,
+  BadgeVisibilityFilter,
+} from "@/features/badges/lib/badge-shelf-model";
 
 const BADGE_RARITY_FILTERS: BadgeRarityFilter[] = [
   "All",
