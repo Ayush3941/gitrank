@@ -32,6 +32,19 @@ describe("HeaderMetaChips", () => {
     ).not.toBeNull();
   });
 
+  it("accepts stable IDs for repeated visible chip labels", () => {
+    render(
+      <HeaderMetaChips
+        items={[
+          { id: "rank-before", label: "Rank Bronze I" },
+          { id: "rank-after", label: "Rank Bronze I" },
+        ]}
+      />,
+    );
+
+    expect(screen.getAllByText("Rank Bronze I")).toHaveLength(2);
+  });
+
   it("does not render an empty summary region", () => {
     const { container } = render(<HeaderMetaChips items={[]} />);
 

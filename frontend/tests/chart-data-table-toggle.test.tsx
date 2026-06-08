@@ -45,8 +45,8 @@ describe("chart data-table toggles", () => {
     render(
       <TimelineChart
         data={[
-          { label: "Apr", xp: 100 },
-          { label: "May", xp: 180 },
+          { id: "april", label: "Apr", xp: 100 },
+          { id: "may", label: "May", xp: 180 },
         ]}
       />,
     );

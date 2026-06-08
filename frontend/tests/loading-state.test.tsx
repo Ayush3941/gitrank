@@ -40,9 +40,9 @@ describe("PanelLoadingPlaceholder", () => {
       <PanelLoadingPlaceholder
         label="Loading contribution cards"
         skeletons={[
-          { className: "h-9 w-1/2" },
-          { className: "h-24 w-full" },
-          { className: "h-24 w-full" },
+          { id: "headline", className: "h-9 w-1/2" },
+          { id: "summary", className: "h-24 w-full" },
+          { id: "details", className: "h-24 w-full" },
         ]}
       />,
     );

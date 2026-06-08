@@ -3,14 +3,16 @@
 import { GlowCard } from "@/components/shared/GlowCard";
 import { cn } from "@/lib/cn";
 import { formatLoadingAnnouncement, normalizeLoadingTarget } from "@/lib/presentation/loading-copy";
+import { buildStableRenderRows } from "@/lib/presentation/render-identity";
 
 type SkeletonBar = {
+  id?: string;
   className: string;
 };
 
 const DEFAULT_SKELETONS: SkeletonBar[] = [
-  { className: "h-10 w-3/5" },
-  { className: "h-24 w-full" },
+  { id: "headline", className: "h-10 w-3/5" },
+  { id: "body", className: "h-24 w-full" },
 ];
 
 export function PanelLoadingPlaceholder({
@@ -29,6 +31,11 @@ export function PanelLoadingPlaceholder({
   className?: string;
 }) {
   const loadingTarget = normalizeLoadingTarget(label);
+  const skeletonRows = buildStableRenderRows(
+    skeletons,
+    (skeleton) => `skeleton:${skeleton.className}`,
+    (skeleton) => skeleton.id,
+  );
   const body = (
     <>
       <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">
@@ -40,9 +47,9 @@ export function PanelLoadingPlaceholder({
         </span>
         <span className="text-sm font-semibold text-white">{loadingTarget}</span>
       </div>
-      {skeletons.map((skeleton, index) => (
+      {skeletonRows.map(({ renderId, item: skeleton }) => (
         <div
-          key={`${skeleton.className}-${index}`}
+          key={renderId}
           className={cn("neon-skeleton", skeleton.className)}
           aria-hidden="true"
         />

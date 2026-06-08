@@ -11,8 +11,10 @@ import {
   formatXp,
   formatXpLabel,
 } from "@/lib/formatters";
+import { buildStableRenderRows } from "@/lib/presentation/render-identity";
 
 type TimelinePoint = {
+  id?: string;
   label: string;
   xp: number;
 };
@@ -79,6 +81,11 @@ function PublicProfileLiteTimelineSummary({
   }
 
   const recent = timeline.slice(-6);
+  const recentRows = buildStableRenderRows(
+    recent,
+    (point) => `timeline:${point.label}:${point.xp}`,
+    (point) => point.id,
+  );
   const first = recent[0];
   const latest = recent[recent.length - 1];
   const previous = recent.length > 1 ? recent[recent.length - 2] : null;
@@ -107,9 +114,9 @@ function PublicProfileLiteTimelineSummary({
         </p>
       </div>
       <ul role="list" className="space-y-2">
-        {recent.map((point, index) => (
+        {recentRows.map(({ renderId, item: point }) => (
           <li
-            key={`${point.label}-${index}`}
+            key={renderId}
             className="neon-surface flex items-center justify-between gap-3 rounded-[var(--radius-universal)] px-4 py-2.5"
           >
             <p className="text-sm text-muted">{point.label}</p>

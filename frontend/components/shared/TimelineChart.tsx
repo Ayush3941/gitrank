@@ -10,6 +10,7 @@ import {
   useReducedGamification,
 } from "@/hooks/use-gamification-preference";
 import { formatSignedXp, formatXp, formatXpLabel, toRatioPercent } from "@/lib/formatters";
+import { buildStableRenderRows } from "@/lib/presentation/render-identity";
 
 const TimelineChartInner = dynamic(
   () => import("@/components/shared/timeline-chart-inner").then((mod) => mod.TimelineChartInner),
@@ -24,7 +25,19 @@ const TimelineChartInner = dynamic(
   },
 );
 
-export function TimelineChart({ data }: { data: Array<{ label: string; xp: number }> }) {
+export type TimelineChartPoint = {
+  id?: string;
+  label: string;
+  xp: number;
+};
+
+type TimelineChartRow = {
+  id: string;
+  label: string;
+  xp: number;
+};
+
+export function TimelineChart({ data }: { data: TimelineChartPoint[] }) {
   const summaryId = useId();
   const tableRegionId = useId();
   const tableToggleId = useId();
@@ -33,7 +46,7 @@ export function TimelineChart({ data }: { data: Array<{ label: string; xp: numbe
   const reducedGamification = useReducedGamification();
   const useLiteRenderer = constrainedNetwork || reducedGamification;
   const [showDataTable, setShowDataTable] = useState(false);
-  const safeData = data.length > 0 ? data : [{ label: "No data", xp: 0 }];
+  const safeData = buildTimelineRows(data.length > 0 ? data : [{ id: "empty", label: "No data", xp: 0 }]);
   const firstPoint = safeData[0];
   const lastPoint = safeData[safeData.length - 1];
   const growth = lastPoint.xp - firstPoint.xp;
@@ -95,8 +108,8 @@ export function TimelineChart({ data }: { data: Array<{ label: string; xp: numbe
           {previousPoint ? ` Latest step: ${formatSignedXp(latestDelta)}.` : ""}
         </p>
         <ul role="list" className="mt-3 space-y-1 text-xs text-muted">
-          {recentWindow.map((point, index) => (
-            <li key={`${point.label}-${index}`} className="flex items-center justify-between gap-3">
+          {recentWindow.map((point) => (
+            <li key={`summary-${point.id}`} className="flex items-center justify-between gap-3">
               <span>{point.label}</span>
               <span>{formatXpLabel(point.xp)}</span>
             </li>
@@ -122,7 +135,7 @@ export function TimelineChart({ data }: { data: Array<{ label: string; xp: numbe
                   const previous = index > 0 ? recentWindow[index - 1] : null;
                   const delta = previous ? point.xp - previous.xp : 0;
                   return (
-                    <tr key={`${point.label}-${point.xp}-${index}`} className="border-b border-white/6 last:border-b-0">
+                    <tr key={`table-${point.id}`} className="border-b border-white/6 last:border-b-0">
                       <th scope="row" className="px-2 py-2 font-medium text-white">{point.label}</th>
                       <td className="px-2 py-2">{formatXp(point.xp)}</td>
                       <td className="px-2 py-2">{index === 0 ? "-" : `${delta > 0 ? "+" : ""}${delta}`}</td>
@@ -147,7 +160,7 @@ function TimelineChartFallback() {
   );
 }
 
-function TimelineChartLite({ data }: { data: Array<{ label: string; xp: number }> }) {
+function TimelineChartLite({ data }: { data: TimelineChartRow[] }) {
   const maxXP = Math.max(1, ...data.map((point) => point.xp));
   const compactWindow = data.slice(-8);
 
@@ -155,10 +168,10 @@ function TimelineChartLite({ data }: { data: Array<{ label: string; xp: number }
     <div className="neon-surface h-full space-y-3 px-4 py-4">
       <p className="text-xs font-semibold text-primary">Lite timeline view</p>
       <div className="space-y-2">
-        {compactWindow.map((point, index) => {
+        {compactWindow.map((point) => {
           const fill = toRatioPercent(point.xp / maxXP);
           return (
-            <div key={`${point.label}-${index}`} className="space-y-1">
+            <div key={`lite-${point.id}`} className="space-y-1">
               <div className="flex items-center justify-between gap-3 text-xs text-muted">
                 <span>{point.label}</span>
                 <span>{formatXpLabel(point.xp)}</span>
@@ -172,4 +185,16 @@ function TimelineChartLite({ data }: { data: Array<{ label: string; xp: number }
       </div>
     </div>
   );
+}
+
+function buildTimelineRows(data: readonly TimelineChartPoint[]): TimelineChartRow[] {
+  return buildStableRenderRows(
+    data,
+    (point) => `timeline:${point.label}:${point.xp}`,
+    (point) => point.id,
+  ).map(({ renderId, item }) => ({
+    id: renderId,
+    label: item.label,
+    xp: item.xp,
+  }));
 }

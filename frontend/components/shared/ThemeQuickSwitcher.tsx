@@ -81,9 +81,9 @@ export function ThemeQuickSwitcher({
           )}
         </span>
         <span className="inline-flex items-center gap-1" aria-hidden="true">
-          {swatches.map((color, index) => (
+          {swatches.map((color) => (
             <span
-              key={`${theme}-swatch-${index}`}
+              key={`${theme}-swatch-${color}`}
               className="h-2.5 w-2.5 border border-white/30"
               style={{ backgroundColor: color }}
             />

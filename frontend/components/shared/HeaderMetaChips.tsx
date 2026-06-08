@@ -1,9 +1,11 @@
 import { cn } from "@/lib/cn";
 import { ScrollableRegion } from "@/components/shared/ScrollableRegion";
+import { buildStableRenderRows } from "@/lib/presentation/render-identity";
 
 export type HeaderMetaChipTone = "muted" | "info" | "success" | "warning" | "danger";
 
 export type HeaderMetaChipItem = {
+  id?: string;
   label: string;
   tone?: HeaderMetaChipTone;
 };
@@ -20,6 +22,11 @@ export function HeaderMetaChips({
   if (!items.length) {
     return null;
   }
+  const rows = buildStableRenderRows(
+    items,
+    (item) => `${item.tone ?? "muted"}:${item.label}`,
+    (item) => item.id,
+  );
 
   return (
     <ScrollableRegion
@@ -30,8 +37,8 @@ export function HeaderMetaChips({
       )}
     >
       <ul role="list" className="flex w-max min-w-full items-center gap-2 text-xs sm:w-auto sm:min-w-0 sm:flex-wrap">
-        {items.map((item, index) => (
-          <li key={`${item.label}-${index}`} className="list-none shrink-0 sm:shrink">
+        {rows.map(({ renderId, item }) => (
+          <li key={renderId} className="list-none shrink-0 sm:shrink">
             <span className={chipClassName(item.tone)}>{item.label}</span>
           </li>
         ))}

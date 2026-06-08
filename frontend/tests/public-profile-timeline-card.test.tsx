@@ -25,10 +25,10 @@ describe("PublicProfileTimelineCard", () => {
         trendWindowLabel="Last 6 weeks"
         constrainedNetwork
         timeline={[
-          { label: "Week 1", xp: 10 },
-          { label: "Week 2", xp: 20 },
-          { label: "Week 3", xp: 15 },
-          { label: "Week 4", xp: 30 },
+          { id: "week-1", label: "Week 1", xp: 10 },
+          { id: "week-2", label: "Week 2", xp: 20 },
+          { id: "week-3", label: "Week 3", xp: 15 },
+          { id: "week-4", label: "Week 4", xp: 30 },
         ]}
       />,
     );

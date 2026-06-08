@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Shared render identity:
+  - added shared render-row identity normalization for duplicate-prone rows.
+  - routed header meta chips, panel loading skeletons, timeline rows, and theme swatches away from array-position keys without changing visible UI.
 - PR report row identity:
   - replaced index-derived keys in proof checks, stored evidence chips, suggested quest chips, badge reward chips, and XP breakdown rows with stable source/model IDs.
   - kept PR report copy and ordering unchanged while making report rendering less order-fragile.
