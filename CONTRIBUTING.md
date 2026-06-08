@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 8, 2026)
 
+- Added `sync-pipeline-model` for onboarding sync steps, polling cadence, progress, retry eligibility, and sanitized action-error state, keeping `SyncPipeline` focused on sync side effects and rendering.
 - Added `quests-page-model` for quest cadence grouping, visible mission lanes, journey progress, spotlight selection, and stale quest-evidence notice projection, keeping `QuestsPageClient` focused on React state, sync refresh orchestration, and section composition.
 - Extended `badges-page-model` to own stale badge-evidence notice projection and stale-state visibility, keeping `BadgesPageClient` focused on sync refresh orchestration, unlock announcements, and section composition.
 - Extended `leaderboard-view-model` to own leaderboard busy-state derivation and stale evidence notice projection, keeping `LeaderboardPageClient` focused on URL lane state, sync refresh orchestration, and arena composition.

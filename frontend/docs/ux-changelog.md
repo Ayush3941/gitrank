@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Onboarding sync model:
+  - moved sync steps, polling cadence, progress, retry eligibility, and sanitized action-error state into `sync-pipeline-model`.
+  - kept `SyncPipeline` focused on profile-sync side effects, polling orchestration, notices, and rendering the pipeline.
 - Quest page model:
   - moved cadence grouping, visible mission lanes, journey progress, spotlight selection, and stale quest-evidence notice projection into `quests-page-model`.
   - kept `QuestsPageClient` focused on React state, sync refresh orchestration, and composing controls, journey, spotlight, and mission sections.

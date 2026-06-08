@@ -10,41 +10,23 @@ import { RelativeTime } from "@/components/shared/RelativeTime";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { OnboardingStepper } from "@/features/onboarding/components/OnboardingStepper";
+import {
+  buildSyncPipelineModel,
+  INITIAL_SYNC_POLL_INTERVAL_MS,
+  syncPollIntervalMs,
+} from "@/features/onboarding/lib/sync-pipeline-model";
 import { useRequestProfileSync } from "@/hooks/use-account-actions";
 import { useMyProfile } from "@/hooks/use-profile";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
-import { toRatioPercent } from "@/lib/formatters";
 import { deriveEffectiveSyncState } from "@/lib/presentation/sync-evidence";
 import { formatSyncStateLabel } from "@/lib/presentation/status-tone";
-import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
-
-const steps = [
-  "Connecting GitHub",
-  "Fetching repositories",
-  "Reading merged PRs",
-  "Analyzing review depth",
-  "Classifying contribution type",
-  "Calculating PR intensity",
-  "Assigning badges",
-  "Building public profile",
-];
-
-const POLL_INTERVAL_STEPS_MS = [5000, 7000, 10000, 15000, 20000] as const;
-
-function syncPollIntervalMs(attempt: number): number {
-  if (attempt <= 0) {
-    return POLL_INTERVAL_STEPS_MS[0];
-  }
-  const index = Math.min(attempt, POLL_INTERVAL_STEPS_MS.length - 1);
-  return POLL_INTERVAL_STEPS_MS[index];
-}
 
 export function SyncPipeline() {
   const { data, isLoading, isError, refetch } = useMyProfile();
   const userSync = useRequestProfileSync();
   const [syncStartedAt, setSyncStartedAt] = useState<string | null>(null);
   const [syncNotice, setSyncNotice] = useState("");
-  const [pollIntervalMs, setPollIntervalMs] = useState<number>(POLL_INTERVAL_STEPS_MS[0]);
+  const [pollIntervalMs, setPollIntervalMs] = useState<number>(INITIAL_SYNC_POLL_INTERVAL_MS);
   const autoRequestedRef = useRef(false);
   const syncStartedEventSent = useRef(false);
   const previousSyncStateRef = useRef<string>("stale");
@@ -71,7 +53,7 @@ export function SyncPipeline() {
     userSync.mutate(undefined, {
       onSuccess: (result) => {
         syncPollingAttemptRef.current = 0;
-        setPollIntervalMs(POLL_INTERVAL_STEPS_MS[0]);
+        setPollIntervalMs(INITIAL_SYNC_POLL_INTERVAL_MS);
         setSyncStartedAt(result.started_at);
         if (result.status === "queued") {
           setSyncNotice(
@@ -109,7 +91,7 @@ export function SyncPipeline() {
 
     timer = window.setTimeout(() => {
       void poll();
-    }, POLL_INTERVAL_STEPS_MS[0]);
+    }, INITIAL_SYNC_POLL_INTERVAL_MS);
 
     return () => {
       cancelled = true;
@@ -159,26 +141,15 @@ export function SyncPipeline() {
     };
   }, [syncNotice]);
 
-  const completedSteps =
-    isSynced ? steps.length : syncStartedAt || userSync.isPending ? 3 : 1;
-  const pipelineProgress = toRatioPercent(completedSteps / steps.length);
-  const currentPhaseLabel =
-    completedSteps < steps.length ? steps[completedSteps] : "Pipeline complete";
-
-  const actionError = sanitizeUserFacingError(
-    (userSync.error as Error | null)?.message ||
-      (isError ? "Authenticated profile snapshot is loading. Retry in a moment." : ""),
-    "onboarding-sync",
-  );
-  const canRetrySync =
-    Boolean(data) &&
-    !userSync.isPending &&
-    syncState !== "syncing" &&
-    (syncState === "failed" ||
-      syncState === "rate_limited" ||
-      syncState === "stale" ||
-      syncState === "partially_synced" ||
-      syncState === "never_synced");
+  const pipeline = buildSyncPipelineModel({
+    syncState,
+    syncStartedAt,
+    isSyncPending: userSync.isPending,
+    hasProfileData: Boolean(data),
+    isProfileError: isError,
+    syncErrorMessage: (userSync.error as Error | null)?.message,
+    pollIntervalMs,
+  });
 
   function handleRetrySync() {
     if (!data || userSync.isPending) {
@@ -188,7 +159,7 @@ export function SyncPipeline() {
     userSync.mutate(undefined, {
       onSuccess: (result) => {
         syncPollingAttemptRef.current = 0;
-        setPollIntervalMs(POLL_INTERVAL_STEPS_MS[0]);
+        setPollIntervalMs(INITIAL_SYNC_POLL_INTERVAL_MS);
         setSyncStartedAt(result.started_at);
         if (result.status === "queued") {
           setSyncNotice(
@@ -227,7 +198,7 @@ export function SyncPipeline() {
           {syncStartedAt && !isSynced ? (
             <p className="text-sm text-muted">
               Auto-refresh slows from 5s up to 20s while sync is pending.
-              Current cadence: about {Math.max(5, Math.round(pollIntervalMs / 1000))}s.
+              Current cadence: about {pipeline.pollCadenceSeconds}s.
             </p>
           ) : null}
           {syncState === "syncing" ? (
@@ -236,13 +207,13 @@ export function SyncPipeline() {
             </p>
           ) : null}
           <InlineNotice
-            message={actionError || syncNotice}
-            placeholder={actionError ? "Sync action error" : "Sync status update"}
-            variant={actionError ? "error" : "success"}
-            liveRole={actionError ? "alert" : "status"}
+            message={pipeline.actionError || syncNotice}
+            placeholder={pipeline.actionError ? "Sync action error" : "Sync status update"}
+            variant={pipeline.actionError ? "error" : "success"}
+            liveRole={pipeline.actionError ? "alert" : "status"}
             minHeightClassName="min-h-7"
             onDismiss={
-              actionError
+              pipeline.actionError
                 ? undefined
                 : () => {
                     setSyncNotice("");
@@ -254,11 +225,11 @@ export function SyncPipeline() {
         <div className="space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-medium text-primary">
             <span>Pipeline progress</span>
-            <span className="numeric-readout">{pipelineProgress}%</span>
+            <span className="numeric-readout">{pipeline.pipelineProgress}%</span>
           </div>
-          <Progress value={pipelineProgress} aria-label="GitHub sync pipeline progress" />
+          <Progress value={pipeline.pipelineProgress} aria-label="GitHub sync pipeline progress" />
           <p className="text-sm text-muted">
-            {completedSteps} of {steps.length} sync phases completed.
+            {pipeline.completedSteps} of {pipeline.steps.length} sync phases completed.
           </p>
         </div>
         <div id="onboarding-sync-phases" className="space-y-3">
@@ -268,17 +239,17 @@ export function SyncPipeline() {
                 Sync state {formatSyncStateLabel(syncState)}
               </span>
               <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
-                Current phase {currentPhaseLabel}
+                Current phase {pipeline.currentPhaseLabel}
               </span>
               <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
-                Poll cadence ~{Math.max(5, Math.round(pollIntervalMs / 1000))}s
+                Poll cadence ~{pipeline.pollCadenceSeconds}s
               </span>
             </div>
           </div>
           <ol className="space-y-3">
-            {steps.map((step, index) => {
-              const done = index < completedSteps;
-              const active = index === completedSteps && !isSynced;
+            {pipeline.steps.map((step, index) => {
+              const done = index < pipeline.completedSteps;
+              const active = index === pipeline.completedSteps && !pipeline.isSynced;
               return (
                 <li
                   key={`sync-step-${index}-${step}`}
@@ -307,7 +278,7 @@ export function SyncPipeline() {
           </ol>
         </div>
         <div className="flex flex-wrap gap-3">
-          {canRetrySync ? (
+          {pipeline.canRetrySync ? (
             <Button
               variant="secondary"
               onClick={handleRetrySync}
@@ -325,7 +296,7 @@ export function SyncPipeline() {
             <RefreshCcw className="h-4 w-4" aria-hidden="true" />
             Refresh status
           </Button>
-          {isSynced ? (
+          {pipeline.isSynced ? (
             <>
               <Button asChild>
                 <IntentPrefetchLink href="/onboarding/reveal">Continue to reveal</IntentPrefetchLink>
