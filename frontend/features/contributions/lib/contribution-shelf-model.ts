@@ -110,3 +110,5 @@ export function buildContributionShelfModel({
     abraContributionSample,
   };
 }
+
+export type ContributionShelfModel = ReturnType<typeof buildContributionShelfModel>;

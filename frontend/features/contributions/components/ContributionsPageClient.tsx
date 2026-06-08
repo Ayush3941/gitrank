@@ -16,6 +16,7 @@ import {
   buildContributionShelfModel,
   resolveContributionCardPageSize,
 } from "@/features/contributions/lib/contribution-shelf-model";
+import { buildContributionsPageModel } from "@/features/contributions/lib/contributions-page-model";
 import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useContributions } from "@/hooks/use-contributions";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
@@ -27,17 +28,11 @@ import {
   useReducedGamification,
 } from "@/hooks/use-gamification-preference";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
-import { buildAbraInsightsRequest } from "@/lib/ai/abra-insights-request";
-import {
-  summarizeContributionStreak,
-  summarizeRepositories,
-} from "@/lib/metrics/contribution-metrics";
 import { shouldShowProfileFreshnessPill } from "@/lib/presentation/sync-evidence";
 import {
   isGitHubAppInstallationBlocked,
   selectLatestActionableSyncRunOutcome,
 } from "@/lib/presentation/sync-run-diagnostics";
-import { buildStaleSyncNotice } from "@/lib/presentation/stale-sync-notice";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
 import {
   CONTRIBUTION_DEFAULT_FILTER,
@@ -46,7 +41,6 @@ import {
   type ContributionSortOption,
   toContributionQueryFilter,
 } from "@/lib/runtime/contribution-filter-policy";
-import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 
 const CONTRIBUTION_SEARCH_DEBOUNCE_MS = 220;
 const CONTRIBUTIONS_SECTION_LINKS = [
@@ -114,14 +108,6 @@ export function ContributionsPageClient() {
     ],
   );
 
-  const repositories = useMemo(
-    () => summarizeRepositories(profile?.user.contributions ?? []),
-    [profile?.user.contributions],
-  );
-  const streak = useMemo(
-    () => summarizeContributionStreak(profile?.user.contributions ?? []),
-    [profile?.user.contributions],
-  );
   const { syncStateForDisplay, showRefreshPill } = useProfileSyncState(
     profile?.user,
     syncRunsQuery.data?.runs,
@@ -132,19 +118,26 @@ export function ContributionsPageClient() {
   );
   const appInstallationBlocked = isGitHubAppInstallationBlocked(latestSyncOutcome);
   const displaySyncState = appInstallationBlocked ? "failed" : syncStateForDisplay;
-  const staleNotice = useMemo(
+  const contributionsPage = useMemo(
     () =>
-      buildStaleSyncNotice({
-        syncState: displaySyncState === "partially_synced" ? "partially_synced" : "stale",
-        refreshedAt: profile?.refreshedAt,
+      buildContributionsPageModel({
+        profile,
+        contributionShelf,
+        displaySyncState,
         latestSyncOutcome,
-        snapshotLabel: "Contribution evidence",
-        partialFallback:
-          "Profile exists, but scored PR evidence is still empty. Keep auto-sync on and retry.",
-        staleFallback:
-          "New PR rows appear after sync completes.",
+        isLoading,
+        isError,
+        errorMessage: (error as Error | null)?.message || "",
       }),
-    [displaySyncState, latestSyncOutcome, profile?.refreshedAt],
+    [
+      contributionShelf,
+      displaySyncState,
+      error,
+      isError,
+      isLoading,
+      latestSyncOutcome,
+      profile,
+    ],
   );
   const staleSyncRefresh = useStaleSyncRefresh({
     runs: syncRunsQuery.data?.runs,
@@ -154,30 +147,7 @@ export function ContributionsPageClient() {
       await refetch();
     },
   });
-  const abraPayload = useMemo(() => {
-    return buildAbraInsightsRequest({
-      user: profile?.user,
-      contributions: contributionShelf.abraContributionSample,
-      badges: profile?.user.badges ?? [],
-      repositoriesTouched: repositories.length,
-      streakDays: streak.currentStreakDays,
-      enabled: contributionShelf.effectiveShowCardDetails,
-    });
-  }, [
-    contributionShelf.abraContributionSample,
-    contributionShelf.effectiveShowCardDetails,
-    profile?.user,
-    repositories.length,
-    streak.currentStreakDays,
-  ]);
-
-  const abraInsights = useAbraInsights(abraPayload);
-  const hasCachedProfile = Boolean(data?.profile);
-  const shouldBlockOnLoading = isLoading && !hasCachedProfile;
-  const shouldBlockOnError = isError && !hasCachedProfile;
-  const backgroundRefreshError = isError && hasCachedProfile
-    ? `${sanitizeUserFacingError((error as Error | null)?.message || "", "stale-refresh")} Showing latest verified contribution data.`
-    : "";
+  const abraInsights = useAbraInsights(contributionsPage.abraPayload);
 
   useEffect(() => {
     if (!exportNotice) {
@@ -191,7 +161,7 @@ export function ContributionsPageClient() {
     };
   }, [exportNotice]);
 
-  if (shouldBlockOnLoading) {
+  if (contributionsPage.shouldBlockOnLoading) {
     return (
       <RouteLoadingState
         eyebrow="Contributions"
@@ -203,7 +173,7 @@ export function ContributionsPageClient() {
     );
   }
 
-  if (shouldBlockOnError) {
+  if (contributionsPage.shouldBlockOnError) {
     return (
       <ErrorState
         title="Contribution sync failed"
@@ -304,9 +274,9 @@ export function ContributionsPageClient() {
         }}
         dismissLabel="Dismiss export status"
       />
-      {backgroundRefreshError ? (
+      {contributionsPage.backgroundRefreshError ? (
         <InlineNotice
-          message={backgroundRefreshError}
+          message={contributionsPage.backgroundRefreshError}
           placeholder="Background refresh status"
           variant="warning"
           minHeightClassName="min-h-0"
@@ -315,10 +285,10 @@ export function ContributionsPageClient() {
       {appInstallationBlocked ? (
         <GitHubAppSyncBlockNotice message={latestSyncOutcome?.message} />
       ) : null}
-      {profile && (displaySyncState === "stale" || displaySyncState === "partially_synced") ? (
+      {contributionsPage.shouldShowStaleState && profile ? (
         <StaleState
-          message={staleNotice.message}
-          reasonMessage={staleNotice.reasonMessage}
+          message={contributionsPage.staleNotice.message}
+          reasonMessage={contributionsPage.staleNotice.reasonMessage}
           updatedAt={profile.refreshedAt}
           syncState={displaySyncState === "partially_synced" ? "partially_synced" : "stale"}
           onRefresh={staleSyncRefresh.onRefresh}

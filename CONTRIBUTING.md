@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 8, 2026)
 
+- Moved contributions repository/streak summaries, stale evidence notice selection, cached-refresh blocking state, background-refresh warning copy, and ABRA request shaping into `contributions-page-model`, keeping `ContributionsPageClient` focused on filters, sync refresh orchestration, export notices, and section composition.
 - Moved dashboard streak projection, ABRA request shaping, deterministic identity fallback, and stale-notice selection into `dashboard-page-model`; added shared GitRank profile/badge test fixtures so dashboard, badge, and ABRA model tests stop carrying duplicate profile builders.
 - Moved badge page-size policy, deferred-filter status, shelf projection, streak summary, ABRA badge request shaping, and deterministic archetype fallback into `badges-page-model`, keeping `BadgesPageClient` focused on React state, sync notices, and section composition.
 - Moved settings sync-run row projection, searchable text, safe error normalization, metric summaries, status counts, health labels, summary insight selection, and filtered results into `sync-run-activity-model`, keeping `SyncRunActivityPanel` focused on local control state and section composition.

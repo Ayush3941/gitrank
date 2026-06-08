@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Contributions page model:
+  - moved repository and streak summaries, stale evidence notice selection, cached-refresh blocking state, background-refresh warning copy, and ABRA request shaping into `contributions-page-model`.
+  - kept `ContributionsPageClient` focused on filter state, sync refresh orchestration, export notices, and composing filters with the card section.
 - Dashboard page model:
   - moved streak projection, ABRA request shaping, deterministic archetype/identity fallback, and stale-notice selection into `dashboard-page-model`.
   - added shared GitRank profile and badge fixtures so dashboard, badge, and ABRA model tests use one profile contract instead of private duplicate builders.
