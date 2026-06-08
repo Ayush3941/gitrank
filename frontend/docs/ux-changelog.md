@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- ABRA insights:
+  - centralized profile, contribution, and badge request projection in `buildAbraInsightsRequest`.
+  - kept per-page gates explicit while removing duplicated AI request mapping from dashboard, contributions, badges, public profile, and onboarding clients.
 - Quest spotlight:
   - moved daily, weekly, and long-term mission spotlight cards into `QuestsSpotlightSection`.
   - moved spotlight ranking and progress percent calculation into `quest-spotlight` so presentation and selection rules are testable outside the page client.

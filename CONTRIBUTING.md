@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 8, 2026)
 
+- Centralized ABRA insight request projection in `buildAbraInsightsRequest`, replacing repeated profile/contribution/badge mapping across dashboard, contributions, badges, public profile, and onboarding clients while preserving each page's gating and evidence limits.
 - Split quest spotlight rendering into `QuestsSpotlightSection` and moved spotlight ranking/progress logic into `quest-spotlight`, keeping quest data loading and selected spotlight ownership in `QuestsPageClient`.
 
 ## Session Notes (June 7, 2026)

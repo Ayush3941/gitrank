@@ -13,10 +13,9 @@ import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import {
   buildDeterministicIdentitySummary,
   deriveDeterministicArchetype,
-  shouldRequestAbraInsights,
 } from "@/lib/ai/deterministic-identity-summary";
+import { buildAbraInsightsRequest } from "@/lib/ai/abra-insights-request";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
-import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 
 export function RevealPanelContainer() {
   const { data, isError, isLoading } = useMyProfile();
@@ -27,58 +26,13 @@ export function RevealPanelContainer() {
     [data?.user.contributions],
   );
   const abraPayload = useMemo(() => {
-    if (!data) {
-      return null;
-    }
-    if (
-      !shouldRequestAbraInsights({
-        showAiSummaries: data.user.privacy.showAiSummaries !== false,
-        mergedPrCount: data.user.mergedPrCount,
-        contributionCount: data.user.contributions.length,
-      })
-    ) {
-      return null;
-    }
-    const visibleBadges = deduplicateBadgesByName(data.user.badges);
-    return {
-      profile: {
-        username: data.user.username,
-        displayName: data.user.displayName,
-        currentTitle: data.user.title,
-        rankTier: data.user.level.rankTier,
-        level: data.user.level.currentLevel,
-        totalXp: data.user.level.currentXp,
-        mergedPrCount: data.user.mergedPrCount,
-        strongestSignals: data.user.strongestSignals,
-        repositoriesTouched: data.topRepositories.length,
-        badgeCount: visibleBadges.filter((badge) => badge.unlocked).length,
-        streakDays: streak.currentStreakDays,
-      },
-      contributions: data.user.contributions.slice(0, 8).map((row) => ({
-        id: row.id,
-        title: row.title,
-        owner: row.owner,
-        repo: row.repo,
-        number: row.number,
-        category: row.category,
-        status: row.status,
-        xpEarned: row.xpEarned,
-        mergedAt: row.mergedAt,
-        summary: row.aiSummary,
-        evidenceSignals: row.evidenceSignals,
-      })),
-      badges: visibleBadges.slice(0, 8).map((badge) => ({
-        id: badge.id,
-        name: badge.name,
-        rarity: badge.rarity,
-        unlocked: badge.unlocked,
-        earnedAt: badge.earnedAt,
-        description: badge.description,
-        unlockCondition: badge.unlockCondition,
-        progress: badge.progress ?? (badge.unlocked ? 100 : 0),
-        evidencePrIds: badge.evidencePrIds,
-      })),
-    };
+    return buildAbraInsightsRequest({
+      user: data?.user,
+      contributions: data?.user.contributions ?? [],
+      badges: data?.user.badges ?? [],
+      repositoriesTouched: data?.topRepositories.length ?? 0,
+      streakDays: streak.currentStreakDays,
+    });
   }, [data, streak.currentStreakDays]);
   const abraInsights = useAbraInsights(abraPayload);
   const fallbackArchetype = useMemo(

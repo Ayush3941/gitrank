@@ -28,12 +28,11 @@ import { StatCard } from "@/components/shared/StatCard";
 import {
   buildDeterministicIdentitySummary,
   deriveDeterministicArchetype,
-  shouldRequestAbraInsights,
 } from "@/lib/ai/deterministic-identity-summary";
+import { buildAbraInsightsRequest } from "@/lib/ai/abra-insights-request";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { formatNumber, formatPluralCount } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
-import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { shouldShowProfileFreshnessPill } from "@/lib/presentation/sync-evidence";
 import {
   isGitHubAppInstallationBlocked,
@@ -109,61 +108,14 @@ export function DashboardPageClient() {
     [user?.contributions],
   );
   const abraPayload = useMemo(() => {
-    if (!user) {
-      return null;
-    }
-    if (constrainedNetwork) {
-      return null;
-    }
-    if (
-      !shouldRequestAbraInsights({
-        showAiSummaries: user.privacy.showAiSummaries !== false,
-        mergedPrCount: user.mergedPrCount,
-        contributionCount: user.contributions.length,
-      })
-    ) {
-      return null;
-    }
-    const visibleBadges = deduplicateBadgesByName(user.badges);
-    return {
-      profile: {
-        username: user.username,
-        displayName: user.displayName,
-        currentTitle: user.title,
-        rankTier: user.level.rankTier,
-        level: user.level.currentLevel,
-        totalXp: user.level.currentXp,
-        mergedPrCount: user.mergedPrCount,
-        strongestSignals: user.strongestSignals,
-        repositoriesTouched: user.repositories.length,
-        badgeCount: visibleBadges.filter((badge) => badge.unlocked).length,
-        streakDays: streak.currentStreakDays,
-      },
-      contributions: user.contributions.slice(0, 8).map((row) => ({
-        id: row.id,
-        title: row.title,
-        owner: row.owner,
-        repo: row.repo,
-        number: row.number,
-        category: row.category,
-        status: row.status,
-        xpEarned: row.xpEarned,
-        mergedAt: row.mergedAt,
-        summary: row.aiSummary,
-        evidenceSignals: row.evidenceSignals,
-      })),
-      badges: visibleBadges.slice(0, 8).map((badge) => ({
-        id: badge.id,
-        name: badge.name,
-        rarity: badge.rarity,
-        unlocked: badge.unlocked,
-        earnedAt: badge.earnedAt,
-        description: badge.description,
-        unlockCondition: badge.unlockCondition,
-        progress: badge.progress ?? (badge.unlocked ? 100 : 0),
-        evidencePrIds: badge.evidencePrIds,
-      })),
-    };
+    return buildAbraInsightsRequest({
+      user,
+      contributions: user?.contributions ?? [],
+      badges: user?.badges ?? [],
+      repositoriesTouched: user?.repositories.length ?? 0,
+      streakDays: streak.currentStreakDays,
+      enabled: !constrainedNetwork,
+    });
   }, [constrainedNetwork, streak.currentStreakDays, user]);
   const abraInsights = useAbraInsights(abraPayload);
   const fallbackArchetype = useMemo(

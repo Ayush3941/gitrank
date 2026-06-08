@@ -27,8 +27,8 @@ import { useStaleSyncRefresh } from "@/hooks/use-stale-sync-refresh";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import {
   deriveDeterministicArchetype,
-  shouldRequestAbraInsights,
 } from "@/lib/ai/deterministic-identity-summary";
+import { buildAbraInsightsRequest } from "@/lib/ai/abra-insights-request";
 import { toRatioPercent } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
@@ -83,15 +83,17 @@ export function BadgesPageClient() {
     (rarity !== "All" ? 1 : 0) + (visibility !== "All" ? 1 : 0);
 
   const allBadges = useMemo(() => deduplicateBadgesByName(data?.badges ?? []), [data?.badges]);
-  const filtered =
-    allBadges.filter((badge) => {
+  const filtered = useMemo(
+    () => allBadges.filter((badge) => {
       const rarityMatch = deferredRarity === "All" || badge.rarity === deferredRarity;
       const visibilityMatch =
         deferredVisibility === "All" ||
         (deferredVisibility === "Unlocked" && badge.unlocked) ||
         (deferredVisibility === "Locked" && !badge.unlocked);
       return rarityMatch && visibilityMatch;
-    });
+    }),
+    [allBadges, deferredRarity, deferredVisibility],
+  );
   const profile = data?.profile;
   const { syncStateForDisplay, showRefreshPill } = useProfileSyncState(
     profile?.user,
@@ -146,55 +148,28 @@ export function BadgesPageClient() {
   const streak = summarizeContributionStreak(profile?.user.contributions ?? []);
   const nextUnlockTarget = lockedBadgesSorted[0] ?? null;
 
-  const abraInsights = useAbraInsights(
-    profile &&
-      !constrainedNetwork &&
-      shouldRequestAbraInsights({
-        showAiSummaries: profile.user.privacy.showAiSummaries !== false,
-        mergedPrCount: profile.user.mergedPrCount,
-        contributionCount: profile.user.contributions.length,
-      })
-      ? {
-          profile: {
-            username: profile.user.username,
-            displayName: profile.user.displayName,
-            currentTitle: profile.user.title,
-            rankTier: profile.user.level.rankTier,
-            level: profile.user.level.currentLevel,
-            totalXp: profile.user.level.currentXp,
-            mergedPrCount: profile.user.mergedPrCount,
-            strongestSignals: profile.user.strongestSignals,
-            repositoriesTouched: profile.topRepositories.length,
-            badgeCount: unlockedCount,
-            streakDays: streak.currentStreakDays,
-          },
-          contributions: profile.user.contributions.slice(0, 8).map((row) => ({
-            id: row.id,
-            title: row.title,
-            owner: row.owner,
-            repo: row.repo,
-            number: row.number,
-            category: row.category,
-            status: row.status,
-            xpEarned: row.xpEarned,
-            mergedAt: row.mergedAt,
-            summary: row.aiSummary,
-            evidenceSignals: row.evidenceSignals,
-          })),
-          badges: filtered.slice(0, 10).map((badge) => ({
-            id: badge.id,
-            name: badge.name,
-            rarity: badge.rarity,
-            unlocked: badge.unlocked,
-            earnedAt: badge.earnedAt,
-            description: badge.description,
-            unlockCondition: badge.unlockCondition,
-            progress: badge.progress ?? (badge.unlocked ? 100 : 0),
-            evidencePrIds: badge.evidencePrIds,
-          })),
-        }
-      : null,
+  const abraPayload = useMemo(
+    () =>
+      buildAbraInsightsRequest({
+        user: profile?.user,
+        contributions: profile?.user.contributions ?? [],
+        badges: filtered,
+        repositoriesTouched: profile?.topRepositories.length ?? 0,
+        streakDays: streak.currentStreakDays,
+        enabled: !constrainedNetwork,
+        badgeLimit: 10,
+        badgeCount: unlockedCount,
+      }),
+    [
+      constrainedNetwork,
+      filtered,
+      profile?.topRepositories.length,
+      profile?.user,
+      streak.currentStreakDays,
+      unlockedCount,
+    ],
   );
+  const abraInsights = useAbraInsights(abraPayload);
   const fallbackArchetype = profile
     ? deriveDeterministicArchetype(profile.user.strongestSignals)
     : "Systems Builder";

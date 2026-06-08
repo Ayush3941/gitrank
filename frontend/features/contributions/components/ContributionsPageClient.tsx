@@ -23,14 +23,11 @@ import {
   useReducedGamification,
 } from "@/hooks/use-gamification-preference";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
-import {
-  shouldRequestAbraInsights,
-} from "@/lib/ai/deterministic-identity-summary";
+import { buildAbraInsightsRequest } from "@/lib/ai/abra-insights-request";
 import {
   summarizeContributionStreak,
   summarizeRepositories,
 } from "@/lib/metrics/contribution-metrics";
-import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { deduplicateContributionsByPullRequest } from "@/lib/presentation/contribution-dedup";
 import { shouldShowProfileFreshnessPill } from "@/lib/presentation/sync-evidence";
 import {
@@ -179,64 +176,17 @@ export function ContributionsPageClient() {
     [filteredRows],
   );
   const abraPayload = useMemo(() => {
-    if (!profile) {
-      return null;
-    }
-    if (!effectiveShowCardDetails) {
-      return null;
-    }
-    if (
-      !shouldRequestAbraInsights({
-        showAiSummaries: profile.user.privacy.showAiSummaries !== false,
-        mergedPrCount: profile.user.mergedPrCount,
-        contributionCount: abraContributionSample.length,
-      })
-    ) {
-      return null;
-    }
-    const visibleBadges = deduplicateBadgesByName(profile.user.badges);
-    return {
-      profile: {
-        username: profile.user.username,
-        displayName: profile.user.displayName,
-        currentTitle: profile.user.title,
-        rankTier: profile.user.level.rankTier,
-        level: profile.user.level.currentLevel,
-        totalXp: profile.user.level.currentXp,
-        mergedPrCount: profile.user.mergedPrCount,
-        strongestSignals: profile.user.strongestSignals,
-        repositoriesTouched: repositories.length,
-        badgeCount: visibleBadges.filter((badge) => badge.unlocked).length,
-        streakDays: streak.currentStreakDays,
-      },
-      contributions: abraContributionSample.map((row) => ({
-        id: row.id,
-        title: row.title,
-        owner: row.owner,
-        repo: row.repo,
-        number: row.number,
-        category: row.category,
-        status: row.status,
-        xpEarned: row.xpEarned,
-        mergedAt: row.mergedAt,
-        summary: row.aiSummary,
-        evidenceSignals: row.evidenceSignals,
-      })),
-      badges: visibleBadges.slice(0, 8).map((badge) => ({
-        id: badge.id,
-        name: badge.name,
-        rarity: badge.rarity,
-        unlocked: badge.unlocked,
-        earnedAt: badge.earnedAt,
-        description: badge.description,
-        unlockCondition: badge.unlockCondition,
-        progress: badge.progress ?? (badge.unlocked ? 100 : 0),
-        evidencePrIds: badge.evidencePrIds,
-      })),
-    };
+    return buildAbraInsightsRequest({
+      user: profile?.user,
+      contributions: abraContributionSample,
+      badges: profile?.user.badges ?? [],
+      repositoriesTouched: repositories.length,
+      streakDays: streak.currentStreakDays,
+      enabled: effectiveShowCardDetails,
+    });
   }, [
     abraContributionSample,
-    profile,
+    profile?.user,
     repositories.length,
     effectiveShowCardDetails,
     streak.currentStreakDays,
