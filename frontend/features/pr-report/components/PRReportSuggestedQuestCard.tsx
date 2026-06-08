@@ -35,8 +35,8 @@ export function PRReportSuggestedQuestCard({
             </p>
             {signals.length ? (
               <ul role="list" className="mt-3 flex flex-wrap gap-2">
-                {signals.map((signal, index) => (
-                  <li key={`${questId}-${signal}-${index}`} className="list-none">
+                {signals.map((signal) => (
+                  <li key={`${questId}-${signal}`} className="list-none">
                     <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
                       {signal}
                     </span>

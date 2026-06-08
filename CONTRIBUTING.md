@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 8, 2026)
 
+- Routed PR report proof checks, evidence chips, badge rewards, suggested-quest chips, and XP breakdown rows to stable model/source IDs instead of index-derived render keys.
 - Extended `reveal-panel-model` next-action output with stable IDs and routed reveal badge/action lists away from index-derived keys, keeping reveal rendering tied to model-owned identities.
 - Added `onboarding-entry-model` for sign-in steps, connection steps, scoring rules, data-access rows, and privacy controls, keeping `LoginPanel` and `ConnectGithubPanel` focused on layout and side effects while mapped rows use stable IDs.
 - Added shared `social-image-chips` presentation data for home, profile, and PR OpenGraph/Twitter chip rows, replacing repeated inline chip arrays with stable IDs across share-card routes.

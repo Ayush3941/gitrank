@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- PR report row identity:
+  - replaced index-derived keys in proof checks, stored evidence chips, suggested quest chips, badge reward chips, and XP breakdown rows with stable source/model IDs.
+  - kept PR report copy and ordering unchanged while making report rendering less order-fragile.
 - Onboarding reveal model:
   - changed reveal next actions from plain strings to stable `{id, text}` rows.
   - routed reveal badge and next-action lists away from index-derived keys while preserving the same visible copy and ordering.

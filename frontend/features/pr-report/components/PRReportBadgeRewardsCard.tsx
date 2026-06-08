@@ -26,11 +26,11 @@ export function PRReportBadgeRewardsCard({
             Rewards unlocked
           </div>
           <ul role="list" className="grid gap-3 md:grid-cols-2">
-            {badges.map((badge, index) => {
+            {badges.map((badge) => {
               const badgeSignals = buildEvidenceSignalChips(badge.evidenceSignals, 3);
               return (
                 <li
-                  key={`${badge.key}-${index}`}
+                  key={badge.key}
                   className="list-none render-opt-card neon-surface rounded-[var(--radius-universal)] p-4"
                 >
                   <p className="text-lg font-semibold text-white">{badge.name}</p>
@@ -42,8 +42,8 @@ export function PRReportBadgeRewardsCard({
                   </p>
                   {badgeSignals.length ? (
                     <ul role="list" className="mt-3 flex flex-wrap gap-2">
-                      {badgeSignals.map((signal, signalIndex) => (
-                        <li key={`${badge.key}-${signal}-${signalIndex}`} className="list-none">
+                      {badgeSignals.map((signal) => (
+                        <li key={`${badge.key}-${signal}`} className="list-none">
                           <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
                             {signal}
                           </span>

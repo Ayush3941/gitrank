@@ -7,14 +7,38 @@ export function EvidenceSignalsCard({ report }: { report: PullRequestAnalysis })
   const contribution = report.contribution;
   const allSignals = buildEvidenceSignalChips(contribution.evidenceSignals);
   const visibleSignals = allSignals.slice(0, 8);
+  const visibleSignalRows = visibleSignals.map((label) => ({
+    id: `evidence-signal:${label.toLowerCase().replace(/\s+/g, "-")}`,
+    label,
+  }));
   const remainingSignals = Math.max(0, allSignals.length - visibleSignals.length);
   const signals = [
-    { label: "Maintainer reviewed", active: contribution.maintainerReviewed, icon: ShieldCheck },
-    { label: "Linked issue", active: contribution.linkedIssue, icon: Link2 },
-    { label: "Tests added", active: contribution.testSignalScore >= 50, icon: TestTube2 },
-    { label: "Runtime or service code changed", active: contribution.category !== "Documentation", icon: GitMerge },
-    { label: "Docs updated", active: contribution.category === "Documentation", icon: Check },
-    { label: "CI passed", active: contribution.ciPassed, icon: Check },
+    {
+      id: "maintainer-reviewed",
+      label: "Maintainer reviewed",
+      active: contribution.maintainerReviewed,
+      icon: ShieldCheck,
+    },
+    { id: "linked-issue", label: "Linked issue", active: contribution.linkedIssue, icon: Link2 },
+    {
+      id: "tests-added",
+      label: "Tests added",
+      active: contribution.testSignalScore >= 50,
+      icon: TestTube2,
+    },
+    {
+      id: "runtime-code",
+      label: "Runtime or service code changed",
+      active: contribution.category !== "Documentation",
+      icon: GitMerge,
+    },
+    {
+      id: "docs-updated",
+      label: "Docs updated",
+      active: contribution.category === "Documentation",
+      icon: Check,
+    },
+    { id: "ci-passed", label: "CI passed", active: contribution.ciPassed, icon: Check },
   ];
 
   return (
@@ -24,10 +48,10 @@ export function EvidenceSignalsCard({ report }: { report: PullRequestAnalysis })
         <h2 className="mt-2 text-xl font-semibold text-white">Proof checks</h2>
       </div>
       <ul role="list" className="grid gap-3 md:grid-cols-2">
-        {signals.map((signal, index) => {
+        {signals.map((signal) => {
           const Icon = signal.icon;
           return (
-            <li key={`${signal.label}-${index}`} className="list-none neon-surface flex items-center gap-3 rounded-[var(--radius-universal)] px-4 py-4">
+            <li key={signal.id} className="list-none neon-surface flex items-center gap-3 rounded-[var(--radius-universal)] px-4 py-4">
               <div
                 className={`rounded-[var(--radius-universal)] p-2 ${
                   signal.active ? "bg-emerald-400/12 text-emerald-200" : "neon-tile text-muted"
@@ -54,10 +78,10 @@ export function EvidenceSignalsCard({ report }: { report: PullRequestAnalysis })
       <div className="neon-surface rounded-[var(--radius-universal)] p-4">
         <h3 className="text-xs font-medium text-primary">Stored evidence labels</h3>
         <ul role="list" className="mt-3 flex flex-wrap gap-2">
-          {visibleSignals.map((signal, index) => (
-            <li key={`${signal}-${index}`} className="list-none">
+          {visibleSignalRows.map((signal) => (
+            <li key={signal.id} className="list-none">
               <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
-                {signal}
+                {signal.label}
               </span>
             </li>
           ))}

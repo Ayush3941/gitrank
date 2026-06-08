@@ -2,15 +2,24 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { formatSignedXp } from "@/lib/formatters";
 import type { PullRequestAnalysis } from "@/types/gitrank";
 
+type XPBreakdownRow = {
+  id: string;
+  label: string;
+  value: string;
+  detail: string;
+};
+
 export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
   const contribution = report.contribution;
-  const fallbackRows = [
+  const fallbackRows: XPBreakdownRow[] = [
     {
+      id: "base-pr-value",
       label: "Base PR value",
       value: formatSignedXp(report.baseValue),
       detail: `${contribution.difficultyScore}/100 difficulty and ${contribution.impactScore}/100 impact.`,
     },
     {
+      id: "merged-bonus",
       label: "Merged bonus",
       value: formatSignedXp(report.mergedBonus),
       detail:
@@ -19,6 +28,7 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
           : "Open work earns provisional value only.",
     },
     {
+      id: "review-depth-bonus",
       label: "Review depth bonus",
       value: formatSignedXp(report.reviewBonus),
       detail: contribution.maintainerReviewed
@@ -26,6 +36,7 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
         : "No maintainer review detected yet.",
     },
     {
+      id: "test-impact-bonus",
       label: "Test impact bonus",
       value: formatSignedXp(report.testBonus),
       detail: contribution.ciPassed
@@ -33,6 +44,7 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
         : "CI proof was missing or incomplete.",
     },
     {
+      id: "repo-weight-bonus",
       label: "Repo weight bonus",
       value: formatSignedXp(report.repoBonus),
       detail: `Repository context multiplier ${contribution.repoWeight.toFixed(2)}x.`,
@@ -40,6 +52,7 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
   ];
   const rows = report.scoreComponents.length
     ? report.scoreComponents.map((component) => ({
+        id: component.key || `${component.label}:${component.source}`,
         label: component.label,
         value: component.displayValue,
         detail: component.reason,
@@ -62,9 +75,9 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
         </h2>
       </div>
       <ul role="list" className="space-y-3">
-        {visibleRows.map((row, index) => (
+        {visibleRows.map((row) => (
           <li
-            key={`${row.label}-${index}`}
+            key={row.id}
             className="list-none neon-surface rounded-[var(--radius-universal)] px-4 py-4"
           >
             <div className="flex items-center justify-between gap-4">
@@ -91,9 +104,9 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
             meaningful evidence.
           </p>
         </li>
-        {report.penalties.map((penalty, index) => (
+        {report.penalties.map((penalty) => (
           <li
-            key={`${penalty.label}-${index}`}
+            key={`${penalty.label}:${penalty.reason}`}
             className="list-none rounded-[var(--radius-universal)] border border-rose-400/18 bg-rose-400/8 px-4 py-4"
           >
             <div className="flex items-center justify-between gap-4">
@@ -113,8 +126,8 @@ export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
 }
 
 function prioritizeFinalXpRow(
-  rows: Array<{ label: string; value: string; detail: string }>,
-): Array<{ label: string; value: string; detail: string }> {
+  rows: XPBreakdownRow[],
+): XPBreakdownRow[] {
   if (rows.length <= 3) {
     return rows;
   }
