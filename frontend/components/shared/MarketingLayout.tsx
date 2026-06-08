@@ -4,6 +4,10 @@ import { ArrowUpRight } from "lucide-react";
 import { BrandLogo } from "@/components/shared/BrandLogo";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { Button } from "@/components/ui/button";
+import {
+  MARKETING_ANTI_SPAM_PROMISE,
+  MARKETING_NAV_ITEMS,
+} from "@/lib/presentation/marketing-shell";
 
 export function MarketingLayout({ children }: { children: ReactNode }) {
   return (
@@ -37,13 +41,8 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
               role="list"
               className="dashboard-nav-track scroll-fade-x scroll-fade-x-sm-hide lane-rail flex gap-2 overflow-x-auto p-0.5 sm:flex-wrap sm:overflow-visible sm:p-0"
             >
-              {[
-                { href: "/#why-gitrank", label: "Why GitRank" },
-                { href: "/#core-journeys", label: "Journeys" },
-                { href: "/#battle-reports", label: "Reports" },
-                { href: "/#start-reveal", label: "Start" },
-              ].map((item) => (
-                <li key={item.href} className="list-none shrink-0 sm:shrink">
+              {MARKETING_NAV_ITEMS.map((item) => (
+                <li key={item.id} className="list-none shrink-0 sm:shrink">
                   <IntentPrefetchLink
                     href={item.href}
                     className="focus-ring dashboard-nav-item inline-flex min-h-11 items-center justify-center px-4 py-2 text-xs font-medium"
@@ -58,7 +57,7 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
         {children}
         <footer className="cyber-terminal px-5 py-6 text-sm text-muted">
           <p className="text-foreground">
-            GitRank rewards merged evidence, review depth, tests, and project impact. Repeated low-signal PRs receive reduced weight.
+            {MARKETING_ANTI_SPAM_PROMISE.body}
           </p>
         </footer>
       </div>

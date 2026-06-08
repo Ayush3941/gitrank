@@ -4,9 +4,10 @@ import { describe, expect, it, vi } from "vitest";
 import MarketingLoading from "@/app/(marketing)/loading";
 import { MarketingLayout } from "@/components/shared/MarketingLayout";
 import { LandingPage } from "@/features/marketing/components/LandingPage";
-
-const antiSpamCopy =
-  "GitRank rewards merged evidence, review depth, tests, and project impact. Repeated low-signal PRs receive reduced weight.";
+import {
+  MARKETING_ANTI_SPAM_PROMISE,
+  MARKETING_NAV_ITEMS,
+} from "@/lib/presentation/marketing-shell";
 
 vi.mock("next/link", () => ({
   default: ({ href, children, className }: { href: string; children: ReactNode; className?: string }) => (
@@ -24,15 +25,15 @@ describe("marketing shell copy", () => {
 
     expect(
       screen.getByRole("heading", {
-        name: "Low-signal volume does not outrank meaningful work.",
+        name: MARKETING_ANTI_SPAM_PROMISE.title,
       }),
     ).not.toBeNull();
-    expect(screen.getAllByText(antiSpamCopy).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(MARKETING_ANTI_SPAM_PROMISE.body).length).toBeGreaterThanOrEqual(1);
     expect(screen.queryByText(/do not make you powerful/i)).toBeNull();
 
     const nav = screen.getByRole("navigation", { name: "Marketing routes" });
     expect(nav.querySelector("ul")?.className).toContain("overflow-x-auto");
-    expect(nav.querySelectorAll(".min-h-11")).toHaveLength(4);
+    expect(nav.querySelectorAll(".min-h-11")).toHaveLength(MARKETING_NAV_ITEMS.length);
   });
 
   it("uses a product-focused first-load label", () => {

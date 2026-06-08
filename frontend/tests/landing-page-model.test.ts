@@ -3,9 +3,7 @@ import {
   buildLandingPageModel,
   type LandingIconKey,
 } from "@/features/marketing/lib/landing-page-model";
-
-const antiSpamCopy =
-  "GitRank rewards merged evidence, review depth, tests, and project impact. Repeated low-signal PRs receive reduced weight.";
+import { MARKETING_ANTI_SPAM_PROMISE } from "@/lib/presentation/marketing-shell";
 
 function expectUniqueIds(items: Array<{ id: string }>, section: string) {
   const ids = items.map((item) => item.id);
@@ -40,8 +38,7 @@ describe("landing page model", () => {
   it("keeps the anti-spam promise direct and evidence-focused", () => {
     const model = buildLandingPageModel();
 
-    expect(model.antiSpamPromise.title).toBe("Low-signal volume does not outrank meaningful work.");
-    expect(model.antiSpamPromise.body).toBe(antiSpamCopy);
+    expect(model.antiSpamPromise).toBe(MARKETING_ANTI_SPAM_PROMISE);
     expect(model.antiSpamPromise.body).not.toMatch(/powerful|arena/i);
   });
 });

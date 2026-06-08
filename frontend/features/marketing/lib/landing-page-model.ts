@@ -1,3 +1,5 @@
+import { MARKETING_ANTI_SPAM_PROMISE } from "@/lib/presentation/marketing-shell";
+
 export type LandingIconKey =
   | "chart"
   | "pull-request"
@@ -122,9 +124,6 @@ export function buildLandingPageModel(): LandingPageModel {
       { id: "testing-reliability", title: "Testing and reliability signal" },
       { id: "cross-repo-impact", title: "Cross-repository impact" },
     ],
-    antiSpamPromise: {
-      title: "Low-signal volume does not outrank meaningful work.",
-      body: "GitRank rewards merged evidence, review depth, tests, and project impact. Repeated low-signal PRs receive reduced weight.",
-    },
+    antiSpamPromise: MARKETING_ANTI_SPAM_PROMISE,
   };
 }

@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Marketing shell model:
+  - moved marketing navigation items and anti-spam promise copy into shared `marketing-shell` presentation data.
+  - kept `MarketingLayout` and `landing-page-model` aligned through one tested source of truth instead of duplicate inline shell copy.
 - Marketing landing model:
   - moved loop steps, problem cards, core journeys, solution lines, badge tracks, and anti-spam promise copy into `landing-page-model`.
   - kept `LandingPage` focused on layout and icon selection while mapped sections use stable content IDs instead of index-derived keys.

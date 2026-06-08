@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 8, 2026)
 
+- Added shared `marketing-shell` presentation data for marketing navigation and anti-spam promise copy, so `MarketingLayout` and `landing-page-model` consume one tested source of truth instead of duplicating shell copy.
 - Added `landing-page-model` for marketing loop steps, problem cards, core journeys, solution lines, badge tracks, and anti-spam promise copy, keeping `LandingPage` focused on layout while mapped sections use stable content IDs.
 - Added `reveal-panel-model` for onboarding reveal metrics, badge de-duplication, evidence summary copy, sync-recovery decisions, next actions, and share headline formatting, keeping `RevealPanel` focused on presentation.
 - Added `sync-pipeline-model` for onboarding sync steps, polling cadence, progress, retry eligibility, and sanitized action-error state, keeping `SyncPipeline` focused on sync side effects and rendering.
