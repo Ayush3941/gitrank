@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { SOCIAL_IMAGE_CHIP_GROUPS } from "@/lib/presentation/social-image-chips";
 
 export const alt = "GitRank public profile Twitter card";
 export const size = {
@@ -91,9 +92,9 @@ export default async function ProfileTwitterImage({
           </div>
         </div>
         <div style={{ display: "flex", gap: "14px", position: "relative" }}>
-          {["Contributions", "Badges", "Quests", "Leaderboard"].map((chip, index) => (
+          {SOCIAL_IMAGE_CHIP_GROUPS.profileTwitter.map((chip) => (
             <div
-              key={`profile-twitter-chip-${index}-${chip}`}
+              key={chip.id}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -104,7 +105,7 @@ export default async function ProfileTwitterImage({
                 fontWeight: 600,
               }}
             >
-              {chip}
+              {chip.label}
             </div>
           ))}
         </div>

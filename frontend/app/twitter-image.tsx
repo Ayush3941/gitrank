@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { SOCIAL_IMAGE_CHIP_GROUPS } from "@/lib/presentation/social-image-chips";
 
 export const alt = "GitRank open-source contributor profile platform";
 export const size = {
@@ -85,9 +86,9 @@ export default function TwitterImage() {
           </div>
         </div>
         <div style={{ display: "flex", gap: "14px", position: "relative" }}>
-          {["Sync GitHub", "Analyze PRs", "Earn XP", "Climb Leaderboard"].map((chip, index) => (
+          {SOCIAL_IMAGE_CHIP_GROUPS.homeTwitter.map((chip) => (
             <div
-              key={`home-twitter-chip-${index}-${chip}`}
+              key={chip.id}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -98,7 +99,7 @@ export default function TwitterImage() {
                 fontWeight: 600,
               }}
             >
-              {chip}
+              {chip.label}
             </div>
           ))}
         </div>

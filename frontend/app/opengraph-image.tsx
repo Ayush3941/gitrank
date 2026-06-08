@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { SOCIAL_IMAGE_CHIP_GROUPS } from "@/lib/presentation/social-image-chips";
 
 export const alt = "GitRank contributor intelligence card";
 export const size = {
@@ -85,9 +86,9 @@ export default function OpenGraphImage() {
           </div>
         </div>
         <div style={{ display: "flex", gap: "14px", position: "relative" }}>
-          {["PR Impact", "XP + Levels", "Badges + Quests", "Public Profile"].map((chip, index) => (
+          {SOCIAL_IMAGE_CHIP_GROUPS.homeOpenGraph.map((chip) => (
             <div
-              key={`home-og-chip-${index}-${chip}`}
+              key={chip.id}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -98,7 +99,7 @@ export default function OpenGraphImage() {
                 fontWeight: 600,
               }}
             >
-              {chip}
+              {chip.label}
             </div>
           ))}
         </div>

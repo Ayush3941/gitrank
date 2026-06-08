@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Social image chips:
+  - moved home, profile, and PR OpenGraph/Twitter chip labels into shared `social-image-chips` presentation data.
+  - replaced repeated inline chip arrays and index-derived keys in share-card routes with stable chip IDs while preserving the rendered labels.
 - Marketing shell model:
   - moved marketing navigation items and anti-spam promise copy into shared `marketing-shell` presentation data.
   - kept `MarketingLayout` and `landing-page-model` aligned through one tested source of truth instead of duplicate inline shell copy.

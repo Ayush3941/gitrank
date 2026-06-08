@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 8, 2026)
 
+- Added shared `social-image-chips` presentation data for home, profile, and PR OpenGraph/Twitter chip rows, replacing repeated inline chip arrays with stable IDs across share-card routes.
 - Added shared `marketing-shell` presentation data for marketing navigation and anti-spam promise copy, so `MarketingLayout` and `landing-page-model` consume one tested source of truth instead of duplicating shell copy.
 - Added `landing-page-model` for marketing loop steps, problem cards, core journeys, solution lines, badge tracks, and anti-spam promise copy, keeping `LandingPage` focused on layout while mapped sections use stable content IDs.
 - Added `reveal-panel-model` for onboarding reveal metrics, badge de-duplication, evidence summary copy, sync-recovery decisions, next actions, and share headline formatting, keeping `RevealPanel` focused on presentation.

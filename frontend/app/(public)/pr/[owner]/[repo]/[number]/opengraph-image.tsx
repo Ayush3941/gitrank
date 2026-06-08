@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { SOCIAL_IMAGE_CHIP_GROUPS } from "@/lib/presentation/social-image-chips";
 
 export const alt = "GitRank PR battle report preview";
 export const size = {
@@ -91,9 +92,9 @@ export default async function PRReportOpenGraphImage({
           </div>
         </div>
         <div style={{ display: "flex", gap: "14px", position: "relative" }}>
-          {["Difficulty", "Impact", "Review Depth", "XP Drivers"].map((chip, index) => (
+          {SOCIAL_IMAGE_CHIP_GROUPS.prOpenGraph.map((chip) => (
             <div
-              key={`pr-og-chip-${index}-${chip}`}
+              key={chip.id}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -104,7 +105,7 @@ export default async function PRReportOpenGraphImage({
                 fontWeight: 600,
               }}
             >
-              {chip}
+              {chip.label}
             </div>
           ))}
         </div>

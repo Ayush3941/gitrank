@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { SOCIAL_IMAGE_CHIP_GROUPS } from "@/lib/presentation/social-image-chips";
 
 export const alt = "GitRank PR report Twitter card";
 export const size = {
@@ -91,9 +92,9 @@ export default async function PRReportTwitterImage({
           </div>
         </div>
         <div style={{ display: "flex", gap: "14px", position: "relative" }}>
-          {["Score Matrix", "Evidence Signals", "XP Breakdown", "Recommendations"].map((chip, index) => (
+          {SOCIAL_IMAGE_CHIP_GROUPS.prTwitter.map((chip) => (
             <div
-              key={`pr-twitter-chip-${index}-${chip}`}
+              key={chip.id}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -104,7 +105,7 @@ export default async function PRReportTwitterImage({
                 fontWeight: 600,
               }}
             >
-              {chip}
+              {chip.label}
             </div>
           ))}
         </div>

@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { SOCIAL_IMAGE_CHIP_GROUPS } from "@/lib/presentation/social-image-chips";
 
 export const alt = "GitRank public contributor profile card";
 export const size = {
@@ -92,9 +93,9 @@ export default async function ProfileOpenGraphImage({
           </div>
         </div>
         <div style={{ display: "flex", gap: "14px", position: "relative" }}>
-          {["PR Impact", "XP Movement", "Badge Story", "Rank Progression"].map((chip, index) => (
+          {SOCIAL_IMAGE_CHIP_GROUPS.profileOpenGraph.map((chip) => (
             <div
-              key={`profile-og-chip-${index}-${chip}`}
+              key={chip.id}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -105,7 +106,7 @@ export default async function ProfileOpenGraphImage({
                 fontWeight: 600,
               }}
             >
-              {chip}
+              {chip.label}
             </div>
           ))}
         </div>
