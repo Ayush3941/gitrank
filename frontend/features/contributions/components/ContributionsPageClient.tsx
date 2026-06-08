@@ -12,6 +12,10 @@ import { StaleState } from "@/components/shared/StaleState";
 import { ContributionsCardsSection } from "@/features/contributions/components/ContributionsCardsSection";
 import { ContributionFilters } from "@/features/contributions/components/ContributionFilters";
 import { ContributionsHeaderActions } from "@/features/contributions/components/ContributionsHeaderActions";
+import {
+  buildContributionShelfModel,
+  resolveContributionCardPageSize,
+} from "@/features/contributions/lib/contribution-shelf-model";
 import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useContributions } from "@/hooks/use-contributions";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
@@ -28,7 +32,6 @@ import {
   summarizeContributionStreak,
   summarizeRepositories,
 } from "@/lib/metrics/contribution-metrics";
-import { deduplicateContributionsByPullRequest } from "@/lib/presentation/contribution-dedup";
 import { shouldShowProfileFreshnessPill } from "@/lib/presentation/sync-evidence";
 import {
   isGitHubAppInstallationBlocked,
@@ -36,10 +39,7 @@ import {
 } from "@/lib/presentation/sync-run-diagnostics";
 import { buildStaleSyncNotice } from "@/lib/presentation/stale-sync-notice";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
-import { contributionDisplayConfig } from "@/lib/runtime/contribution-display-config";
 import {
-  buildContributionFocusCounts,
-  buildContributionStatusCounts,
   CONTRIBUTION_DEFAULT_FILTER,
   CONTRIBUTION_DEFAULT_SORT,
   type ContributionFilterValue,
@@ -68,10 +68,7 @@ export function ContributionsPageClient() {
   const deferredSearch = useDeferredValue(debouncedSearch);
   const deferredSort = useDeferredValue(sort);
   const useLiteCards = constrainedNetwork || reducedGamification;
-  const effectiveShowCardDetails = showCardDetails && !useLiteCards;
-  const cardPageSize = useLiteCards
-    ? contributionDisplayConfig.constrainedCardPageSize
-    : contributionDisplayConfig.cardPageSize;
+  const cardPageSize = resolveContributionCardPageSize(useLiteCards);
   const [visibleCardCount, setVisibleCardCount] = useState(cardPageSize);
   const { data, isLoading, isError, error, refetch } = useContributions({
     filter: toContributionQueryFilter(deferredFilter),
@@ -81,55 +78,41 @@ export function ContributionsPageClient() {
   const syncRunsQuery = useProfileSyncRuns();
   const runUserSync = useRunUserSync();
   const profile = data?.profile;
-  const contributionUniverse = useMemo(
-    () => deduplicateContributionsByPullRequest(profile?.user.contributions ?? []),
-    [profile?.user.contributions],
-  );
-  const effectiveHighXPThreshold = Math.max(
-    1,
-    profile?.highXPThreshold ?? contributionDisplayConfig.highXPThreshold,
-  );
-  const statusCounts = useMemo(
-    () => buildContributionStatusCounts(contributionUniverse),
-    [contributionUniverse],
-  );
-  const focusCounts = useMemo(
-    () => buildContributionFocusCounts(contributionUniverse, effectiveHighXPThreshold),
-    [contributionUniverse, effectiveHighXPThreshold],
-  );
-  const effectiveHistoryCap = Math.max(
-    1,
-    Math.min(
-      contributionDisplayConfig.renderHardCap,
-      data?.profile.scoreHistoryCap ?? contributionDisplayConfig.renderHardCap,
-    ),
-  );
-  const filteredRows = useMemo(
+  const contributionShelf = useMemo(
     () =>
-      deduplicateContributionsByPullRequest(data?.rows ?? []).slice(
-        0,
-        effectiveHistoryCap,
-      ),
-    [data?.rows, effectiveHistoryCap],
+      buildContributionShelfModel({
+        rows: data?.rows,
+        contributions: profile?.user.contributions,
+        highXPThreshold: profile?.highXPThreshold,
+        scoreHistoryCap: profile?.scoreHistoryCap,
+        filter,
+        search,
+        sort,
+        debouncedSearch,
+        deferredFilter,
+        deferredSearch,
+        deferredSort,
+        visibleCardCount,
+        useLiteCards,
+        showCardDetails,
+      }),
+    [
+      data?.rows,
+      debouncedSearch,
+      deferredFilter,
+      deferredSearch,
+      deferredSort,
+      filter,
+      profile?.highXPThreshold,
+      profile?.scoreHistoryCap,
+      profile?.user.contributions,
+      search,
+      showCardDetails,
+      sort,
+      useLiteCards,
+      visibleCardCount,
+    ],
   );
-  const visibleRows = useMemo(
-    () => filteredRows.slice(0, visibleCardCount),
-    [filteredRows, visibleCardCount],
-  );
-  const hasMoreRows = filteredRows.length > visibleRows.length;
-  const remainingRows = Math.max(0, filteredRows.length - visibleRows.length);
-  const isFiltering =
-    deferredFilter !== filter ||
-    deferredSearch !== debouncedSearch ||
-    debouncedSearch !== search ||
-    deferredSort !== sort;
-  const canReset =
-    filter !== CONTRIBUTION_DEFAULT_FILTER ||
-    search.trim().length > 0 ||
-    sort !== CONTRIBUTION_DEFAULT_SORT;
-  const totalContributionEvidence = profile?.user.contributions.length ?? 0;
-  const isFilteredNoResults =
-    canReset && totalContributionEvidence > 0 && filteredRows.length === 0;
 
   const repositories = useMemo(
     () => summarizeRepositories(profile?.user.contributions ?? []),
@@ -171,24 +154,20 @@ export function ContributionsPageClient() {
       await refetch();
     },
   });
-  const abraContributionSample = useMemo(
-    () => filteredRows.slice(0, contributionDisplayConfig.abraSampleLimit),
-    [filteredRows],
-  );
   const abraPayload = useMemo(() => {
     return buildAbraInsightsRequest({
       user: profile?.user,
-      contributions: abraContributionSample,
+      contributions: contributionShelf.abraContributionSample,
       badges: profile?.user.badges ?? [],
       repositoriesTouched: repositories.length,
       streakDays: streak.currentStreakDays,
-      enabled: effectiveShowCardDetails,
+      enabled: contributionShelf.effectiveShowCardDetails,
     });
   }, [
-    abraContributionSample,
+    contributionShelf.abraContributionSample,
+    contributionShelf.effectiveShowCardDetails,
     profile?.user,
     repositories.length,
-    effectiveShowCardDetails,
     streak.currentStreakDays,
   ]);
 
@@ -285,7 +264,7 @@ export function ContributionsPageClient() {
         meta={(
           <HeaderMetaChips
             items={[
-              { label: `Evidence rows ${filteredRows.length}` },
+              { label: `Evidence rows ${contributionShelf.filteredRows.length}` },
               {
                 label: `Sync ${formatSyncStateLabel(displaySyncState)}`,
                 tone: toneForSyncState(displaySyncState),
@@ -296,7 +275,7 @@ export function ContributionsPageClient() {
         actions={(
           <ContributionsHeaderActions
             cardsRegionId={contributionCardsRegionId}
-            rows={filteredRows}
+            rows={contributionShelf.filteredRows}
             showFreshness={shouldShowProfileFreshnessPill(
               showRefreshPill,
               displaySyncState,
@@ -364,34 +343,37 @@ export function ContributionsPageClient() {
           sort={sort}
           onSortChange={handleSortChange}
           resultsRegionId={contributionCardsRegionId}
-          resultCount={filteredRows.length}
-          isFiltering={isFiltering}
-          canReset={canReset}
+          resultCount={contributionShelf.filteredRows.length}
+          isFiltering={contributionShelf.isFiltering}
+          canReset={contributionShelf.canReset}
           onReset={handleResetFilters}
           compact
           onClearSearch={handleClearSearchFilter}
-          statusCounts={statusCounts}
-          focusCounts={focusCounts}
+          statusCounts={contributionShelf.statusCounts}
+          focusCounts={contributionShelf.focusCounts}
           contextNote="Categories reflect your recent PR work and help choose the next lane."
         />
       </section>
       <ContributionsCardsSection
         regionId={contributionCardsRegionId}
-        filteredRows={filteredRows}
-        visibleRows={visibleRows}
+        filteredRows={contributionShelf.filteredRows}
+        visibleRows={contributionShelf.visibleRows}
         narratives={abraInsights.data?.contributionNarratives}
-        isFiltering={isFiltering}
-        isFilteredNoResults={isFilteredNoResults}
-        hasMoreRows={hasMoreRows}
-        remainingRows={remainingRows}
-        cardPageSize={cardPageSize}
+        isFiltering={contributionShelf.isFiltering}
+        isFilteredNoResults={contributionShelf.isFilteredNoResults}
+        hasMoreRows={contributionShelf.hasMoreRows}
+        remainingRows={contributionShelf.remainingRows}
+        cardPageSize={contributionShelf.cardPageSize}
         useLiteCards={useLiteCards}
-        showDetails={effectiveShowCardDetails}
+        showDetails={contributionShelf.effectiveShowCardDetails}
         onResetFilters={handleResetFilters}
         onShowMoreRows={() => {
           startTransition(() => {
             setVisibleCardCount((current) =>
-              Math.min(filteredRows.length, current + cardPageSize),
+              Math.min(
+                contributionShelf.filteredRows.length,
+                current + contributionShelf.cardPageSize,
+              ),
             );
           });
         }}

@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Contribution shelf:
+  - moved PR de-duplication, status/focus counts, render capping, visible-row pagination, filtered-empty state, and ABRA sample selection into `contribution-shelf-model`.
+  - kept `ContributionsPageClient` focused on React query state, sync notices, export feedback, and composing filters with the card section.
 - Badge shelf:
   - moved de-duplication, shelf filtering, locked-path sorting, pagination slices, completion percent, and filter-state counts into `badge-shelf-model`.
   - kept `BadgesPageClient` focused on React state, sync notices, and composing the badge overview, shelf, and locked-path sections.
