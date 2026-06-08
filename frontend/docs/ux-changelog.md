@@ -2,6 +2,9 @@
 
 ## 2026-06-07
 
+- Badge shelf controls:
+  - moved state/rarity segmented controls, advanced-filter disclosure, reset header, and live result counts into `BadgesShelfControls`.
+  - kept rarity, visibility, deferred filtering, and pagination reset ownership in `BadgesPageClient` so the controls stay presentation-only.
 - Badge shelf:
   - moved badge shelf loading, error, empty, grid, and show-more presentation into `BadgesShelfResults`.
   - kept filter state, deferred filter values, and pagination counts in `BadgesPageClient` so shelf controls remain the source of truth.

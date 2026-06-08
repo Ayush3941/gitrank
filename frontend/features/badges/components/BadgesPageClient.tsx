@@ -1,26 +1,21 @@
 "use client";
 
-import {
-  Gem,
-  Lock,
-  Medal,
-  Unlock,
-} from "lucide-react";
 import { startTransition, useDeferredValue, useEffect, useId, useMemo, useRef, useState } from "react";
-import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlockNotice";
-import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
 import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
-import { ControlSurface } from "@/components/shared/ControlSurface";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
-import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { StaleState } from "@/components/shared/StaleState";
 import { Button } from "@/components/ui/button";
 import { BadgesLockedPathsSection } from "@/features/badges/components/BadgesLockedPathsSection";
 import { BadgesOverviewCard } from "@/features/badges/components/BadgesOverviewCard";
+import {
+  BadgesShelfControls,
+  type BadgeRarityFilter,
+  type BadgeVisibilityFilter,
+} from "@/features/badges/components/BadgesShelfControls";
 import { BadgesShelfResults } from "@/features/badges/components/BadgesShelfResults";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useRunUserSync } from "@/hooks/use-account-actions";
@@ -44,25 +39,10 @@ import {
 } from "@/lib/presentation/sync-run-diagnostics";
 import { buildStaleSyncNotice } from "@/lib/presentation/stale-sync-notice";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
-import type { BadgeRarity } from "@/types/gitrank";
 const LOCKED_BADGE_PAGE_SIZE_DEFAULT = 8;
 const LOCKED_BADGE_PAGE_SIZE_CONSTRAINED = 4;
 const BADGE_SHELF_PAGE_SIZE_DEFAULT = 10;
 const BADGE_SHELF_PAGE_SIZE_CONSTRAINED = 6;
-const BADGE_RARITY_FILTERS: Array<BadgeRarity | "All"> = [
-  "All",
-  "Common",
-  "Uncommon",
-  "Rare",
-  "Epic",
-  "Legendary",
-  "Mythic",
-];
-const BADGE_VISIBILITY_FILTERS: Array<"All" | "Unlocked" | "Locked"> = [
-  "All",
-  "Unlocked",
-  "Locked",
-];
 const BADGES_SECTION_LINKS = [
   { id: "badges-overview", label: "Overview" },
   { id: "badges-shelf", label: "Shelf" },
@@ -82,8 +62,8 @@ export function BadgesPageClient() {
     : BADGE_SHELF_PAGE_SIZE_DEFAULT;
   const badgeViewedEventSent = useRef(false);
   const previousUnlockedCountRef = useRef<number | null>(null);
-  const [rarity, setRarity] = useState<BadgeRarity | "All">("All");
-  const [visibility, setVisibility] = useState<"All" | "Unlocked" | "Locked">("All");
+  const [rarity, setRarity] = useState<BadgeRarityFilter>("All");
+  const [visibility, setVisibility] = useState<BadgeVisibilityFilter>("All");
   const deferredRarity = useDeferredValue(rarity);
   const deferredVisibility = useDeferredValue(visibility);
   const [unlockNotice, setUnlockNotice] = useState("");
@@ -261,7 +241,7 @@ export function BadgesPageClient() {
     };
   }, [unlockNotice]);
 
-  function handleRarityChange(value: BadgeRarity | "All") {
+  function handleRarityChange(value: BadgeRarityFilter) {
     startTransition(() => {
       setRarity(value);
       setVisibleLockedCount(lockedBadgePageSize);
@@ -269,7 +249,7 @@ export function BadgesPageClient() {
     });
   }
 
-  function handleVisibilityChange(value: "All" | "Unlocked" | "Locked") {
+  function handleVisibilityChange(value: BadgeVisibilityFilter) {
     startTransition(() => {
       setVisibility(value);
       setVisibleLockedCount(lockedBadgePageSize);
@@ -365,102 +345,27 @@ export function BadgesPageClient() {
         data-scroll-target="true"
         className="render-opt-section space-y-4"
       >
-        <div className="space-y-3">
-          <p id={badgesFilterStatusId} role="status" aria-live="polite" aria-atomic="true" className="sr-only">
-            Showing {filtered.length} of {totalCount} badges
-          </p>
-          <ControlSurface>
-            <FilterControlsHeader
-              label="Badge controls"
-              summary={isFiltering ? "Updating shelf..." : `${filtered.length} of ${totalCount} badges`}
-              activeFilterCount={activeFilterCount}
-              resetAction={{
-                onReset: handleResetFilters,
-                enabled: canResetFilters,
-                ariaControls: badgesEarnedRegionId,
-              }}
-            />
-            <div className="grid gap-3">
-              <div className="space-y-2">
-                <p className="text-xs font-medium text-primary">State</p>
-                <SegmentedControl
-                  options={BADGE_VISIBILITY_FILTERS.map((item) => {
-                    const Icon = item === "Unlocked" ? Unlock : item === "Locked" ? Lock : Medal;
-                    const count =
-                      item === "All"
-                        ? totalCount
-                        : item === "Unlocked"
-                          ? unlockedCount
-                          : totalCount - unlockedCount;
-                    return {
-                      value: item,
-                      label: item,
-                      icon: <Icon className="h-4 w-4" aria-hidden="true" />,
-                      count,
-                      minWidthClassName: "min-w-[6.75rem] sm:min-w-[8rem]",
-                    };
-                  })}
-                  value={visibility}
-                  onValueChange={handleVisibilityChange}
-                  ariaLabel="Badge visibility filters"
-                  ariaDescribedBy={badgesFilterStatusId}
-                  ariaControls={badgesEarnedRegionId}
-                  controlIdPrefix="badge-visibility-filter"
-                  wrap
-                />
-              </div>
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-xs text-muted">
-                  Use state first. Open advanced filters for rarity lanes.
-                </p>
-                <DisclosureToggle
-                  id={badgesAdvancedFiltersToggleId}
-                  controlsId={badgesAdvancedFiltersRegionId}
-                  expanded={showAdvancedFilters}
-                  onToggle={() => {
-                    setShowAdvancedFilters((current) => !current);
-                  }}
-                  collapsedLabel="Advanced filters"
-                  expandedLabel="Hide advanced"
-                />
-              </div>
-              <div
-                id={badgesAdvancedFiltersRegionId}
-                role="region"
-                aria-labelledby={badgesAdvancedFiltersToggleId}
-                hidden={!showAdvancedFilters}
-                className="space-y-2"
-              >
-                <p className="text-xs font-medium text-primary">Rarity</p>
-                <SegmentedControl
-                  options={BADGE_RARITY_FILTERS.map((item) => ({
-                    value: item,
-                    label: item,
-                    compactLabel:
-                      item === "Legendary"
-                        ? "Legend"
-                        : item === "Uncommon"
-                          ? "Uncommon"
-                          : item === "Common"
-                            ? "Common"
-                            : item === "Mythic"
-                              ? "Mythic"
-                              : item,
-                    icon: <Gem className="h-4 w-4" aria-hidden="true" />,
-                    minWidthClassName: "min-w-[6.75rem] sm:min-w-[8rem]",
-                  }))}
-                  value={rarity}
-                  onValueChange={handleRarityChange}
-                  ariaLabel="Badge rarity filters"
-                  ariaDescribedBy={badgesFilterStatusId}
-                  ariaControls={badgesEarnedRegionId}
-                  controlIdPrefix="badge-rarity-filter"
-                  wrap
-                />
-              </div>
-            </div>
-          </ControlSurface>
-        </div>
+        <BadgesShelfControls
+          filteredCount={filtered.length}
+          totalCount={totalCount}
+          unlockedCount={unlockedCount}
+          isFiltering={isFiltering}
+          activeFilterCount={activeFilterCount}
+          canResetFilters={canResetFilters}
+          filterStatusId={badgesFilterStatusId}
+          earnedRegionId={badgesEarnedRegionId}
+          advancedFiltersToggleId={badgesAdvancedFiltersToggleId}
+          advancedFiltersRegionId={badgesAdvancedFiltersRegionId}
+          visibility={visibility}
+          rarity={rarity}
+          showAdvancedFilters={showAdvancedFilters}
+          onVisibilityChange={handleVisibilityChange}
+          onRarityChange={handleRarityChange}
+          onResetFilters={handleResetFilters}
+          onToggleAdvancedFilters={() => {
+            setShowAdvancedFilters((current) => !current);
+          }}
+        />
         <div id={badgesEarnedRegionId}>
           <BadgesShelfResults
             visibleBadges={visibleBadges}
