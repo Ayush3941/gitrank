@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Onboarding reveal model:
+  - changed reveal next actions from plain strings to stable `{id, text}` rows.
+  - routed reveal badge and next-action lists away from index-derived keys while preserving the same visible copy and ordering.
 - Onboarding entry model:
   - moved sign-in steps, connection steps, scoring rules, data-access rows, and privacy controls into `onboarding-entry-model`.
   - kept `LoginPanel` and `ConnectGithubPanel` focused on layout and analytics side effects while mapped rows use stable IDs.

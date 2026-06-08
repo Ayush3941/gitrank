@@ -90,8 +90,8 @@ export function RevealPanel({
             </div>
             <ul id="reveal-unlock-preview" role="list" className="grid gap-4 sm:grid-cols-3">
               {reveal.unlockedBadges.length > 0 ? (
-                reveal.unlockedBadges.map((badge, index) => (
-                  <li key={`${badge.id}-${index}`} className="list-none rounded-[var(--radius-universal)] border border-cyan-300/16 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/22 p-5 text-left">
+                reveal.unlockedBadges.map((badge) => (
+                  <li key={badge.id} className="list-none rounded-[var(--radius-universal)] border border-cyan-300/16 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/22 p-5 text-left">
                     <div className="flex items-center justify-between">
                       <Award className="h-5 w-5 text-primary" aria-hidden="true" />
                       <RarityBadge rarity={badge.rarity} />
@@ -120,9 +120,9 @@ export function RevealPanel({
             <div id="reveal-next-actions" className="neon-surface rounded-[var(--radius-universal)] px-5 py-4 text-left">
               <ol className="mt-1 grid gap-3 sm:grid-cols-3">
                 {reveal.nextActions.map((item, index) => (
-                  <li key={`${item}-${index}`} className="neon-metric rounded-[var(--radius-universal)] px-3 py-3">
+                  <li key={item.id} className="neon-metric rounded-[var(--radius-universal)] px-3 py-3">
                     <p className="text-xs font-medium text-cyan-100">Step {index + 1}</p>
-                    <p className="mt-2 text-sm leading-6 text-muted">{item}</p>
+                    <p className="mt-2 text-sm leading-6 text-muted">{item.text}</p>
                   </li>
                 ))}
               </ol>

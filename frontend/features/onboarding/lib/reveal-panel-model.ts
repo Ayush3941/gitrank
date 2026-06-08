@@ -12,6 +12,11 @@ export type RevealMetricModel = {
   value: string;
 };
 
+export type RevealNextActionModel = {
+  id: string;
+  text: string;
+};
+
 export type RevealPanelModel = {
   aiSourceLabel: string;
   strongestSignalSummary: string;
@@ -21,23 +26,41 @@ export type RevealPanelModel = {
   effectiveSyncState: ReturnType<typeof deriveEffectiveSyncState>;
   needsSyncRecovery: boolean;
   recoveryActionLabel: string;
-  nextActions: string[];
+  nextActions: readonly RevealNextActionModel[];
   metrics: RevealMetricModel[];
   unlockPreviewLabel: string;
   xpProgressLabel: string;
   shareHeadline: string;
 };
 
-const FIRST_EVIDENCE_ACTIONS = [
-  "Merge your first meaningful PR so score movement can activate.",
-  "Open sync settings to refresh and attach fresh GitHub evidence to this profile.",
-  "Open quests to target your first high-signal contribution type.",
+const FIRST_EVIDENCE_ACTIONS: readonly RevealNextActionModel[] = [
+  {
+    id: "merge-first-pr",
+    text: "Merge your first meaningful PR so score movement can activate.",
+  },
+  {
+    id: "refresh-evidence",
+    text: "Open sync settings to refresh and attach fresh GitHub evidence to this profile.",
+  },
+  {
+    id: "open-quests",
+    text: "Open quests to target your first high-signal contribution type.",
+  },
 ];
 
-const ACTIVE_PROFILE_ACTIONS = [
-  "Open dashboard to inspect score movement and weekly XP.",
-  "Review contribution drill-down for high-impact PR evidence cards.",
-  "Share your public profile once privacy toggles are set.",
+const ACTIVE_PROFILE_ACTIONS: readonly RevealNextActionModel[] = [
+  {
+    id: "open-dashboard",
+    text: "Open dashboard to inspect score movement and weekly XP.",
+  },
+  {
+    id: "review-contributions",
+    text: "Review contribution drill-down for high-impact PR evidence cards.",
+  },
+  {
+    id: "share-public-profile",
+    text: "Share your public profile once privacy toggles are set.",
+  },
 ];
 
 export function buildRevealPanelModel({

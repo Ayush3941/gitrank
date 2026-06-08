@@ -42,7 +42,15 @@ describe("buildRevealPanelModel", () => {
     expect(model.unlockPreviewLabel).toBe("2 earned");
     expect(model.xpProgressLabel).toBe("1,200 XP / 1,500 XP");
     expect(model.shareHeadline).toBe("Ada Builder is Systems Builder on GitRank.");
-    expect(model.nextActions[0]).toContain("Open dashboard");
+    expect(model.nextActions.map((action) => action.id)).toEqual([
+      "open-dashboard",
+      "review-contributions",
+      "share-public-profile",
+    ]);
+    expect(model.nextActions[0]).toEqual({
+      id: "open-dashboard",
+      text: "Open dashboard to inspect score movement and weekly XP.",
+    });
   });
 
   it("routes empty or degraded evidence to sync recovery copy", () => {
@@ -68,7 +76,15 @@ describe("buildRevealPanelModel", () => {
     expect(model.effectiveSyncState).toBe("partially_synced");
     expect(model.recoveryActionLabel).toBe("Continue sync analysis");
     expect(model.unlockPreviewLabel).toBe("next badge targets");
-    expect(model.nextActions[0]).toContain("Merge your first meaningful PR");
+    expect(model.nextActions.map((action) => action.id)).toEqual([
+      "merge-first-pr",
+      "refresh-evidence",
+      "open-quests",
+    ]);
+    expect(model.nextActions[0]).toEqual({
+      id: "merge-first-pr",
+      text: "Merge your first meaningful PR so score movement can activate.",
+    });
   });
 
   it("uses retry copy for failed sync recovery", () => {
