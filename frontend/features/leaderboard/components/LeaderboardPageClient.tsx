@@ -21,6 +21,10 @@ import {
   LEADERBOARD_TAB_LABELS,
 } from "@/features/leaderboard/components/LeaderboardControls";
 import { laneParamToTab, tabToLaneParam } from "@/features/leaderboard/lib/lane-param";
+import {
+  buildLeaderboardPageModel,
+  resolveLeaderboardRowPageSize,
+} from "@/features/leaderboard/lib/leaderboard-view-model";
 import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useLeaderboard } from "@/hooks/use-leaderboard";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
@@ -48,9 +52,6 @@ const LeaderboardArena = dynamic(
   },
 );
 
-const LEADERBOARD_ROW_PAGE_SIZE_DEFAULT = 12;
-const LEADERBOARD_ROW_PAGE_SIZE_CONSTRAINED = 6;
-const LEADERBOARD_NEARBY_DEFAULT_THRESHOLD = 10;
 const LEADERBOARD_SECTION_LINKS = [
   { id: "leaderboard-controls", label: "Controls" },
   { id: "leaderboard-arena", label: "Arena" },
@@ -64,9 +65,7 @@ export function LeaderboardPageClient() {
   const constrainedNetwork = useNetworkConstraintPreference();
   const runUserSync = useRunUserSync();
   const syncRunsQuery = useProfileSyncRuns();
-  const rowPageSize = constrainedNetwork
-    ? LEADERBOARD_ROW_PAGE_SIZE_CONSTRAINED
-    : LEADERBOARD_ROW_PAGE_SIZE_DEFAULT;
+  const rowPageSize = resolveLeaderboardRowPageSize(constrainedNetwork);
   const [visibleRowCount, setVisibleRowCount] = useState(rowPageSize);
   const [showLaneDetails, setShowLaneDetails] = useState(false);
   const [showViewOptions, setShowViewOptions] = useState(false);
@@ -82,20 +81,27 @@ export function LeaderboardPageClient() {
     refetch: refetchMyProfile,
   } = useMyProfile();
   const isSwitchingTab = deferredTab !== tab;
-  const currentUserHandle = myProfile?.user.username.toLowerCase() ?? "";
-  const rows = (data?.rows ?? []).map((row) => ({
-    ...row,
-    isCurrentUser:
-      currentUserHandle.length > 0 &&
-      row.username.toLowerCase() === currentUserHandle,
-  }));
-  const snapshot = data
-    ? {
-        ...data,
-        rows,
-        currentUser: rows.find((row) => row.isCurrentUser),
-      }
-    : null;
+  const leaderboardModel = useMemo(
+    () =>
+      buildLeaderboardPageModel({
+        snapshot: data,
+        currentUsername: myProfile?.user.username,
+        tab,
+        visibleRowCount,
+        constrainedNetwork,
+        preferNearbyMode,
+        showLaneDetails,
+      }),
+    [
+      constrainedNetwork,
+      data,
+      myProfile?.user.username,
+      preferNearbyMode,
+      showLaneDetails,
+      tab,
+      visibleRowCount,
+    ],
+  );
   const { syncStateForDisplay, showRefreshPill } = useProfileSyncState(
     myProfile?.user,
     syncRunsQuery.data?.runs,
@@ -128,23 +134,6 @@ export function LeaderboardPageClient() {
       }),
     [displaySyncState, latestSyncOutcome, myProfile?.refreshedAt],
   );
-  const safeVisibleRowCount = Math.min(rows.length, visibleRowCount);
-  const hasMoreRows = rows.length > safeVisibleRowCount;
-  const remainingRows = Math.max(0, rows.length - safeVisibleRowCount);
-  const supportsNearbyMode =
-    Boolean(snapshot?.currentUser) &&
-    rows.length >= LEADERBOARD_NEARBY_DEFAULT_THRESHOLD;
-  const effectiveMode: "nearby" | "full" =
-    supportsNearbyMode && preferNearbyMode ? "nearby" : "full";
-  const hasLaneFilter = tab !== "Global";
-  const hasViewFilter = supportsNearbyMode && effectiveMode === "full";
-  const hasDetailsFilter = showLaneDetails;
-  const activeFilterCount =
-    (hasLaneFilter ? 1 : 0) +
-    (hasViewFilter ? 1 : 0) +
-    (hasDetailsFilter ? 1 : 0);
-  const canClearAllControls = hasLaneFilter || hasViewFilter || hasDetailsFilter;
-
   function replaceLane(nextTab: LeaderboardTab) {
     const lane = tabToLaneParam(nextTab);
     const nextParams = new URLSearchParams(searchParams.toString());
@@ -161,7 +150,7 @@ export function LeaderboardPageClient() {
     });
   }
 
-  const isBusy = isSwitchingTab || (isFetching && Boolean(snapshot));
+  const isBusy = isSwitchingTab || (isFetching && Boolean(leaderboardModel.snapshot));
 
   return (
     <div className="stable-scroll-scope space-y-6" aria-busy={isBusy || undefined}>
@@ -183,7 +172,11 @@ export function LeaderboardPageClient() {
         actions={(
           <div className="flex flex-wrap items-center gap-2">
             <ProfileEvidenceStateChip
-              showFreshness={shouldShowProfileFreshnessPill(showRefreshPill, displaySyncState, appInstallationBlocked)}
+              showFreshness={shouldShowProfileFreshnessPill(
+                showRefreshPill,
+                displaySyncState,
+                appInstallationBlocked,
+              )}
               refreshedAt={myProfile?.refreshedAt}
               syncState={displaySyncState}
             />
@@ -214,19 +207,19 @@ export function LeaderboardPageClient() {
       ) : null}
       <InPageSectionNav sections={LEADERBOARD_SECTION_LINKS} className="render-opt-section" />
       <LeaderboardControls
-        rowsCount={rows.length}
+        rowsCount={leaderboardModel.rows.length}
         tab={tab}
         isBusy={isBusy}
-        activeFilterCount={activeFilterCount}
-        hasViewFilter={hasViewFilter}
+        activeFilterCount={leaderboardModel.activeFilterCount}
+        hasViewFilter={leaderboardModel.hasViewFilter}
         showLaneDetails={showLaneDetails}
-        canClearAllControls={canClearAllControls}
+        canClearAllControls={leaderboardModel.canClearAllControls}
         rowsRegionId={leaderboardRowsRegionId}
         viewOptionsToggleId={leaderboardViewOptionsToggleId}
         viewOptionsRegionId={leaderboardViewOptionsRegionId}
         showViewOptions={showViewOptions}
-        supportsNearbyMode={supportsNearbyMode}
-        effectiveMode={effectiveMode}
+        supportsNearbyMode={leaderboardModel.supportsNearbyMode}
+        effectiveMode={leaderboardModel.effectiveMode}
         onReset={() => {
           startTransition(() => {
             setShowLaneDetails(false);
@@ -260,7 +253,7 @@ export function LeaderboardPageClient() {
         />
       ) : null}
       <section id="leaderboard-arena" data-scroll-target="true" className="render-opt-section space-y-4">
-        {!isLoading && !isError && rows.length === 0 ? (
+        {!isLoading && !isError && leaderboardModel.rows.length === 0 ? (
           <>
             <EmptyState
               eyebrow="Leaderboard participation"
@@ -318,45 +311,55 @@ export function LeaderboardPageClient() {
             </GlowCard>
           </>
         ) : null}
-        {!isLoading && !isError && snapshot && rows.length ? (
+        {!isLoading && !isError && leaderboardModel.snapshot && leaderboardModel.rows.length ? (
           <>
-            {snapshot.currentUser ? (
+            {leaderboardModel.snapshot.currentUser ? (
               <div className="neon-surface rounded-[var(--radius-universal)] px-4 py-3">
                 <p className="text-sm font-semibold text-white">
-                  Rank #{snapshot.currentUser.rank} in {tab}
+                  Rank #{leaderboardModel.snapshot.currentUser.rank} in {tab}
                 </p>
                 <p className="mt-1 text-xs text-muted">
-                  {snapshot.currentUser.xpToNextRank > 0
-                    ? `${formatXpLabel(snapshot.currentUser.xpToNextRank)} to next band`
+                  {leaderboardModel.snapshot.currentUser.xpToNextRank > 0
+                    ? `${formatXpLabel(leaderboardModel.snapshot.currentUser.xpToNextRank)} to next band`
                     : "You currently lead this lane"}
                 </p>
               </div>
             ) : null}
             <div id={leaderboardRowsRegionId} data-leaderboard-arena="true">
               <LeaderboardArena
-                snapshot={snapshot}
-                rowLimit={effectiveMode === "full" ? safeVisibleRowCount : undefined}
+                snapshot={leaderboardModel.snapshot}
+                rowLimit={
+                  leaderboardModel.effectiveMode === "full"
+                    ? leaderboardModel.safeVisibleRowCount
+                    : undefined
+                }
                 showDetails={showLaneDetails}
-                viewMode={effectiveMode}
+                viewMode={leaderboardModel.effectiveMode}
               />
             </div>
             <div className="flex flex-wrap items-center justify-end gap-3">
-              {effectiveMode === "full" && hasMoreRows ? (
+              {leaderboardModel.effectiveMode === "full" && leaderboardModel.hasMoreRows ? (
                 <Button
                   type="button"
                   variant="secondary"
                   size="sm"
                   aria-controls={leaderboardRowsRegionId}
-                  aria-label={`Show ${Math.min(rowPageSize, remainingRows)} more ranked rows. ${remainingRows} remaining.`}
+                  aria-label={`Show ${Math.min(
+                    leaderboardModel.rowPageSize,
+                    leaderboardModel.remainingRows,
+                  )} more ranked rows. ${leaderboardModel.remainingRows} remaining.`}
                   onClick={() => {
                     startTransition(() => {
                       setVisibleRowCount((current) =>
-                        Math.min(rows.length, current + rowPageSize),
+                        Math.min(
+                          leaderboardModel.rows.length,
+                          current + leaderboardModel.rowPageSize,
+                        ),
                       );
                     });
                   }}
                 >
-                  Show more rows ({remainingRows} left)
+                  Show more rows ({leaderboardModel.remainingRows} left)
                 </Button>
               ) : null}
             </div>

@@ -4,6 +4,10 @@ import { ClampedText } from "@/components/shared/ClampedText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { RankBadge } from "@/components/shared/RankBadge";
 import {
+  buildLeaderboardArenaModel,
+  type LeaderboardViewMode,
+} from "@/features/leaderboard/lib/leaderboard-view-model";
+import {
   formatDate,
   formatNumber,
   formatSignedNumber,
@@ -21,33 +25,16 @@ export function LeaderboardArena({
   snapshot: LeaderboardSnapshot;
   rowLimit?: number;
   showDetails?: boolean;
-  viewMode?: "nearby" | "full";
+  viewMode?: LeaderboardViewMode;
 }) {
-  const rows = snapshot.rows;
-  const currentUser =
-    snapshot.currentUser ?? rows.find((row) => row.isCurrentUser) ?? null;
-  const currentUserIndex = currentUser
-    ? rows.findIndex((row) => row.username === currentUser.username)
-    : -1;
-  const localBracketRows =
-    currentUser && currentUserIndex >= 0
-      ? rows.slice(
-          Math.max(0, currentUserIndex - 2),
-          Math.min(rows.length, currentUserIndex + 3),
-        )
-      : [];
-  const nextAboveRow =
-    currentUserIndex > 0 ? rows[currentUserIndex - 1] : null;
-  const nextAboveGap =
-    currentUser && nextAboveRow
-      ? Math.max(0, nextAboveRow.seasonXp - currentUser.seasonXp)
-      : 0;
-  const nearbyRows = buildNearbyRows(rows, localBracketRows);
-  const sourceRows = viewMode === "nearby" ? nearbyRows : rows;
-  const visibleRows =
-    typeof rowLimit === "number" && rowLimit > 0
-      ? sourceRows.slice(0, rowLimit)
-      : sourceRows;
+  const {
+    rows,
+    currentUser,
+    localBracketRows,
+    nextAboveRow,
+    nextAboveGap,
+    visibleRows,
+  } = buildLeaderboardArenaModel({ snapshot, rowLimit, viewMode });
 
   return (
     <div className="grid gap-4">
@@ -70,7 +57,10 @@ export function LeaderboardArena({
           <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[32rem]">
             <Metric label="Window" value={snapshot.season.windowLabel} />
             <Metric label="Formula" value={snapshot.season.scoringVersion} />
-            <Metric label="Current rank" value={snapshot.currentUser ? `#${snapshot.currentUser.rank}` : "Unranked"} />
+            <Metric
+              label="Current rank"
+              value={currentUser ? `#${currentUser.rank}` : "Unranked"}
+            />
           </div>
         </div>
         <div className="mt-5 grid gap-3 md:grid-cols-2">
@@ -234,18 +224,6 @@ export function LeaderboardArena({
       </ol>
     </div>
   );
-}
-
-function buildNearbyRows(
-  allRows: LeaderboardSnapshot["rows"],
-  localBracketRows: LeaderboardSnapshot["rows"],
-) {
-  const topRows = allRows.slice(0, 3);
-  const merged = new Map<string, (typeof allRows)[number]>();
-  for (const row of [...topRows, ...localBracketRows]) {
-    merged.set(row.username, row);
-  }
-  return Array.from(merged.values()).sort((a, b) => a.rank - b.rank);
 }
 
 function CompactRule({

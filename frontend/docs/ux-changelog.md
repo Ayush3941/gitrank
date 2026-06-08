@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Leaderboard view model:
+  - moved current-user row marking, row page-size policy, nearby/full mode selection, active-control counts, and pagination state into `leaderboard-view-model`.
+  - moved arena nearby-row construction into the same model so podium plus local-bracket rules are tested outside `LeaderboardArena`.
 - Contribution shelf:
   - moved PR de-duplication, status/focus counts, render capping, visible-row pagination, filtered-empty state, and ABRA sample selection into `contribution-shelf-model`.
   - kept `ContributionsPageClient` focused on React query state, sync notices, export feedback, and composing filters with the card section.
