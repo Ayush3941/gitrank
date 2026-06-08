@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { Activity, Flame, Medal } from "lucide-react";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { DashboardHeroRankCard } from "@/features/dashboard/components/DashboardHeroRankCard";
-import { buildDashboardStaleNotice } from "@/features/dashboard/lib/stale-notice";
+import { buildDashboardPageModel } from "@/features/dashboard/lib/dashboard-page-model";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useDashboard } from "@/hooks/use-dashboard";
@@ -25,14 +25,8 @@ import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceSta
 import { RouteLoadingState } from "@/components/shared/RouteLoadingState";
 import { StaleState } from "@/components/shared/StaleState";
 import { StatCard } from "@/components/shared/StatCard";
-import {
-  buildDeterministicIdentitySummary,
-  deriveDeterministicArchetype,
-} from "@/lib/ai/deterministic-identity-summary";
-import { buildAbraInsightsRequest } from "@/lib/ai/abra-insights-request";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 import { formatNumber, formatPluralCount } from "@/lib/formatters";
-import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { shouldShowProfileFreshnessPill } from "@/lib/presentation/sync-evidence";
 import {
   isGitHubAppInstallationBlocked,
@@ -103,42 +97,28 @@ export function DashboardPageClient() {
       await refetch();
     },
   });
-  const streak = useMemo(
-    () => summarizeContributionStreak(user?.contributions ?? []),
-    [user?.contributions],
-  );
-  const abraPayload = useMemo(() => {
-    return buildAbraInsightsRequest({
+  const dashboardPage = useMemo(
+    () =>
+      buildDashboardPageModel({
+        user,
+        isStale: data?.isStale,
+        trendWindowLabel: data?.trendWindowLabel,
+        refreshedAt: data?.refreshedAt,
+        displaySyncState,
+        latestSyncOutcome,
+        constrainedNetwork,
+      }),
+    [
+      constrainedNetwork,
+      data?.isStale,
+      data?.refreshedAt,
+      data?.trendWindowLabel,
+      displaySyncState,
+      latestSyncOutcome,
       user,
-      contributions: user?.contributions ?? [],
-      badges: user?.badges ?? [],
-      repositoriesTouched: user?.repositories.length ?? 0,
-      streakDays: streak.currentStreakDays,
-      enabled: !constrainedNetwork,
-    });
-  }, [constrainedNetwork, streak.currentStreakDays, user]);
-  const abraInsights = useAbraInsights(abraPayload);
-  const fallbackArchetype = useMemo(
-    () => (user ? deriveDeterministicArchetype(user.strongestSignals) : "Systems Builder"),
-    [user],
+    ],
   );
-  const fallbackIdentitySummary = useMemo(() => {
-    if (!data || !user) {
-      return undefined;
-    }
-    return buildDeterministicIdentitySummary({
-      displayName: user.displayName,
-      rankTier: user.level.rankTier,
-      level: user.level.currentLevel,
-      totalXp: user.level.currentXp,
-      mergedPrCount: user.mergedPrCount,
-      strongestSignals: user.strongestSignals,
-      repositoriesTouched: user.repositories.length,
-      streakDays: streak.currentStreakDays,
-      isStale: data.isStale,
-      trendWindowLabel: data.trendWindowLabel,
-    });
-  }, [data, streak.currentStreakDays, user]);
+  const abraInsights = useAbraInsights(dashboardPage.abraPayload);
 
   useEffect(() => {
     if (isLoading || isError || !data || scoreExplanationEventSent.current) {
@@ -180,11 +160,6 @@ export function DashboardPageClient() {
     );
   }
 
-  const staleNotice =
-    displaySyncState === "stale" || displaySyncState === "partially_synced"
-      ? buildDashboardStaleNotice(displaySyncState, data.refreshedAt, latestSyncOutcome)
-      : null;
-
   return (
     <div className="stable-scroll-scope space-y-6">
       <PageHeader
@@ -205,7 +180,11 @@ export function DashboardPageClient() {
         actions={(
           <div className="flex flex-wrap items-center gap-2">
             <ProfileEvidenceStateChip
-              showFreshness={shouldShowProfileFreshnessPill(showRefreshPill, displaySyncState, appInstallationBlocked)}
+              showFreshness={shouldShowProfileFreshnessPill(
+                showRefreshPill,
+                displaySyncState,
+                appInstallationBlocked,
+              )}
               refreshedAt={data.refreshedAt}
               syncState={displaySyncState}
             />
@@ -220,10 +199,10 @@ export function DashboardPageClient() {
       {appInstallationBlocked ? (
         <GitHubAppSyncBlockNotice message={latestSyncOutcome?.message} />
       ) : null}
-      {staleNotice ? (
+      {dashboardPage.staleNotice ? (
         <StaleState
-          message={staleNotice.message}
-          reasonMessage={staleNotice.reasonMessage}
+          message={dashboardPage.staleNotice.message}
+          reasonMessage={dashboardPage.staleNotice.reasonMessage}
           updatedAt={data.refreshedAt}
           syncState={displaySyncState === "partially_synced" ? "partially_synced" : "stale"}
           onRefresh={staleSyncRefresh.onRefresh}
@@ -238,8 +217,10 @@ export function DashboardPageClient() {
       <section id="dashboard-identity" data-scroll-target="true">
         <DashboardHeroRankCard
           user={user}
-          archetype={abraInsights.data?.archetype ?? fallbackArchetype}
-          identitySummary={abraInsights.data?.identitySummary ?? fallbackIdentitySummary}
+          archetype={abraInsights.data?.archetype ?? dashboardPage.fallbackArchetype}
+          identitySummary={
+            abraInsights.data?.identitySummary ?? dashboardPage.fallbackIdentitySummary
+          }
           aiMode={abraInsights.data?.generatedBy ?? "deterministic"}
           effectiveSyncState={displaySyncState}
         />
@@ -265,10 +246,11 @@ export function DashboardPageClient() {
             </span>
           </div>
           <div className="numeric-readout text-3xl font-semibold tracking-tight">
-            {formatNumber(streak.currentStreakDays)}d
+            {formatNumber(dashboardPage.streak.currentStreakDays)}d
           </div>
           <p className="text-sm leading-6 text-muted">
-            Best {formatNumber(streak.bestStreakDays)}d • {formatPluralCount(streak.activeDaysThisYear, "active day")} this year
+            Best {formatNumber(dashboardPage.streak.bestStreakDays)}d •{" "}
+            {formatPluralCount(dashboardPage.streak.activeDaysThisYear, "active day")} this year
           </p>
         </GlowCard>
         <StatCard

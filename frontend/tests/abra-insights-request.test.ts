@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildAbraInsightsRequest } from "@/lib/ai/abra-insights-request";
 import { buildContribution } from "@/tests/helpers/contribution-fixture";
-import type { Badge, UserProfile } from "@/types/gitrank";
+import { buildBadge, buildPrivacy, buildUserProfile } from "@/tests/helpers/gitrank-fixtures";
 
 describe("buildAbraInsightsRequest", () => {
   it("returns null when ABRA insights should not run", () => {
@@ -68,7 +68,7 @@ describe("buildAbraInsightsRequest", () => {
     });
 
     expect(request?.profile).toMatchObject({
-      username: "octo",
+      username: "octocat",
       displayName: "Octo Cat",
       repositoriesTouched: 4,
       badgeCount: 1,
@@ -96,52 +96,3 @@ describe("buildAbraInsightsRequest", () => {
     ]);
   });
 });
-
-function buildUserProfile(overrides: Partial<UserProfile> = {}): UserProfile {
-  return {
-    username: "octo",
-    displayName: "Octo Cat",
-    title: "Systems Builder",
-    mergedPrCount: 2,
-    strongestSignals: ["Testing"],
-    level: {
-      currentLevel: 3,
-      title: "Builder",
-      currentXp: 900,
-      nextLevelXp: 1200,
-      rankTier: "Silver II",
-    },
-    privacy: buildPrivacy(),
-    ...overrides,
-  } as UserProfile;
-}
-
-function buildBadge(overrides: Partial<Badge> = {}): Badge {
-  return {
-    id: "badge-1",
-    name: "Builder",
-    rarity: "Common",
-    description: "Evidence-backed badge.",
-    unlockCondition: "Earn scored contribution evidence.",
-    icon: "bolt",
-    unlocked: true,
-    earnedAt: "2026-05-25T00:00:00.000Z",
-    progress: 100,
-    evidencePrIds: ["pr-1"],
-    ...overrides,
-  };
-}
-
-function buildPrivacy(overrides: Partial<UserProfile["privacy"]> = {}): UserProfile["privacy"] {
-  return {
-    publicProfileEnabled: true,
-    showExactPRs: true,
-    showAiSummaries: true,
-    showLeaderboardParticipation: true,
-    badgeUnlockedNotifications: true,
-    levelUpNotifications: true,
-    weeklyReportNotifications: true,
-    reducedGamification: false,
-    ...overrides,
-  };
-}

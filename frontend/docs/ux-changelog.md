@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Dashboard page model:
+  - moved streak projection, ABRA request shaping, deterministic archetype/identity fallback, and stale-notice selection into `dashboard-page-model`.
+  - added shared GitRank profile and badge fixtures so dashboard, badge, and ABRA model tests use one profile contract instead of private duplicate builders.
 - Badge page model:
   - moved page-size policy, deferred-filter status, streak summary, ABRA badge request shaping, and deterministic archetype fallback into `badges-page-model`.
   - kept `BadgesPageClient` focused on query state, sync notices, unlock announcements, and composing the overview, shelf, and locked-path sections.
