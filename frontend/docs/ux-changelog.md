@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Settings sync-run activity:
+  - moved row projection, searchable text, safe error normalization, metric summaries, status counts, health labels, summary insight selection, and filtered results into `sync-run-activity-model`.
+  - kept `SyncRunActivityPanel` focused on search/status/detail local state while summary, filters, and results consume the same tested model output.
 - Leaderboard view model:
   - moved current-user row marking, row page-size policy, nearby/full mode selection, active-control counts, and pagination state into `leaderboard-view-model`.
   - moved arena nearby-row construction into the same model so podium plus local-bracket rules are tested outside `LeaderboardArena`.

@@ -4,19 +4,11 @@ import { ControlSurface } from "@/components/shared/ControlSurface";
 import { SearchInputWithClear } from "@/components/shared/SearchInputWithClear";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { Button } from "@/components/ui/button";
-
-export const SYNC_RUN_STATUS_FILTERS = ["All", "Completed", "Partial", "Queued", "Running", "Failed"] as const;
-
-export type SyncRunStatusFilter = (typeof SYNC_RUN_STATUS_FILTERS)[number];
-
-export type SyncRunStatusCounts = {
-  all: number;
-  completed: number;
-  partial: number;
-  queued: number;
-  running: number;
-  failed: number;
-};
+import {
+  SYNC_RUN_STATUS_FILTERS,
+  type SyncRunStatusCounts,
+  type SyncRunStatusFilter,
+} from "@/features/settings/lib/sync-run-activity-model";
 
 const SYNC_RUN_STATUS_META: Record<SyncRunStatusFilter, { countKey: keyof SyncRunStatusCounts }> = {
   All: { countKey: "all" },

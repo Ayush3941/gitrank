@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 8, 2026)
 
+- Moved settings sync-run row projection, searchable text, safe error normalization, metric summaries, status counts, health labels, summary insight selection, and filtered results into `sync-run-activity-model`, keeping `SyncRunActivityPanel` focused on local control state and section composition.
 - Moved leaderboard current-user marking, row page-size policy, nearby/full mode selection, active-control counts, pagination state, and arena bracket construction into `leaderboard-view-model`, keeping `LeaderboardPageClient` and `LeaderboardArena` focused on routing, sync notices, and rendering.
 - Moved contribution shelf de-duplication, status/focus counts, render cap, pagination slices, filter-empty state, and ABRA sample selection into `contribution-shelf-model`, keeping `ContributionsPageClient` focused on query state, sync notices, and section composition.
 - Moved badge shelf filtering, de-duplication, locked-path sorting, pagination slices, completion percent, and filter-state counting into `badge-shelf-model`, keeping `BadgesPageClient` focused on state wiring and section composition.

@@ -6,22 +6,11 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { ExactTime } from "@/components/shared/ExactTime";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { ScrollableRegion } from "@/components/shared/ScrollableRegion";
-import type { ApiSyncRunRecord } from "@/lib/api/account-api";
+import type { SyncRunActivityRow } from "@/features/settings/lib/sync-run-activity-model";
 import {
   syncRunStatusLabel,
   type SyncRunUiStatus,
 } from "@/features/settings/lib/sync-run-status";
-
-export type SyncRunActivityRow = {
-  id: string;
-  run: ApiSyncRunRecord;
-  label: string;
-  uiStatus: SyncRunUiStatus;
-  searchableText: string;
-  safeLastError: string | null;
-  metricsSummary: string;
-  outcomeInsight: string;
-};
 
 const RESULTS_REGION_CLASS_NAME = "min-h-[12rem]";
 

@@ -3,13 +3,7 @@
 import { RefreshCw } from "lucide-react";
 import { RelativeTime } from "@/components/shared/RelativeTime";
 import { Button } from "@/components/ui/button";
-
-type SyncRunStatusCounts = {
-  completed: number;
-  partial: number;
-  running: number;
-  failed: number;
-};
+import type { SyncRunStatusCounts } from "@/features/settings/lib/sync-run-activity-model";
 
 export function SyncRunActivitySummary({
   headingId,
