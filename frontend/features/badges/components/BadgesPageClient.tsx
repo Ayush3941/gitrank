@@ -14,11 +14,13 @@ import { BadgesOverviewCard } from "@/features/badges/components/BadgesOverviewC
 import { BadgesShelfControls } from "@/features/badges/components/BadgesShelfControls";
 import { BadgesShelfResults } from "@/features/badges/components/BadgesShelfResults";
 import {
-  buildBadgeFilterState,
-  buildBadgeShelfModel,
   type BadgeRarityFilter,
   type BadgeVisibilityFilter,
 } from "@/features/badges/lib/badge-shelf-model";
+import {
+  buildBadgesPageModel,
+  resolveBadgePageSizes,
+} from "@/features/badges/lib/badges-page-model";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useBadges } from "@/hooks/use-badges";
@@ -27,11 +29,6 @@ import { useProfileSyncRuns } from "@/hooks/use-profile-sync-runs";
 import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
 import { useStaleSyncRefresh } from "@/hooks/use-stale-sync-refresh";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
-import {
-  deriveDeterministicArchetype,
-} from "@/lib/ai/deterministic-identity-summary";
-import { buildAbraInsightsRequest } from "@/lib/ai/abra-insights-request";
-import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { shouldShowProfileFreshnessPill } from "@/lib/presentation/sync-evidence";
 import {
   isGitHubAppInstallationBlocked,
@@ -39,10 +36,7 @@ import {
 } from "@/lib/presentation/sync-run-diagnostics";
 import { buildStaleSyncNotice } from "@/lib/presentation/stale-sync-notice";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
-const LOCKED_BADGE_PAGE_SIZE_DEFAULT = 8;
-const LOCKED_BADGE_PAGE_SIZE_CONSTRAINED = 4;
-const BADGE_SHELF_PAGE_SIZE_DEFAULT = 10;
-const BADGE_SHELF_PAGE_SIZE_CONSTRAINED = 6;
+
 const BADGES_SECTION_LINKS = [
   { id: "badges-overview", label: "Overview" },
   { id: "badges-shelf", label: "Shelf" },
@@ -54,12 +48,7 @@ export function BadgesPageClient() {
   const runUserSync = useRunUserSync();
   const syncRunsQuery = useProfileSyncRuns();
   const constrainedNetwork = useNetworkConstraintPreference();
-  const lockedBadgePageSize = constrainedNetwork
-    ? LOCKED_BADGE_PAGE_SIZE_CONSTRAINED
-    : LOCKED_BADGE_PAGE_SIZE_DEFAULT;
-  const badgeShelfPageSize = constrainedNetwork
-    ? BADGE_SHELF_PAGE_SIZE_CONSTRAINED
-    : BADGE_SHELF_PAGE_SIZE_DEFAULT;
+  const pageSizes = resolveBadgePageSizes(constrainedNetwork);
   const badgeViewedEventSent = useRef(false);
   const previousUnlockedCountRef = useRef<number | null>(null);
   const [rarity, setRarity] = useState<BadgeRarityFilter>("All");
@@ -67,8 +56,8 @@ export function BadgesPageClient() {
   const deferredRarity = useDeferredValue(rarity);
   const deferredVisibility = useDeferredValue(visibility);
   const [unlockNotice, setUnlockNotice] = useState("");
-  const [visibleLockedCount, setVisibleLockedCount] = useState(lockedBadgePageSize);
-  const [visibleBadgeCount, setVisibleBadgeCount] = useState(badgeShelfPageSize);
+  const [visibleLockedCount, setVisibleLockedCount] = useState(pageSizes.lockedBadgePageSize);
+  const [visibleBadgeCount, setVisibleBadgeCount] = useState(pageSizes.badgeShelfPageSize);
   const [showLockedBadges, setShowLockedBadges] = useState(false);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const badgesEarnedRegionId = useId();
@@ -77,26 +66,32 @@ export function BadgesPageClient() {
   const badgesFilterStatusId = useId();
   const badgesAdvancedFiltersToggleId = useId();
   const badgesAdvancedFiltersRegionId = useId();
-  const isFiltering = deferredRarity !== rarity || deferredVisibility !== visibility;
-  const filterState = buildBadgeFilterState({ rarity, visibility });
-  const badgeShelf = useMemo(
+  const profile = data?.profile;
+  const badgePage = useMemo(
     () =>
-      buildBadgeShelfModel({
+      buildBadgesPageModel({
         badges: data?.badges ?? [],
-        rarity: deferredRarity,
-        visibility: deferredVisibility,
+        profile,
+        rarity,
+        visibility,
+        deferredRarity,
+        deferredVisibility,
         visibleBadgeCount,
         visibleLockedCount,
+        constrainedNetwork,
       }),
     [
       data?.badges,
+      constrainedNetwork,
       deferredRarity,
       deferredVisibility,
+      profile,
+      rarity,
       visibleBadgeCount,
       visibleLockedCount,
+      visibility,
     ],
   );
-  const profile = data?.profile;
   const { syncStateForDisplay, showRefreshPill } = useProfileSyncState(
     profile?.user,
     syncRunsQuery.data?.runs,
@@ -129,33 +124,7 @@ export function BadgesPageClient() {
       }),
     [displaySyncState, latestSyncOutcome, profile?.refreshedAt],
   );
-  const streak = summarizeContributionStreak(profile?.user.contributions ?? []);
-
-  const abraPayload = useMemo(
-    () =>
-      buildAbraInsightsRequest({
-        user: profile?.user,
-        contributions: profile?.user.contributions ?? [],
-        badges: badgeShelf.filtered,
-        repositoriesTouched: profile?.topRepositories.length ?? 0,
-        streakDays: streak.currentStreakDays,
-        enabled: !constrainedNetwork,
-        badgeLimit: 10,
-        badgeCount: badgeShelf.unlockedCount,
-      }),
-    [
-      badgeShelf.filtered,
-      badgeShelf.unlockedCount,
-      constrainedNetwork,
-      profile?.topRepositories.length,
-      profile?.user,
-      streak.currentStreakDays,
-    ],
-  );
-  const abraInsights = useAbraInsights(abraPayload);
-  const fallbackArchetype = profile
-    ? deriveDeterministicArchetype(profile.user.strongestSignals)
-    : "Systems Builder";
+  const abraInsights = useAbraInsights(badgePage.abraPayload);
 
   useEffect(() => {
     if (isLoading || isError || !data || badgeViewedEventSent.current) {
@@ -175,17 +144,17 @@ export function BadgesPageClient() {
       return;
     }
     const previous = previousUnlockedCountRef.current;
-    previousUnlockedCountRef.current = badgeShelf.unlockedCount;
-    if (previous === null || badgeShelf.unlockedCount <= previous) {
+    previousUnlockedCountRef.current = badgePage.badgeShelf.unlockedCount;
+    if (previous === null || badgePage.badgeShelf.unlockedCount <= previous) {
       return;
     }
-    const delta = badgeShelf.unlockedCount - previous;
+    const delta = badgePage.badgeShelf.unlockedCount - previous;
     setUnlockNotice(
       delta === 1
         ? "Badge unlocked. Your shelf gained 1 new achievement."
         : `Badges unlocked. Your shelf gained ${delta} new achievements.`,
     );
-  }, [badgeShelf.unlockedCount, data, isError, isLoading]);
+  }, [badgePage.badgeShelf.unlockedCount, data, isError, isLoading]);
 
   useEffect(() => {
     if (!unlockNotice) {
@@ -202,16 +171,16 @@ export function BadgesPageClient() {
   function handleRarityChange(value: BadgeRarityFilter) {
     startTransition(() => {
       setRarity(value);
-      setVisibleLockedCount(lockedBadgePageSize);
-      setVisibleBadgeCount(badgeShelfPageSize);
+      setVisibleLockedCount(badgePage.pageSizes.lockedBadgePageSize);
+      setVisibleBadgeCount(badgePage.pageSizes.badgeShelfPageSize);
     });
   }
 
   function handleVisibilityChange(value: BadgeVisibilityFilter) {
     startTransition(() => {
       setVisibility(value);
-      setVisibleLockedCount(lockedBadgePageSize);
-      setVisibleBadgeCount(badgeShelfPageSize);
+      setVisibleLockedCount(badgePage.pageSizes.lockedBadgePageSize);
+      setVisibleBadgeCount(badgePage.pageSizes.badgeShelfPageSize);
     });
   }
 
@@ -219,8 +188,8 @@ export function BadgesPageClient() {
     startTransition(() => {
       setRarity("All");
       setVisibility("All");
-      setVisibleLockedCount(lockedBadgePageSize);
-      setVisibleBadgeCount(badgeShelfPageSize);
+      setVisibleLockedCount(badgePage.pageSizes.lockedBadgePageSize);
+      setVisibleBadgeCount(badgePage.pageSizes.badgeShelfPageSize);
     });
   }
 
@@ -233,7 +202,7 @@ export function BadgesPageClient() {
         meta={(
           <HeaderMetaChips
             items={[
-              { label: `Earned ${badgeShelf.unlockedCount}` },
+              { label: `Earned ${badgePage.badgeShelf.unlockedCount}` },
               {
                 label: `Sync ${formatSyncStateLabel(displaySyncState)}`,
                 tone: toneForSyncState(displaySyncState),
@@ -244,7 +213,11 @@ export function BadgesPageClient() {
         actions={(
           <div className="flex flex-wrap items-center gap-2">
             <ProfileEvidenceStateChip
-              showFreshness={shouldShowProfileFreshnessPill(showRefreshPill, displaySyncState, appInstallationBlocked)}
+              showFreshness={shouldShowProfileFreshnessPill(
+                showRefreshPill,
+                displaySyncState,
+                appInstallationBlocked,
+              )}
               refreshedAt={profile?.refreshedAt}
               syncState={displaySyncState}
             />
@@ -281,17 +254,17 @@ export function BadgesPageClient() {
         ) : null}
         {!isLoading && !isError && profile ? (
           <BadgesOverviewCard
-            archetype={abraInsights.data?.archetype ?? fallbackArchetype}
+            archetype={abraInsights.data?.archetype ?? badgePage.fallbackArchetype}
             identitySummary={
               abraInsights.data?.identitySummary ||
               "Using deterministic badge guidance right now."
             }
-            unlockedCount={badgeShelf.unlockedCount}
-            completionPercent={badgeShelf.completionPercent}
+            unlockedCount={badgePage.badgeShelf.unlockedCount}
+            completionPercent={badgePage.badgeShelf.completionPercent}
             level={profile.user.level.currentLevel}
-            streakDays={streak.currentStreakDays}
+            streakDays={badgePage.streak.currentStreakDays}
             unlockNotice={unlockNotice}
-            nextUnlockTarget={badgeShelf.nextUnlockTarget}
+            nextUnlockTarget={badgePage.badgeShelf.nextUnlockTarget}
             onDismissUnlockNotice={() => {
               setUnlockNotice("");
             }}
@@ -304,12 +277,12 @@ export function BadgesPageClient() {
         className="render-opt-section space-y-4"
       >
         <BadgesShelfControls
-          filteredCount={badgeShelf.filtered.length}
-          totalCount={badgeShelf.totalCount}
-          unlockedCount={badgeShelf.unlockedCount}
-          isFiltering={isFiltering}
-          activeFilterCount={filterState.activeFilterCount}
-          canResetFilters={filterState.canResetFilters}
+          filteredCount={badgePage.badgeShelf.filtered.length}
+          totalCount={badgePage.badgeShelf.totalCount}
+          unlockedCount={badgePage.badgeShelf.unlockedCount}
+          isFiltering={badgePage.isFiltering}
+          activeFilterCount={badgePage.filterState.activeFilterCount}
+          canResetFilters={badgePage.filterState.canResetFilters}
           filterStatusId={badgesFilterStatusId}
           earnedRegionId={badgesEarnedRegionId}
           advancedFiltersToggleId={badgesAdvancedFiltersToggleId}
@@ -326,15 +299,15 @@ export function BadgesPageClient() {
         />
         <div id={badgesEarnedRegionId}>
           <BadgesShelfResults
-            visibleBadges={badgeShelf.visibleBadges}
+            visibleBadges={badgePage.badgeShelf.visibleBadges}
             stories={abraInsights.data?.badgeStories}
             isLoading={isLoading}
             isError={isError}
-            filteredCount={badgeShelf.filtered.length}
-            totalCount={badgeShelf.totalCount}
-            canResetFilters={filterState.canResetFilters}
-            hasMoreBadges={badgeShelf.hasMoreBadges}
-            remainingBadges={badgeShelf.remainingBadges}
+            filteredCount={badgePage.badgeShelf.filtered.length}
+            totalCount={badgePage.badgeShelf.totalCount}
+            canResetFilters={badgePage.filterState.canResetFilters}
+            hasMoreBadges={badgePage.badgeShelf.hasMoreBadges}
+            remainingBadges={badgePage.badgeShelf.remainingBadges}
             regionId={badgesEarnedRegionId}
             onRetry={() => {
               void refetch();
@@ -343,7 +316,10 @@ export function BadgesPageClient() {
             onShowMoreBadges={() => {
               startTransition(() => {
                 setVisibleBadgeCount((current) =>
-                  Math.min(badgeShelf.filtered.length, current + badgeShelfPageSize),
+                  Math.min(
+                    badgePage.badgeShelf.filtered.length,
+                    current + badgePage.pageSizes.badgeShelfPageSize,
+                  ),
                 );
               });
             }}
@@ -351,11 +327,11 @@ export function BadgesPageClient() {
         </div>
       </section>
       <BadgesLockedPathsSection
-        lockedBadges={badgeShelf.lockedBadges}
-        lockedBadgePreview={badgeShelf.lockedBadgePreview}
-        visibleLockedBadges={badgeShelf.visibleLockedBadges}
-        hasMoreLockedBadges={badgeShelf.hasMoreLockedBadges}
-        remainingLockedBadges={badgeShelf.remainingLockedBadges}
+        lockedBadges={badgePage.badgeShelf.lockedBadges}
+        lockedBadgePreview={badgePage.badgeShelf.lockedBadgePreview}
+        visibleLockedBadges={badgePage.badgeShelf.visibleLockedBadges}
+        hasMoreLockedBadges={badgePage.badgeShelf.hasMoreLockedBadges}
+        remainingLockedBadges={badgePage.badgeShelf.remainingLockedBadges}
         showLockedBadges={showLockedBadges}
         isLoading={isLoading}
         isError={isError}
@@ -367,7 +343,10 @@ export function BadgesPageClient() {
         onShowMoreLockedBadges={() => {
           startTransition(() => {
             setVisibleLockedCount((current) =>
-              Math.min(badgeShelf.lockedBadgesSorted.length, current + lockedBadgePageSize),
+              Math.min(
+                badgePage.badgeShelf.lockedBadgesSorted.length,
+                current + badgePage.pageSizes.lockedBadgePageSize,
+              ),
             );
           });
         }}

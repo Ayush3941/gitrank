@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Badge page model:
+  - moved page-size policy, deferred-filter status, streak summary, ABRA badge request shaping, and deterministic archetype fallback into `badges-page-model`.
+  - kept `BadgesPageClient` focused on query state, sync notices, unlock announcements, and composing the overview, shelf, and locked-path sections.
 - Settings sync-run activity:
   - moved row projection, searchable text, safe error normalization, metric summaries, status counts, health labels, summary insight selection, and filtered results into `sync-run-activity-model`.
   - kept `SyncRunActivityPanel` focused on search/status/detail local state while summary, filters, and results consume the same tested model output.
