@@ -3,6 +3,7 @@ import {
   buildLeaderboardArenaModel,
   buildLeaderboardNearbyRows,
   buildLeaderboardPageModel,
+  buildLeaderboardStaleNotice,
   resolveLeaderboardRowPageSize,
 } from "@/features/leaderboard/lib/leaderboard-view-model";
 import type {
@@ -22,6 +23,14 @@ describe("buildLeaderboardPageModel", () => {
       constrainedNetwork: true,
       preferNearbyMode: false,
       showLaneDetails: true,
+      displaySyncState: "partially_synced",
+      latestSyncOutcome: {
+        code: "backfill_incomplete",
+        message: "Historical authored PR backfill is still in progress.",
+      },
+      profileRefreshedAt: "2026-06-08T10:00:00.000Z",
+      hasProfile: true,
+      isFetching: true,
     });
 
     expect(model.rowPageSize).toBe(resolveLeaderboardRowPageSize(true));
@@ -34,6 +43,10 @@ describe("buildLeaderboardPageModel", () => {
     expect(model.effectiveMode).toBe("full");
     expect(model.activeFilterCount).toBe(3);
     expect(model.canClearAllControls).toBe(true);
+    expect(model.isBusy).toBe(true);
+    expect(model.shouldShowStaleState).toBe(true);
+    expect(model.staleNotice.message).toContain("scored PR evidence is still empty");
+    expect(model.staleNotice.reasonMessage).toContain("Historical authored PR backfill");
   });
 
   it("falls back to full mode when nearby view has no current-user context", () => {
@@ -52,6 +65,41 @@ describe("buildLeaderboardPageModel", () => {
     expect(model.hasViewFilter).toBe(false);
     expect(model.activeFilterCount).toBe(0);
     expect(model.canClearAllControls).toBe(false);
+    expect(model.isBusy).toBe(false);
+    expect(model.shouldShowStaleState).toBe(false);
+  });
+
+  it("reports busy state while URL lane state is settling even before rows load", () => {
+    const model = buildLeaderboardPageModel({
+      snapshot: null,
+      currentUsername: "player-1",
+      tab: "Global",
+      visibleRowCount: 12,
+      constrainedNetwork: false,
+      preferNearbyMode: true,
+      showLaneDetails: false,
+      isSwitchingTab: true,
+      isFetching: false,
+    });
+
+    expect(model.snapshot).toBeNull();
+    expect(model.isBusy).toBe(true);
+  });
+});
+
+describe("buildLeaderboardStaleNotice", () => {
+  it("builds app-access-aware leaderboard stale copy", () => {
+    const notice = buildLeaderboardStaleNotice({
+      displaySyncState: "stale",
+      refreshedAt: "2026-06-08T10:00:00.000Z",
+      latestSyncOutcome: {
+        code: "app_installation_required",
+        message: "GitHub App installation is required before leaderboard evidence can update.",
+      },
+    });
+
+    expect(notice.message).toContain("blocked until GitHub App access is restored");
+    expect(notice.reasonMessage).toContain("installation is required");
   });
 });
 

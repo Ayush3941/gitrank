@@ -1,5 +1,10 @@
 import type { LeaderboardTab } from "@/lib/api/leaderboard-api";
-import type { LeaderboardEntry, LeaderboardSnapshot } from "@/types/gitrank";
+import {
+  buildStaleSyncNotice,
+  type StaleSyncNotice,
+} from "@/lib/presentation/stale-sync-notice";
+import type { SyncRunDiagnostic } from "@/lib/presentation/sync-run-diagnostics";
+import type { LeaderboardEntry, LeaderboardSnapshot, SyncState } from "@/types/gitrank";
 
 const LEADERBOARD_ROW_PAGE_SIZE_DEFAULT = 12;
 const LEADERBOARD_ROW_PAGE_SIZE_CONSTRAINED = 6;
@@ -15,6 +20,12 @@ export type LeaderboardPageModelInput = {
   constrainedNetwork: boolean;
   preferNearbyMode: boolean;
   showLaneDetails: boolean;
+  displaySyncState?: SyncState;
+  latestSyncOutcome?: SyncRunDiagnostic | null;
+  profileRefreshedAt?: string;
+  hasProfile?: boolean;
+  isSwitchingTab?: boolean;
+  isFetching?: boolean;
 };
 
 export function resolveLeaderboardRowPageSize(constrainedNetwork: boolean): number {
@@ -31,6 +42,12 @@ export function buildLeaderboardPageModel({
   constrainedNetwork,
   preferNearbyMode,
   showLaneDetails,
+  displaySyncState = "synced",
+  latestSyncOutcome = null,
+  profileRefreshedAt,
+  hasProfile = false,
+  isSwitchingTab = false,
+  isFetching = false,
 }: LeaderboardPageModelInput) {
   const rowPageSize = resolveLeaderboardRowPageSize(constrainedNetwork);
   const rows = markCurrentUserRows(snapshot?.rows ?? [], currentUsername);
@@ -57,6 +74,14 @@ export function buildLeaderboardPageModel({
     (hasViewFilter ? 1 : 0) +
     (hasDetailsFilter ? 1 : 0);
   const canClearAllControls = hasLaneFilter || hasViewFilter || hasDetailsFilter;
+  const shouldShowStaleState =
+    hasProfile && (displaySyncState === "stale" || displaySyncState === "partially_synced");
+  const staleNotice = buildLeaderboardStaleNotice({
+    displaySyncState,
+    refreshedAt: profileRefreshedAt,
+    latestSyncOutcome,
+  });
+  const isBusy = isSwitchingTab || (isFetching && Boolean(viewSnapshot));
 
   return {
     rowPageSize,
@@ -72,7 +97,31 @@ export function buildLeaderboardPageModel({
     hasDetailsFilter,
     activeFilterCount,
     canClearAllControls,
+    shouldShowStaleState,
+    staleNotice,
+    isBusy,
   };
+}
+
+export function buildLeaderboardStaleNotice({
+  displaySyncState,
+  refreshedAt,
+  latestSyncOutcome,
+}: {
+  displaySyncState: SyncState;
+  refreshedAt?: string;
+  latestSyncOutcome: SyncRunDiagnostic | null;
+}): StaleSyncNotice {
+  return buildStaleSyncNotice({
+    syncState: displaySyncState === "partially_synced" ? "partially_synced" : "stale",
+    refreshedAt,
+    latestSyncOutcome,
+    snapshotLabel: "Leaderboard context",
+    partialFallback:
+      "Leaderboard profile snapshot exists, but scored PR evidence is still empty. Keep auto-sync active and refresh after GitHub processing completes.",
+    staleFallback:
+      "Rank updates can lag until sync completes.",
+  });
 }
 
 export function markCurrentUserRows(

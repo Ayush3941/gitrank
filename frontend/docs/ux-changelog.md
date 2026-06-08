@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Leaderboard view model:
+  - moved route-switch busy-state derivation and stale evidence notice projection into `leaderboard-view-model`.
+  - kept `LeaderboardPageClient` focused on URL lane updates, sync refresh orchestration, and composing controls with the arena.
 - Contributions page model:
   - moved repository and streak summaries, stale evidence notice selection, cached-refresh blocking state, background-refresh warning copy, and ABRA request shaping into `contributions-page-model`.
   - kept `ContributionsPageClient` focused on filter state, sync refresh orchestration, export notices, and composing filters with the card section.

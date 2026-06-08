@@ -39,7 +39,6 @@ import {
   isGitHubAppInstallationBlocked,
   selectLatestActionableSyncRunOutcome,
 } from "@/lib/presentation/sync-run-diagnostics";
-import { buildStaleSyncNotice } from "@/lib/presentation/stale-sync-notice";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
 
 const LeaderboardArena = dynamic(
@@ -80,28 +79,6 @@ export function LeaderboardPageClient() {
     data: myProfile,
     refetch: refetchMyProfile,
   } = useMyProfile();
-  const isSwitchingTab = deferredTab !== tab;
-  const leaderboardModel = useMemo(
-    () =>
-      buildLeaderboardPageModel({
-        snapshot: data,
-        currentUsername: myProfile?.user.username,
-        tab,
-        visibleRowCount,
-        constrainedNetwork,
-        preferNearbyMode,
-        showLaneDetails,
-      }),
-    [
-      constrainedNetwork,
-      data,
-      myProfile?.user.username,
-      preferNearbyMode,
-      showLaneDetails,
-      tab,
-      visibleRowCount,
-    ],
-  );
   const { syncStateForDisplay, showRefreshPill } = useProfileSyncState(
     myProfile?.user,
     syncRunsQuery.data?.runs,
@@ -112,6 +89,43 @@ export function LeaderboardPageClient() {
   );
   const appInstallationBlocked = isGitHubAppInstallationBlocked(latestSyncOutcome);
   const displaySyncState = appInstallationBlocked ? "failed" : syncStateForDisplay;
+  const isSwitchingTab = deferredTab !== tab;
+  const currentUsername = myProfile?.user.username;
+  const profileRefreshedAt = myProfile?.refreshedAt;
+  const hasProfile = Boolean(myProfile);
+  const leaderboardModel = useMemo(
+    () =>
+      buildLeaderboardPageModel({
+        snapshot: data,
+        currentUsername,
+        tab,
+        visibleRowCount,
+        constrainedNetwork,
+        preferNearbyMode,
+        showLaneDetails,
+        displaySyncState,
+        latestSyncOutcome,
+        profileRefreshedAt,
+        hasProfile,
+        isSwitchingTab,
+        isFetching,
+      }),
+    [
+      constrainedNetwork,
+      data,
+      displaySyncState,
+      currentUsername,
+      hasProfile,
+      isFetching,
+      isSwitchingTab,
+      latestSyncOutcome,
+      profileRefreshedAt,
+      preferNearbyMode,
+      showLaneDetails,
+      tab,
+      visibleRowCount,
+    ],
+  );
   const staleSyncRefresh = useStaleSyncRefresh({
     runs: syncRunsQuery.data?.runs,
     isSyncPending: runUserSync.isPending,
@@ -120,20 +134,6 @@ export function LeaderboardPageClient() {
       await Promise.allSettled([refetchMyProfile(), refetch()]);
     },
   });
-  const staleNotice = useMemo(
-    () =>
-      buildStaleSyncNotice({
-        syncState: displaySyncState === "partially_synced" ? "partially_synced" : "stale",
-        refreshedAt: myProfile?.refreshedAt,
-        latestSyncOutcome,
-        snapshotLabel: "Leaderboard context",
-        partialFallback:
-          "Leaderboard profile snapshot exists, but scored PR evidence is still empty. Keep auto-sync active and refresh after GitHub processing completes.",
-        staleFallback:
-          "Rank updates can lag until sync completes.",
-      }),
-    [displaySyncState, latestSyncOutcome, myProfile?.refreshedAt],
-  );
   function replaceLane(nextTab: LeaderboardTab) {
     const lane = tabToLaneParam(nextTab);
     const nextParams = new URLSearchParams(searchParams.toString());
@@ -150,10 +150,11 @@ export function LeaderboardPageClient() {
     });
   }
 
-  const isBusy = isSwitchingTab || (isFetching && Boolean(leaderboardModel.snapshot));
-
   return (
-    <div className="stable-scroll-scope space-y-6" aria-busy={isBusy || undefined}>
+    <div
+      className="stable-scroll-scope space-y-6"
+      aria-busy={leaderboardModel.isBusy || undefined}
+    >
       <PageHeader
         eyebrow="Leaderboard"
         title="Leaderboard"
@@ -191,10 +192,10 @@ export function LeaderboardPageClient() {
       {appInstallationBlocked ? (
         <GitHubAppSyncBlockNotice message={latestSyncOutcome?.message} />
       ) : null}
-      {myProfile && (displaySyncState === "stale" || displaySyncState === "partially_synced") ? (
+      {leaderboardModel.shouldShowStaleState && myProfile ? (
         <StaleState
-          message={staleNotice.message}
-          reasonMessage={staleNotice.reasonMessage}
+          message={leaderboardModel.staleNotice.message}
+          reasonMessage={leaderboardModel.staleNotice.reasonMessage}
           updatedAt={myProfile.refreshedAt}
           syncState={displaySyncState === "partially_synced" ? "partially_synced" : "stale"}
           onRefresh={staleSyncRefresh.onRefresh}
@@ -209,7 +210,7 @@ export function LeaderboardPageClient() {
       <LeaderboardControls
         rowsCount={leaderboardModel.rows.length}
         tab={tab}
-        isBusy={isBusy}
+        isBusy={leaderboardModel.isBusy}
         activeFilterCount={leaderboardModel.activeFilterCount}
         hasViewFilter={leaderboardModel.hasViewFilter}
         showLaneDetails={showLaneDetails}
