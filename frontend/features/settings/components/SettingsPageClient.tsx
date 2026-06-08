@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
@@ -9,14 +9,6 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
 import { RouteLoadingState } from "@/components/shared/RouteLoadingState";
 import { Button } from "@/components/ui/button";
-import {
-  useDeleteMyAccount,
-  useExportMyAccountData,
-  useLogoutSession,
-  useRunUserSync,
-  useStartAccountLink,
-  useUnlinkMyAccount,
-} from "@/hooks/use-account-actions";
 import {
   useMyProfile,
   useUpdateProfilePrivacy,
@@ -40,7 +32,6 @@ import {
 } from "@/features/settings/lib/sync-run-diagnostics";
 import { shouldShowProfileFreshnessPill } from "@/lib/presentation/sync-evidence";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
-import { buildUserSyncRefreshFeedback } from "@/lib/sync-refresh-feedback";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import { useThemePreference } from "@/hooks/use-theme-preference";
 import { SettingsAccountCard } from "@/features/settings/components/SettingsAccountCard";
@@ -52,6 +43,7 @@ import {
 } from "@/features/settings/components/SettingsPublicProfileCard";
 import { SettingsRepositoryVisibilitySection } from "@/features/settings/components/SettingsRepositoryVisibilitySection";
 import { SettingsSyncActivitySection } from "@/features/settings/components/SettingsSyncActivitySection";
+import { useSettingsAccountActions } from "@/features/settings/lib/use-settings-account-actions";
 
 type BackedPrivacyKey = SettingsPublicProfilePrivacyKey | "reducedGamification";
 
@@ -68,12 +60,6 @@ export function SettingsPageClient() {
   const { data, isLoading, isError, isFetching, refetch } = useMyProfile();
   const updatePrivacy = useUpdateProfilePrivacy();
   const updateRepositoryVisibility = useUpdateRepositoryVisibility();
-  const unlinkAccount = useUnlinkMyAccount();
-  const deleteAccount = useDeleteMyAccount();
-  const exportAccount = useExportMyAccountData();
-  const logoutSession = useLogoutSession();
-  const accountLinkStart = useStartAccountLink();
-  const runUserSync = useRunUserSync();
   const syncRunsQuery = useSyncRuns(15);
   const { setReducedGamification } = useGamificationPreference();
   const { theme, themeSource, setTheme, clearThemePreference } = useThemePreference();
@@ -81,8 +67,6 @@ export function SettingsPageClient() {
   const { enabled: displayShortcutsEnabled, setEnabled: setDisplayShortcutsEnabled } =
     useDisplayShortcutsEnabled();
   useAccountGamificationPreference(data);
-  const [actionNotice, setActionNotice] = useState("");
-  const [actionNoticeVariant, setActionNoticeVariant] = useState<"info" | "success" | "warning" | "error">("info");
   const profileUser = data?.user;
   const currentSettings = data?.user.privacy ?? null;
   const syncRuns = useMemo(
@@ -99,18 +83,13 @@ export function SettingsPageClient() {
   );
   const appInstallationBlocked = isGitHubAppInstallationBlocked(latestSyncOutcome);
   const displaySyncState = appInstallationBlocked ? "failed" : syncStateForDisplay;
-
-  useEffect(() => {
-    if (!actionNotice) {
-      return;
-    }
-    const timer = window.setTimeout(() => {
-      setActionNotice("");
-    }, 4200);
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [actionNotice]);
+  const accountActions = useSettingsAccountActions({
+    username: data?.user.username ?? "",
+    appInstallationBlocked,
+    isFetchingProfile: isFetching,
+    refetchProfile: refetch,
+    refetchSyncRuns: syncRunsQuery.refetch,
+  });
 
   if (isLoading) {
     return (
@@ -144,24 +123,8 @@ export function SettingsPageClient() {
       "",
     "settings-privacy",
   );
-  const actionError = sanitizeUserFacingError(
-    (runUserSync.error as Error | null)?.message ||
-    (logoutSession.error as Error | null)?.message ||
-    (unlinkAccount.error as Error | null)?.message ||
-      (deleteAccount.error as Error | null)?.message ||
-      (exportAccount.error as Error | null)?.message ||
-      (accountLinkStart.error as Error | null)?.message ||
-      "",
-    "settings-account-actions",
-  );
   const isSaving = updatePrivacy.isPending || updateRepositoryVisibility.isPending;
-  const isActing =
-    logoutSession.isPending ||
-    runUserSync.isPending ||
-    unlinkAccount.isPending ||
-    deleteAccount.isPending ||
-    exportAccount.isPending ||
-    accountLinkStart.isPending;
+  const isActing = accountActions.isActing;
   const pendingRepository = updateRepositoryVisibility.variables?.fullName ?? null;
   const syncRunsError = sanitizeUserFacingError(
     (syncRunsQuery.error as Error | null)?.message || "",
@@ -173,116 +136,6 @@ export function SettingsPageClient() {
       setReducedGamification(checked);
     }
     updatePrivacy.mutate({ [key]: checked });
-  }
-
-  function handleUnlinkAccount() {
-    if (isActing) {
-      return;
-    }
-    if (!window.confirm("Disconnect GitHub and sign out of this GitRank session?")) {
-      return;
-    }
-    setActionNotice("");
-    setActionNoticeVariant("info");
-    unlinkAccount.mutate(undefined, {
-      onSuccess: () => {
-        window.location.assign("/login");
-      },
-    });
-  }
-
-  function handleAccountRelink() {
-    if (isActing) {
-      return;
-    }
-    setActionNotice("");
-    setActionNoticeVariant("info");
-    accountLinkStart.mutate("/dashboard/settings", {
-      onSuccess: (result) => {
-        if (!result.authorize_url) {
-          setActionNotice("Account relink response is missing authorize_url.");
-          setActionNoticeVariant("warning");
-          return;
-        }
-        window.location.assign(result.authorize_url);
-      },
-    });
-  }
-
-  function handleSessionLogout() {
-    if (isActing) {
-      return;
-    }
-    setActionNotice("");
-    setActionNoticeVariant("info");
-    logoutSession.mutate(undefined, {
-      onSuccess: () => {
-        window.location.assign("/login");
-      },
-    });
-  }
-
-  function handleDeleteAccount() {
-    if (isActing) {
-      return;
-    }
-    if (
-      !window.confirm(
-        "Delete this GitRank account? This removes your user-owned profile, score, badge, and session data from GitRank.",
-      )
-    ) {
-      return;
-    }
-    setActionNotice("");
-    setActionNoticeVariant("info");
-    deleteAccount.mutate(undefined, {
-      onSuccess: () => {
-        window.location.assign("/");
-      },
-    });
-  }
-
-  function handleExportAccountData() {
-    if (isActing) {
-      return;
-    }
-    setActionNotice("");
-    setActionNoticeVariant("info");
-    exportAccount.mutate(undefined, {
-      onSuccess: (payload) => {
-        const generatedAt = new Date(payload.generated_at);
-        const exportDate = Number.isNaN(generatedAt.getTime())
-          ? new Date().toISOString().slice(0, 10)
-          : generatedAt.toISOString().slice(0, 10);
-        const handle = data?.user.username || payload.user.public_handle || "account";
-        downloadJSON(payload, `gitrank-account-export-${handle}-${exportDate}.json`);
-        setActionNotice("Account export generated. Token secrets and secret hashes are excluded from the file.");
-        setActionNoticeVariant("success");
-      },
-    });
-  }
-
-  function handleRunProfileRefresh() {
-    if (appInstallationBlocked || isActing || isFetching) {
-      return;
-    }
-    setActionNotice("");
-    setActionNoticeVariant("info");
-    runUserSync.mutate(undefined, {
-      onSuccess: (result) => {
-        const feedback = buildUserSyncRefreshFeedback(result);
-        setActionNotice(feedback.message);
-        setActionNoticeVariant(
-          feedback.tone === "success"
-            ? "success"
-            : feedback.tone === "error"
-              ? "error"
-              : "warning",
-        );
-        void refetch();
-        void syncRunsQuery.refetch();
-      },
-    });
   }
 
   return (
@@ -325,23 +178,20 @@ export function SettingsPageClient() {
           displaySyncState={displaySyncState}
           appInstallationBlocked={appInstallationBlocked}
           appBlockMessage={latestSyncOutcome?.message}
-          actionError={actionError}
-          actionNotice={actionNotice}
-          actionNoticeVariant={actionNoticeVariant}
+          actionError={accountActions.actionError}
+          actionNotice={accountActions.actionNotice}
+          actionNoticeVariant={accountActions.actionNoticeVariant}
           isActing={isActing}
           isFetchingProfile={isFetching}
-          isUserSyncPending={runUserSync.isPending}
-          isRelinkPending={accountLinkStart.isPending}
-          isLogoutPending={logoutSession.isPending}
-          isUnlinkPending={unlinkAccount.isPending}
-          onRefreshProfile={handleRunProfileRefresh}
-          onReconnectGitHub={handleAccountRelink}
-          onSignOut={handleSessionLogout}
-          onDisconnectGitHub={handleUnlinkAccount}
-          onDismissNotice={() => {
-            setActionNotice("");
-            setActionNoticeVariant("info");
-          }}
+          isUserSyncPending={accountActions.isUserSyncPending}
+          isRelinkPending={accountActions.isRelinkPending}
+          isLogoutPending={accountActions.isLogoutPending}
+          isUnlinkPending={accountActions.isUnlinkPending}
+          onRefreshProfile={accountActions.refreshProfile}
+          onReconnectGitHub={accountActions.reconnectGitHub}
+          onSignOut={accountActions.signOut}
+          onDisconnectGitHub={accountActions.disconnectGitHub}
+          onDismissNotice={accountActions.clearActionNotice}
         />
       </section>
 
@@ -424,26 +274,12 @@ export function SettingsPageClient() {
       >
         <SettingsDataControlsCard
           isActing={isActing}
-          isExportPending={exportAccount.isPending}
-          isDeletePending={deleteAccount.isPending}
-          onExportAccountData={handleExportAccountData}
-          onDeleteAccount={handleDeleteAccount}
+          isExportPending={accountActions.isExportPending}
+          isDeletePending={accountActions.isDeletePending}
+          onExportAccountData={accountActions.exportAccountData}
+          onDeleteAccount={accountActions.deleteAccount}
         />
       </section>
     </div>
   );
-}
-
-function downloadJSON(payload: unknown, filename: string) {
-  const blob = new Blob([JSON.stringify(payload, null, 2)], {
-    type: "application/json",
-  });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = filename;
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  URL.revokeObjectURL(url);
 }

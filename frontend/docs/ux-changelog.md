@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Settings account actions:
+  - moved profile refresh, relink, sign-out, disconnect, export, delete, notice timeout, and JSON download orchestration into `useSettingsAccountActions`.
+  - kept `SettingsPageClient` responsible for page layout and privacy/repository settings while account and data-control cards receive action state from the hook.
 - ABRA insights:
   - centralized profile, contribution, and badge request projection in `buildAbraInsightsRequest`.
   - kept per-page gates explicit while removing duplicated AI request mapping from dashboard, contributions, badges, public profile, and onboarding clients.
