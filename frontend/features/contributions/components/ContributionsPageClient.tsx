@@ -1,18 +1,17 @@
 "use client";
 
 import { startTransition, useDeferredValue, useEffect, useId, useMemo, useState } from "react";
-import { Download, LayoutList, Rows3 } from "lucide-react";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlockNotice";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { InlineNotice } from "@/components/shared/InlineNotice";
 import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
 import { RouteLoadingState } from "@/components/shared/RouteLoadingState";
 import { StaleState } from "@/components/shared/StaleState";
 import { ContributionsCardsSection } from "@/features/contributions/components/ContributionsCardsSection";
 import { ContributionFilters } from "@/features/contributions/components/ContributionFilters";
+import { ContributionsHeaderActions } from "@/features/contributions/components/ContributionsHeaderActions";
 import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useContributions } from "@/hooks/use-contributions";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
@@ -24,7 +23,6 @@ import {
   useReducedGamification,
 } from "@/hooks/use-gamification-preference";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
-import { Button } from "@/components/ui/button";
 import {
   shouldRequestAbraInsights,
 } from "@/lib/ai/deterministic-identity-summary";
@@ -32,7 +30,6 @@ import {
   summarizeContributionStreak,
   summarizeRepositories,
 } from "@/lib/metrics/contribution-metrics";
-import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { deduplicateContributionsByPullRequest } from "@/lib/presentation/contribution-dedup";
 import { shouldShowProfileFreshnessPill } from "@/lib/presentation/sync-evidence";
@@ -43,7 +40,6 @@ import {
 import { buildStaleSyncNotice } from "@/lib/presentation/stale-sync-notice";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
 import { contributionDisplayConfig } from "@/lib/runtime/contribution-display-config";
-import { formatDateTime } from "@/lib/formatters";
 import {
   buildContributionFocusCounts,
   buildContributionStatusCounts,
@@ -54,7 +50,6 @@ import {
   toContributionQueryFilter,
 } from "@/lib/runtime/contribution-filter-policy";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
-import type { Contribution } from "@/types/gitrank";
 
 const CONTRIBUTION_SEARCH_DEBOUNCE_MS = 220;
 const CONTRIBUTIONS_SECTION_LINKS = [
@@ -349,55 +344,25 @@ export function ContributionsPageClient() {
           />
         )}
         actions={(
-          <div className="flex flex-wrap gap-2">
-            <ProfileEvidenceStateChip
-              showFreshness={shouldShowProfileFreshnessPill(showRefreshPill, displaySyncState, appInstallationBlocked)}
-              refreshedAt={profile?.refreshedAt}
-              syncState={displaySyncState}
-            />
-            {!useLiteCards ? (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  startTransition(() => {
-                    setShowCardDetails((current) => !current);
-                  });
-                }}
-                aria-pressed={showCardDetails}
-                aria-controls={contributionCardsRegionId}
-              >
-                {showCardDetails ? (
-                  <>
-                    <Rows3 className="h-4 w-4" aria-hidden="true" />
-                    Hide details
-                  </>
-                ) : (
-                  <>
-                    <LayoutList className="h-4 w-4" aria-hidden="true" />
-                    Show details
-                  </>
-                )}
-              </Button>
-            ) : null}
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={() => {
-                if (!filteredRows.length) {
-                  setExportNotice("No contribution rows are available to export.");
-                  return;
-                }
-                downloadContributionsCSV(filteredRows);
-                setExportNotice(`Exported ${filteredRows.length} contribution rows as CSV.`);
-              }}
-            >
-              <Download className="h-4 w-4" aria-hidden="true" />
-              Export CSV
-            </Button>
-          </div>
+          <ContributionsHeaderActions
+            cardsRegionId={contributionCardsRegionId}
+            rows={filteredRows}
+            showFreshness={shouldShowProfileFreshnessPill(
+              showRefreshPill,
+              displaySyncState,
+              appInstallationBlocked,
+            )}
+            refreshedAt={profile?.refreshedAt}
+            syncState={displaySyncState}
+            useLiteCards={useLiteCards}
+            showCardDetails={showCardDetails}
+            onToggleCardDetails={() => {
+              startTransition(() => {
+                setShowCardDetails((current) => !current);
+              });
+            }}
+            onExportStatusChange={setExportNotice}
+          />
         )}
       />
       <InlineNotice
@@ -483,78 +448,4 @@ export function ContributionsPageClient() {
       />
     </div>
   );
-}
-
-function downloadContributionsCSV(rows: Contribution[]) {
-  const header = [
-    "pr_url",
-    "owner",
-    "repo",
-    "number",
-    "title",
-    "status",
-    "category",
-    "xp_earned",
-    "difficulty_score",
-    "impact_score",
-    "review_depth_score",
-    "test_signal_score",
-    "changed_files",
-    "merged_at",
-    "merged_date_local",
-    "maintainer_reviewed",
-    "linked_issue",
-    "ci_passed",
-    "impact_summary",
-  ];
-
-  const lines = [
-    header.join(","),
-    ...rows.map((row) =>
-      [
-        `https://github.com/${row.owner}/${row.repo}/pull/${row.number}`,
-        row.owner,
-        row.repo,
-        row.number,
-        row.title,
-        row.status,
-        row.category,
-        row.xpEarned,
-        row.difficultyScore,
-        row.impactScore,
-        row.reviewDepthScore,
-        row.testSignalScore,
-        row.changedFilesCount,
-        row.mergedAt,
-        formatCSVDate(row.mergedAt),
-        row.maintainerReviewed,
-        row.linkedIssue,
-        row.ciPassed,
-        sanitizeReportSummary(row.aiSummary),
-      ]
-        .map(toCSVCell)
-        .join(","),
-    ),
-  ];
-
-  const csv = `\uFEFF${lines.join("\n")}`;
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = window.URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  const stamp = new Date().toISOString().slice(0, 10);
-  anchor.href = url;
-  anchor.download = `gitrank-contributions-${stamp}.csv`;
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  window.URL.revokeObjectURL(url);
-}
-
-function toCSVCell(value: string | number | boolean): string {
-  const text = String(value ?? "");
-  return `"${text.replace(/"/g, "\"\"")}"`;
-}
-
-function formatCSVDate(value: string): string {
-  return formatDateTime(value, "");
 }

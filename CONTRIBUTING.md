@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 7, 2026)
 
+- Split contribution header controls into `ContributionsHeaderActions` and moved CSV formatting/download logic into `contribution-csv-export`, keeping detail-toggle state and export notices owned by `ContributionsPageClient`.
 - Split badge shelf filter controls into `BadgesShelfControls`, moving state/rarity segmented controls, advanced-filter disclosure, reset header, and live result counts out of `BadgesPageClient` while keeping filter state in the page.
 - Updated the segmented-filter consistency guard to audit `BadgesShelfControls` directly so extracted badge filters keep wrapped `SegmentedControl` usage and result-region ARIA coverage.
 - Split badge shelf result rendering into `BadgesShelfResults`, moving shelf loading/error/empty/grid/show-more presentation and the lazy `BadgeGrid` boundary out of `BadgesPageClient` while keeping filter state and pagination counts in the page.

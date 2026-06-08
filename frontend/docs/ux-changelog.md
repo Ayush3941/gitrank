@@ -2,6 +2,9 @@
 
 ## 2026-06-07
 
+- Contribution header actions:
+  - moved evidence freshness, detail toggle, and CSV export controls into `ContributionsHeaderActions`.
+  - moved CSV row formatting and browser download behavior into `contribution-csv-export` so the page client keeps state ownership instead of export plumbing.
 - Badge shelf controls:
   - moved state/rarity segmented controls, advanced-filter disclosure, reset header, and live result counts into `BadgesShelfControls`.
   - kept rarity, visibility, deferred filtering, and pagination reset ownership in `BadgesPageClient` so the controls stay presentation-only.
