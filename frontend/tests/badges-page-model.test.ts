@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  buildBadgesStaleNotice,
   buildBadgesPageModel,
   resolveBadgePageSizes,
 } from "@/features/badges/lib/badges-page-model";
@@ -40,6 +41,11 @@ describe("buildBadgesPageModel", () => {
       visibleBadgeCount: 2,
       visibleLockedCount: 1,
       constrainedNetwork: false,
+      displaySyncState: "partially_synced",
+      latestSyncOutcome: {
+        code: "backfill_incomplete",
+        message: "Historical authored PR backfill is still in progress.",
+      },
     });
 
     expect(model.pageSizes).toEqual(resolveBadgePageSizes(false));
@@ -54,6 +60,9 @@ describe("buildBadgesPageModel", () => {
     expect(model.badgeShelf.visibleLockedBadges.map((badge) => badge.id)).toEqual(["guard"]);
     expect(model.streak.currentStreakDays).toBeGreaterThan(0);
     expect(model.fallbackArchetype).toBe("Quality Champion");
+    expect(model.shouldShowStaleState).toBe(true);
+    expect(model.staleNotice.message).toContain("scored PR evidence is still empty");
+    expect(model.staleNotice.reasonMessage).toContain("Historical authored PR backfill");
     expect(model.abraPayload?.profile.badgeCount).toBe(2);
     expect(model.abraPayload?.badges.map((badge) => badge.id)).toEqual(["ship", "guard", "docs"]);
   });
@@ -80,7 +89,22 @@ describe("buildBadgesPageModel", () => {
     expect(model.pageSizes).toEqual(resolveBadgePageSizes(true));
     expect(model.isFiltering).toBe(false);
     expect(model.filterState.canResetFilters).toBe(false);
+    expect(model.shouldShowStaleState).toBe(false);
     expect(model.abraPayload).toBeNull();
     expect(model.fallbackArchetype).toBe("Guardian Engineer");
+  });
+
+  it("builds app-access-aware badge stale copy", () => {
+    const notice = buildBadgesStaleNotice({
+      displaySyncState: "stale",
+      refreshedAt: "2026-06-08T10:00:00.000Z",
+      latestSyncOutcome: {
+        code: "app_installation_required",
+        message: "GitHub App installation is required before badge evidence can update.",
+      },
+    });
+
+    expect(notice.message).toContain("blocked until GitHub App access is restored");
+    expect(notice.reasonMessage).toContain("installation is required");
   });
 });

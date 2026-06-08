@@ -34,7 +34,6 @@ import {
   isGitHubAppInstallationBlocked,
   selectLatestActionableSyncRunOutcome,
 } from "@/lib/presentation/sync-run-diagnostics";
-import { buildStaleSyncNotice } from "@/lib/presentation/stale-sync-notice";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
 
 const BADGES_SECTION_LINKS = [
@@ -67,6 +66,16 @@ export function BadgesPageClient() {
   const badgesAdvancedFiltersToggleId = useId();
   const badgesAdvancedFiltersRegionId = useId();
   const profile = data?.profile;
+  const { syncStateForDisplay, showRefreshPill } = useProfileSyncState(
+    profile?.user,
+    syncRunsQuery.data?.runs,
+  );
+  const latestSyncOutcome = useMemo(
+    () => selectLatestActionableSyncRunOutcome(syncRunsQuery.data?.runs),
+    [syncRunsQuery.data?.runs],
+  );
+  const appInstallationBlocked = isGitHubAppInstallationBlocked(latestSyncOutcome);
+  const displaySyncState = appInstallationBlocked ? "failed" : syncStateForDisplay;
   const badgePage = useMemo(
     () =>
       buildBadgesPageModel({
@@ -79,12 +88,16 @@ export function BadgesPageClient() {
         visibleBadgeCount,
         visibleLockedCount,
         constrainedNetwork,
+        displaySyncState,
+        latestSyncOutcome,
       }),
     [
       data?.badges,
       constrainedNetwork,
       deferredRarity,
       deferredVisibility,
+      displaySyncState,
+      latestSyncOutcome,
       profile,
       rarity,
       visibleBadgeCount,
@@ -92,16 +105,6 @@ export function BadgesPageClient() {
       visibility,
     ],
   );
-  const { syncStateForDisplay, showRefreshPill } = useProfileSyncState(
-    profile?.user,
-    syncRunsQuery.data?.runs,
-  );
-  const latestSyncOutcome = useMemo(
-    () => selectLatestActionableSyncRunOutcome(syncRunsQuery.data?.runs),
-    [syncRunsQuery.data?.runs],
-  );
-  const appInstallationBlocked = isGitHubAppInstallationBlocked(latestSyncOutcome);
-  const displaySyncState = appInstallationBlocked ? "failed" : syncStateForDisplay;
   const staleSyncRefresh = useStaleSyncRefresh({
     runs: syncRunsQuery.data?.runs,
     isSyncPending: runUserSync.isPending,
@@ -110,20 +113,6 @@ export function BadgesPageClient() {
       await refetch();
     },
   });
-  const staleNotice = useMemo(
-    () =>
-      buildStaleSyncNotice({
-        syncState: displaySyncState === "partially_synced" ? "partially_synced" : "stale",
-        refreshedAt: profile?.refreshedAt,
-        latestSyncOutcome,
-        snapshotLabel: "Badge snapshot",
-        partialFallback:
-          "Badge snapshot exists, but scored PR evidence is still empty. Keep auto-sync active and refresh after GitHub processing completes.",
-        staleFallback:
-          "New unlocks can appear after the next completed sync.",
-      }),
-    [displaySyncState, latestSyncOutcome, profile?.refreshedAt],
-  );
   const abraInsights = useAbraInsights(badgePage.abraPayload);
 
   useEffect(() => {
@@ -238,10 +227,10 @@ export function BadgesPageClient() {
         {appInstallationBlocked ? (
           <GitHubAppSyncBlockNotice message={latestSyncOutcome?.message} />
         ) : null}
-        {profile && (displaySyncState === "stale" || displaySyncState === "partially_synced") ? (
+        {badgePage.shouldShowStaleState && profile ? (
           <StaleState
-            message={staleNotice.message}
-            reasonMessage={staleNotice.reasonMessage}
+            message={badgePage.staleNotice.message}
+            reasonMessage={badgePage.staleNotice.reasonMessage}
             updatedAt={profile.refreshedAt}
             syncState={displaySyncState === "partially_synced" ? "partially_synced" : "stale"}
             onRefresh={staleSyncRefresh.onRefresh}

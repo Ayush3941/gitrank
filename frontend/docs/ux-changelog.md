@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Badge page model:
+  - moved stale badge-evidence notice projection and stale-state visibility into `badges-page-model`.
+  - kept `BadgesPageClient` focused on sync refresh orchestration, unlock announcements, and composing the overview, shelf, and locked-path sections.
 - Leaderboard view model:
   - moved route-switch busy-state derivation and stale evidence notice projection into `leaderboard-view-model`.
   - kept `LeaderboardPageClient` focused on URL lane updates, sync refresh orchestration, and composing controls with the arena.

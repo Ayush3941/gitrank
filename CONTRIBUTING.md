@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 8, 2026)
 
+- Extended `badges-page-model` to own stale badge-evidence notice projection and stale-state visibility, keeping `BadgesPageClient` focused on sync refresh orchestration, unlock announcements, and section composition.
 - Extended `leaderboard-view-model` to own leaderboard busy-state derivation and stale evidence notice projection, keeping `LeaderboardPageClient` focused on URL lane state, sync refresh orchestration, and arena composition.
 - Moved contributions repository/streak summaries, stale evidence notice selection, cached-refresh blocking state, background-refresh warning copy, and ABRA request shaping into `contributions-page-model`, keeping `ContributionsPageClient` focused on filters, sync refresh orchestration, export notices, and section composition.
 - Moved dashboard streak projection, ABRA request shaping, deterministic identity fallback, and stale-notice selection into `dashboard-page-model`; added shared GitRank profile/badge test fixtures so dashboard, badge, and ABRA model tests stop carrying duplicate profile builders.

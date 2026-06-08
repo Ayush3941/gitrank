@@ -1,7 +1,12 @@
 import { deriveDeterministicArchetype } from "@/lib/ai/deterministic-identity-summary";
 import { buildAbraInsightsRequest } from "@/lib/ai/abra-insights-request";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
-import type { Badge, ProfileViewData } from "@/types/gitrank";
+import {
+  buildStaleSyncNotice,
+  type StaleSyncNotice,
+} from "@/lib/presentation/stale-sync-notice";
+import type { SyncRunDiagnostic } from "@/lib/presentation/sync-run-diagnostics";
+import type { Badge, ProfileViewData, SyncState } from "@/types/gitrank";
 import {
   buildBadgeFilterState,
   buildBadgeShelfModel,
@@ -29,6 +34,8 @@ export type BadgesPageModelInput = {
   visibleBadgeCount: number;
   visibleLockedCount: number;
   constrainedNetwork: boolean;
+  displaySyncState?: SyncState;
+  latestSyncOutcome?: SyncRunDiagnostic | null;
 };
 
 export function resolveBadgePageSizes(constrainedNetwork: boolean): BadgePageSizes {
@@ -53,6 +60,8 @@ export function buildBadgesPageModel({
   visibleBadgeCount,
   visibleLockedCount,
   constrainedNetwork,
+  displaySyncState = "synced",
+  latestSyncOutcome = null,
 }: BadgesPageModelInput) {
   const pageSizes = resolveBadgePageSizes(constrainedNetwork);
   const isFiltering = deferredRarity !== rarity || deferredVisibility !== visibility;
@@ -78,6 +87,13 @@ export function buildBadgesPageModel({
   const fallbackArchetype = profile
     ? deriveDeterministicArchetype(profile.user.strongestSignals)
     : "Systems Builder";
+  const shouldShowStaleState =
+    Boolean(profile) && (displaySyncState === "stale" || displaySyncState === "partially_synced");
+  const staleNotice = buildBadgesStaleNotice({
+    displaySyncState,
+    refreshedAt: profile?.refreshedAt,
+    latestSyncOutcome,
+  });
 
   return {
     pageSizes,
@@ -87,5 +103,28 @@ export function buildBadgesPageModel({
     streak,
     abraPayload,
     fallbackArchetype,
+    shouldShowStaleState,
+    staleNotice,
   };
+}
+
+export function buildBadgesStaleNotice({
+  displaySyncState,
+  refreshedAt,
+  latestSyncOutcome,
+}: {
+  displaySyncState: SyncState;
+  refreshedAt?: string;
+  latestSyncOutcome: SyncRunDiagnostic | null;
+}): StaleSyncNotice {
+  return buildStaleSyncNotice({
+    syncState: displaySyncState === "partially_synced" ? "partially_synced" : "stale",
+    refreshedAt,
+    latestSyncOutcome,
+    snapshotLabel: "Badge snapshot",
+    partialFallback:
+      "Badge snapshot exists, but scored PR evidence is still empty. Keep auto-sync active and refresh after GitHub processing completes.",
+    staleFallback:
+      "New unlocks can appear after the next completed sync.",
+  });
 }
