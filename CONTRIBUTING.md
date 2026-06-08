@@ -6,6 +6,8 @@ This document is intentionally detailed.
 
 ## Session Notes (June 7, 2026)
 
+- Split leaderboard lane/view controls into `LeaderboardControls`, moving lane segmented-control options, active control chips, reset handling presentation, and view-option disclosure out of `LeaderboardPageClient` while keeping URL and control state in the page.
+- Updated the segmented-filter consistency guard to audit `LeaderboardControls` directly so extracted leaderboard filters keep wrapped `SegmentedControl` usage and result-region ARIA coverage.
 - Split quest cadence filter controls into `QuestsCadenceControls`, moving mission-count live status, reset header, cadence segmented-control options, compact labels, and filter icons out of `QuestsPageClient` while keeping cadence state in the page.
 - Updated the segmented-filter consistency guard to audit `QuestsCadenceControls` directly so extracted quest filters keep wrapped `SegmentedControl` usage and result-region ARIA coverage.
 - Split contribution header controls into `ContributionsHeaderActions` and moved CSV formatting/download logic into `contribution-csv-export`, keeping detail-toggle state and export notices owned by `ContributionsPageClient`.

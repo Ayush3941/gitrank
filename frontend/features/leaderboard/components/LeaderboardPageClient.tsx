@@ -3,31 +3,23 @@
 import dynamic from "next/dynamic";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { startTransition, useDeferredValue, useId, useMemo, useState } from "react";
-import {
-  BookText,
-  CalendarClock,
-  Cpu,
-  FlaskConical,
-  Globe2,
-  TrendingUp,
-} from "lucide-react";
-import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
-import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
 import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlockNotice";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
-import { ControlSurface } from "@/components/shared/ControlSurface";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { PanelLoadingPlaceholder } from "@/components/shared/PanelLoadingPlaceholder";
 import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
-import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { StaleState } from "@/components/shared/StaleState";
 import { Button } from "@/components/ui/button";
+import {
+  LeaderboardControls,
+  LEADERBOARD_TAB_LABELS,
+} from "@/features/leaderboard/components/LeaderboardControls";
 import { laneParamToTab, tabToLaneParam } from "@/features/leaderboard/lib/lane-param";
 import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useLeaderboard } from "@/hooks/use-leaderboard";
@@ -55,42 +47,6 @@ const LeaderboardArena = dynamic(
     loading: () => <LeaderboardPanelPlaceholder label="Loading leaderboard rows" />,
   },
 );
-
-const tabs: LeaderboardTab[] = [
-  "Global",
-  "Backend",
-  "Testing",
-  "Documentation",
-  "Weekly XP",
-  "Rising Contributors",
-];
-
-const TAB_LABELS: Record<LeaderboardTab, string> = {
-  Global: "Global",
-  Backend: "Backend",
-  Testing: "Testing",
-  Documentation: "Documentation",
-  "Weekly XP": "Weekly XP",
-  "Rising Contributors": "Rising",
-};
-
-const TAB_COMPACT_LABELS: Record<LeaderboardTab, string> = {
-  Global: "Global",
-  Backend: "Backend",
-  Testing: "Tests",
-  Documentation: "Docs",
-  "Weekly XP": "Weekly",
-  "Rising Contributors": "Rising",
-};
-
-const TAB_ICONS: Record<LeaderboardTab, typeof Globe2> = {
-  Global: Globe2,
-  Backend: Cpu,
-  Testing: FlaskConical,
-  Documentation: BookText,
-  "Weekly XP": CalendarClock,
-  "Rising Contributors": TrendingUp,
-};
 
 const LEADERBOARD_ROW_PAGE_SIZE_DEFAULT = 12;
 const LEADERBOARD_ROW_PAGE_SIZE_CONSTRAINED = 6;
@@ -197,8 +153,7 @@ export function LeaderboardPageClient() {
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
   }
 
-  function handleTabChange(value: string) {
-    const nextTab = value as LeaderboardTab;
+  function handleTabChange(nextTab: LeaderboardTab) {
     startTransition(() => {
       setVisibleRowCount(rowPageSize);
       setPreferNearbyMode(true);
@@ -217,7 +172,7 @@ export function LeaderboardPageClient() {
         meta={(
           <HeaderMetaChips
             items={[
-              { label: `Lane ${TAB_LABELS[tab]}` },
+              { label: `Lane ${LEADERBOARD_TAB_LABELS[tab]}` },
               {
                 label: `Sync ${formatSyncStateLabel(displaySyncState)}`,
                 tone: toneForSyncState(displaySyncState),
@@ -258,118 +213,39 @@ export function LeaderboardPageClient() {
         />
       ) : null}
       <InPageSectionNav sections={LEADERBOARD_SECTION_LINKS} className="render-opt-section" />
-      <section
-        id="leaderboard-controls"
-        data-scroll-target="true"
-        className="render-opt-section space-y-3"
-      >
-        <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">
-          {isBusy ? `Refreshing ${tab}...` : `Viewing ${tab}`}
-        </p>
-        <ControlSurface>
-          <FilterControlsHeader
-            label="Leaderboard controls"
-            summary={isBusy ? "Updating lane..." : `${rows.length} rows`}
-            activeFilterCount={activeFilterCount}
-            activeCountLabel={`Active: ${activeFilterCount}`}
-            secondaryLabel={`Lane: ${TAB_LABELS[tab]}`}
-            extraControls={(
-              <>
-                {hasViewFilter ? (
-                  <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-                    View: Full board
-                  </span>
-                ) : null}
-                {showLaneDetails ? (
-                  <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-                    Details: On
-                  </span>
-                ) : null}
-              </>
-            )}
-            resetAction={{
-              onReset: () => {
-                startTransition(() => {
-                  setShowLaneDetails(false);
-                  setPreferNearbyMode(true);
-                  setVisibleRowCount(rowPageSize);
-                  replaceLane("Global");
-                });
-              },
-              enabled: canClearAllControls,
-              ariaControls: leaderboardRowsRegionId,
-            }}
-          />
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-primary">Lane</p>
-            <SegmentedControl
-              options={tabs.map((item) => {
-                const Icon = TAB_ICONS[item];
-                return {
-                  value: item,
-                  label: TAB_LABELS[item],
-                  compactLabel: TAB_COMPACT_LABELS[item],
-                  icon: <Icon className="h-4 w-4" aria-hidden="true" />,
-                  minWidthClassName: "min-w-[6.75rem] sm:min-w-[8.5rem]",
-                };
-              })}
-              value={tab}
-              onValueChange={handleTabChange}
-              ariaLabel="Leaderboard lane filters"
-              ariaControls={leaderboardRowsRegionId}
-              className="w-full"
-              controlIdPrefix="leaderboard-lane-filter"
-              wrap
-            />
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <DisclosureToggle
-              id={leaderboardViewOptionsToggleId}
-              controlsId={leaderboardViewOptionsRegionId}
-              expanded={showViewOptions}
-              onToggle={() => {
-                setShowViewOptions((current) => !current);
-              }}
-              collapsedLabel="View options"
-              expandedLabel="Hide view options"
-            />
-          </div>
-          <div
-            id={leaderboardViewOptionsRegionId}
-            role="region"
-            aria-labelledby={leaderboardViewOptionsToggleId}
-            hidden={!showViewOptions}
-            className="flex flex-wrap items-center gap-2"
-          >
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={() => {
-                setShowLaneDetails((current) => !current);
-              }}
-              aria-controls={leaderboardRowsRegionId}
-              aria-pressed={showLaneDetails}
-            >
-              {showLaneDetails ? "Hide details" : "Show details"}
-            </Button>
-            {supportsNearbyMode ? (
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                onClick={() => {
-                  setPreferNearbyMode((current) => !current);
-                }}
-                aria-controls={leaderboardRowsRegionId}
-                aria-pressed={effectiveMode === "nearby"}
-              >
-                {effectiveMode === "nearby" ? "Show full board" : "Show nearby view"}
-              </Button>
-            ) : null}
-          </div>
-        </ControlSurface>
-      </section>
+      <LeaderboardControls
+        rowsCount={rows.length}
+        tab={tab}
+        isBusy={isBusy}
+        activeFilterCount={activeFilterCount}
+        hasViewFilter={hasViewFilter}
+        showLaneDetails={showLaneDetails}
+        canClearAllControls={canClearAllControls}
+        rowsRegionId={leaderboardRowsRegionId}
+        viewOptionsToggleId={leaderboardViewOptionsToggleId}
+        viewOptionsRegionId={leaderboardViewOptionsRegionId}
+        showViewOptions={showViewOptions}
+        supportsNearbyMode={supportsNearbyMode}
+        effectiveMode={effectiveMode}
+        onReset={() => {
+          startTransition(() => {
+            setShowLaneDetails(false);
+            setPreferNearbyMode(true);
+            setVisibleRowCount(rowPageSize);
+            replaceLane("Global");
+          });
+        }}
+        onTabChange={handleTabChange}
+        onToggleViewOptions={() => {
+          setShowViewOptions((current) => !current);
+        }}
+        onToggleLaneDetails={() => {
+          setShowLaneDetails((current) => !current);
+        }}
+        onToggleNearbyMode={() => {
+          setPreferNearbyMode((current) => !current);
+        }}
+      />
       {isLoading ? <LoadingState message="Leaderboard rows" /> : null}
       {isError ? (
         <ErrorState

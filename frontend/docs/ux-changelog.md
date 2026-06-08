@@ -2,6 +2,9 @@
 
 ## 2026-06-07
 
+- Leaderboard controls:
+  - moved lane segmented-control options, active chips, reset presentation, and view-option disclosure into `LeaderboardControls`.
+  - kept URL lane replacement, nearby/full mode state, detail state, and row pagination ownership in `LeaderboardPageClient`.
 - Quest cadence controls:
   - moved mission-count live status, reset header, cadence segmented-control options, compact labels, and icons into `QuestsCadenceControls`.
   - kept cadence state and deferred filtering in `QuestsPageClient`, with the segmented-filter guard now auditing the extracted component directly.
