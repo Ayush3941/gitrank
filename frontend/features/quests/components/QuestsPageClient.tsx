@@ -5,22 +5,17 @@ import {
   CalendarClock,
   CalendarDays,
   Flame,
-  LayoutGrid,
   Route,
   ShieldCheck,
-  Sparkles,
 } from "lucide-react";
 import { startTransition, useDeferredValue, useId, useMemo, useState } from "react";
-import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
 import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlockNotice";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
-import { ControlSurface } from "@/components/shared/ControlSurface";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
-import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { StaleState } from "@/components/shared/StaleState";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -30,6 +25,11 @@ import { useProfileSyncRuns } from "@/hooks/use-profile-sync-runs";
 import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
 import { useStaleSyncRefresh } from "@/hooks/use-stale-sync-refresh";
 import { useQuests } from "@/hooks/use-quests";
+import {
+  QuestsCadenceControls,
+  type QuestCadenceFilter,
+  type QuestCadenceCounts,
+} from "@/features/quests/components/QuestsCadenceControls";
 import {
   QuestsMissionsSection,
   type QuestGroupMap,
@@ -48,13 +48,6 @@ import type { Quest } from "@/types/gitrank";
 const groups: Array<Quest["cadence"]> = ["Daily", "Weekly", "Long-term", "Skill-based"];
 const QUEST_GROUP_PAGE_SIZE_DEFAULT = 5;
 const QUEST_GROUP_PAGE_SIZE_CONSTRAINED = 3;
-const QUEST_FILTERS: Array<{ value: "All" | Quest["cadence"]; label: string }> = [
-  { value: "All", label: "All" },
-  { value: "Daily", label: "Daily" },
-  { value: "Weekly", label: "Weekly" },
-  { value: "Long-term", label: "Long-term" },
-  { value: "Skill-based", label: "Skill-based" },
-];
 const QUESTS_SECTION_LINKS = [
   { id: "quests-filters", label: "Filters" },
   { id: "quests-journey", label: "Journey" },
@@ -80,7 +73,7 @@ export function QuestsPageClient() {
     "Long-term": questGroupPageSize,
     "Skill-based": questGroupPageSize,
   }));
-  const [cadenceFilter, setCadenceFilter] = useState<"All" | Quest["cadence"]>("All");
+  const [cadenceFilter, setCadenceFilter] = useState<QuestCadenceFilter>("All");
   const deferredCadenceFilter = useDeferredValue(cadenceFilter);
   const quests = data?.quests ?? [];
   const profile = data?.profile;
@@ -114,6 +107,12 @@ export function QuestsPageClient() {
     "Long-term": quests.filter((quest) => quest.cadence === "Long-term"),
     "Skill-based": quests.filter((quest) => quest.cadence === "Skill-based"),
   };
+  const questCadenceCounts: QuestCadenceCounts = {
+    Daily: questMap.Daily.length,
+    Weekly: questMap.Weekly.length,
+    "Long-term": questMap["Long-term"].length,
+    "Skill-based": questMap["Skill-based"].length,
+  };
   const todayQuest = selectQuestSpotlight(
     questMap.Daily.length > 0 ? questMap.Daily : quests,
   );
@@ -123,12 +122,7 @@ export function QuestsPageClient() {
     deferredCadenceFilter === "All"
       ? groups.filter((group) => questMap[group].length > 0)
       : groups.filter((group) => group === deferredCadenceFilter && questMap[group].length > 0);
-  const visibleQuestCount =
-    deferredCadenceFilter === "All"
-      ? quests.length
-      : questMap[deferredCadenceFilter].length;
   const canResetCadenceFilter = cadenceFilter !== "All";
-  const activeFilterCount = canResetCadenceFilter ? 1 : 0;
   const isFiltering = deferredCadenceFilter !== cadenceFilter;
   const staleNotice = useMemo(
     () =>
@@ -145,7 +139,7 @@ export function QuestsPageClient() {
     [displaySyncState, latestSyncOutcome, questSnapshotRefreshedAt],
   );
 
-  function handleCadenceFilterChange(next: "All" | Quest["cadence"]) {
+  function handleCadenceFilterChange(next: QuestCadenceFilter) {
     startTransition(() => {
       setCadenceFilter(next);
     });
@@ -189,76 +183,17 @@ export function QuestsPageClient() {
       <InPageSectionNav sections={QUESTS_SECTION_LINKS} className="render-opt-section" />
       <section id="quests-filters" data-scroll-target="true" className="render-opt-section">
         {!isLoading && !isError ? (
-          <div className="space-y-3">
-          <p id={questsFilterStatusId} role="status" aria-live="polite" aria-atomic="true" className="sr-only">
-            {isFiltering
-              ? "Updating missions…"
-              : deferredCadenceFilter === "All"
-                ? `Showing all ${visibleQuestCount} missions`
-                : `Showing ${visibleQuestCount} ${deferredCadenceFilter.toLowerCase()} missions`}
-          </p>
-          <ControlSurface>
-            <FilterControlsHeader
-              label="Mission controls"
-              summary={
-                isFiltering
-                  ? "Updating missions..."
-                  : deferredCadenceFilter === "All"
-                    ? `${visibleQuestCount} missions`
-                    : `${visibleQuestCount} ${deferredCadenceFilter.toLowerCase()} missions`
-              }
-              activeFilterCount={activeFilterCount}
-              resetAction={{
-                onReset: () => {
-                  handleCadenceFilterChange("All");
-                },
-                enabled: canResetCadenceFilter,
-                ariaControls: questsMissionsRegionId,
-              }}
-            />
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-primary">Cadence lane</p>
-              <SegmentedControl
-                options={QUEST_FILTERS.map((item) => {
-                  const count =
-                    item.value === "All"
-                      ? quests.length
-                      : questMap[item.value].length;
-                  const Icon =
-                    item.value === "All"
-                      ? LayoutGrid
-                      : item.value === "Daily"
-                        ? CalendarClock
-                        : item.value === "Weekly"
-                          ? CalendarDays
-                          : item.value === "Long-term"
-                            ? Route
-                            : Sparkles;
-                  return {
-                    value: item.value,
-                    label: item.label,
-                    compactLabel:
-                      item.value === "Skill-based"
-                        ? "Skills"
-                        : item.value === "Long-term"
-                          ? "Long"
-                          : item.label,
-                    icon: <Icon className="h-4 w-4" aria-hidden="true" />,
-                    count,
-                    minWidthClassName: "min-w-[6.75rem] sm:min-w-[8rem]",
-                  };
-                })}
-                value={cadenceFilter}
-                onValueChange={handleCadenceFilterChange}
-                ariaLabel="Mission cadence filters"
-                ariaDescribedBy={questsFilterStatusId}
-                ariaControls={questsMissionsRegionId}
-                controlIdPrefix="quest-filter"
-                wrap
-              />
-            </div>
-          </ControlSurface>
-          </div>
+          <QuestsCadenceControls
+            totalQuestCount={quests.length}
+            cadenceCounts={questCadenceCounts}
+            value={cadenceFilter}
+            displayValue={deferredCadenceFilter}
+            isFiltering={isFiltering}
+            canReset={canResetCadenceFilter}
+            filterStatusId={questsFilterStatusId}
+            missionsRegionId={questsMissionsRegionId}
+            onValueChange={handleCadenceFilterChange}
+          />
         ) : null}
       </section>
       {displaySyncState === "stale" || displaySyncState === "partially_synced" ? (

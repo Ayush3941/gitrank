@@ -2,6 +2,9 @@
 
 ## 2026-06-07
 
+- Quest cadence controls:
+  - moved mission-count live status, reset header, cadence segmented-control options, compact labels, and icons into `QuestsCadenceControls`.
+  - kept cadence state and deferred filtering in `QuestsPageClient`, with the segmented-filter guard now auditing the extracted component directly.
 - Contribution header actions:
   - moved evidence freshness, detail toggle, and CSV export controls into `ContributionsHeaderActions`.
   - moved CSV row formatting and browser download behavior into `contribution-csv-export` so the page client keeps state ownership instead of export plumbing.

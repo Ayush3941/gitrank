@@ -6,7 +6,7 @@ const root = process.cwd();
 const filterFiles = [
   "features/contributions/components/ContributionFilters.tsx",
   "features/leaderboard/components/LeaderboardPageClient.tsx",
-  "features/quests/components/QuestsPageClient.tsx",
+  "features/quests/components/QuestsCadenceControls.tsx",
   "features/badges/components/BadgesShelfControls.tsx",
   "features/settings/components/SyncRunActivityFilters.tsx",
   "features/settings/components/PrivacyRepositoryToggleList.tsx",

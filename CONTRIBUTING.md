@@ -6,6 +6,8 @@ This document is intentionally detailed.
 
 ## Session Notes (June 7, 2026)
 
+- Split quest cadence filter controls into `QuestsCadenceControls`, moving mission-count live status, reset header, cadence segmented-control options, compact labels, and filter icons out of `QuestsPageClient` while keeping cadence state in the page.
+- Updated the segmented-filter consistency guard to audit `QuestsCadenceControls` directly so extracted quest filters keep wrapped `SegmentedControl` usage and result-region ARIA coverage.
 - Split contribution header controls into `ContributionsHeaderActions` and moved CSV formatting/download logic into `contribution-csv-export`, keeping detail-toggle state and export notices owned by `ContributionsPageClient`.
 - Split badge shelf filter controls into `BadgesShelfControls`, moving state/rarity segmented controls, advanced-filter disclosure, reset header, and live result counts out of `BadgesPageClient` while keeping filter state in the page.
 - Updated the segmented-filter consistency guard to audit `BadgesShelfControls` directly so extracted badge filters keep wrapped `SegmentedControl` usage and result-region ARIA coverage.
