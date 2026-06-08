@@ -2,6 +2,9 @@
 
 ## 2026-06-07
 
+- Badge shelf:
+  - moved badge shelf loading, error, empty, grid, and show-more presentation into `BadgesShelfResults`.
+  - kept filter state, deferred filter values, and pagination counts in `BadgesPageClient` so shelf controls remain the source of truth.
 - Public profile best PRs:
   - moved constrained-network report previews, empty battle-report routing, deferred `BestPRsPanel` loading, and report placeholders into `PublicProfileBestPRsSection`.
   - kept featured-report and detailed-report selection in `PublicProfilePageClient`, with the section now owning presentation and loading behavior.

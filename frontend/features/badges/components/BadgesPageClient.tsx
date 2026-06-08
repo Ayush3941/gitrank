@@ -1,6 +1,5 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import {
   Gem,
   Lock,
@@ -8,8 +7,6 @@ import {
   Unlock,
 } from "lucide-react";
 import { startTransition, useDeferredValue, useEffect, useId, useMemo, useRef, useState } from "react";
-import { EmptyState } from "@/components/shared/EmptyState";
-import { ErrorState } from "@/components/shared/ErrorState";
 import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlockNotice";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
@@ -17,15 +14,14 @@ import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { ControlSurface } from "@/components/shared/ControlSurface";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
-import { LoadingState } from "@/components/shared/LoadingState";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { PanelLoadingPlaceholder } from "@/components/shared/PanelLoadingPlaceholder";
 import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { StaleState } from "@/components/shared/StaleState";
 import { Button } from "@/components/ui/button";
 import { BadgesLockedPathsSection } from "@/features/badges/components/BadgesLockedPathsSection";
 import { BadgesOverviewCard } from "@/features/badges/components/BadgesOverviewCard";
+import { BadgesShelfResults } from "@/features/badges/components/BadgesShelfResults";
 import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useRunUserSync } from "@/hooks/use-account-actions";
 import { useBadges } from "@/hooks/use-badges";
@@ -72,16 +68,6 @@ const BADGES_SECTION_LINKS = [
   { id: "badges-shelf", label: "Shelf" },
   { id: "badges-locked", label: "Locked paths" },
 ];
-
-const BadgeGrid = dynamic(
-  () =>
-    import("@/features/badges/components/BadgeGrid").then(
-      (mod) => mod.BadgeGrid,
-    ),
-  {
-    loading: () => <BadgeShelfPlaceholder label="Loading badge shelf" />,
-  },
-);
 
 export function BadgesPageClient() {
   const { data, isLoading, isError, refetch } = useBadges();
@@ -476,68 +462,29 @@ export function BadgesPageClient() {
           </ControlSurface>
         </div>
         <div id={badgesEarnedRegionId}>
-          {isLoading ? <LoadingState message="Badge shelf" /> : null}
-          {isError ? (
-            <ErrorState
-              title="Badge sync failed"
-              description="Badge refresh failed. Retry or use your latest snapshot."
-              onRetry={() => {
-                void refetch();
-              }}
-              fallbackLabel="Open sync settings"
-              fallbackHref="/dashboard/settings"
-              analyticsTarget="badges:error"
-            />
-          ) : null}
-          {!isLoading && !isError && filtered.length === 0 ? (
-            <EmptyState
-              eyebrow={canResetFilters && totalCount > 0 ? "Filter results" : "Badge progression"}
-              title={
-                canResetFilters && totalCount > 0
-                  ? "No badges match current filters."
-                  : "Your badge shelf is waiting."
-              }
-              description={
-                canResetFilters && totalCount > 0
-                  ? "Reset filters to view earned and locked badges."
-                  : "Complete a meaningful merged PR to unlock badges."
-              }
-              actionLabel={canResetFilters && totalCount > 0 ? "Reset filters" : "Open quests"}
-              actionHref={canResetFilters && totalCount > 0 ? undefined : "/dashboard/quests"}
-              onAction={canResetFilters && totalCount > 0 ? handleResetFilters : undefined}
-              analyticsTarget={
-                canResetFilters && totalCount > 0 ? "badges:empty-filtered" : "badges:empty"
-              }
-            />
-          ) : null}
-          {!isLoading && !isError && filtered.length ? (
-            <div className="space-y-3">
-              <BadgeGrid
-                badges={visibleBadges}
-                stories={abraInsights.data?.badgeStories}
-              />
-              {hasMoreBadges ? (
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-xs text-muted">{remainingBadges} badges remaining</p>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="secondary"
-                    aria-controls={badgesEarnedRegionId}
-                    onClick={() => {
-                      startTransition(() => {
-                        setVisibleBadgeCount((current) =>
-                          Math.min(filtered.length, current + badgeShelfPageSize),
-                        );
-                      });
-                    }}
-                  >
-                    Show more badges
-                  </Button>
-                </div>
-              ) : null}
-            </div>
-          ) : null}
+          <BadgesShelfResults
+            visibleBadges={visibleBadges}
+            stories={abraInsights.data?.badgeStories}
+            isLoading={isLoading}
+            isError={isError}
+            filteredCount={filtered.length}
+            totalCount={totalCount}
+            canResetFilters={canResetFilters}
+            hasMoreBadges={hasMoreBadges}
+            remainingBadges={remainingBadges}
+            regionId={badgesEarnedRegionId}
+            onRetry={() => {
+              void refetch();
+            }}
+            onResetFilters={handleResetFilters}
+            onShowMoreBadges={() => {
+              startTransition(() => {
+                setVisibleBadgeCount((current) =>
+                  Math.min(filtered.length, current + badgeShelfPageSize),
+                );
+              });
+            }}
+          />
         </div>
       </section>
       <BadgesLockedPathsSection
@@ -563,19 +510,5 @@ export function BadgesPageClient() {
         }}
       />
     </div>
-  );
-}
-
-function BadgeShelfPlaceholder({ label }: { label: string }) {
-  return (
-    <PanelLoadingPlaceholder
-      label={label}
-      minHeightClassName="min-h-[18rem]"
-      skeletons={[
-        { className: "h-9 w-1/2" },
-        { className: "h-24 w-full" },
-        { className: "h-24 w-full" },
-      ]}
-    />
   );
 }
