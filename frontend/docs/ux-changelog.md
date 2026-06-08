@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Onboarding reveal model:
+  - moved reveal metrics, badge de-duplication, evidence summary copy, sync-recovery decisions, next actions, and share headline formatting into `reveal-panel-model`.
+  - kept `RevealPanel` focused on rendering the reveal state, badges, recovery CTA, and dashboard/profile links.
 - Onboarding sync model:
   - moved sync steps, polling cadence, progress, retry eligibility, and sanitized action-error state into `sync-pipeline-model`.
   - kept `SyncPipeline` focused on profile-sync side effects, polling orchestration, notices, and rendering the pipeline.

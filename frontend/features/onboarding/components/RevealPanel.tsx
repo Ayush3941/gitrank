@@ -7,12 +7,8 @@ import { RelativeTime } from "@/components/shared/RelativeTime";
 import { ShareProfileButton } from "@/components/shared/ShareProfileButton";
 import { Button } from "@/components/ui/button";
 import { OnboardingStepper } from "@/features/onboarding/components/OnboardingStepper";
-import { uniqueDisplayValues } from "@/lib/display-values";
-import { formatNumber, formatPluralCount, formatXpLabel } from "@/lib/formatters";
+import { buildRevealPanelModel } from "@/features/onboarding/lib/reveal-panel-model";
 import type { AbraInsightSource } from "@/lib/ai/abra-insights-types";
-import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
-import { formatAIInsightSourceLabel } from "@/lib/presentation/ai-insight-source";
-import { deriveEffectiveSyncState } from "@/lib/presentation/sync-evidence";
 import { formatSyncStateLabel } from "@/lib/presentation/status-tone";
 import type { UserProfile } from "@/types/gitrank";
 
@@ -27,37 +23,7 @@ export function RevealPanel({
   identitySummary?: string;
   aiMode?: AbraInsightSource;
 }) {
-  const aiSourceLabel = formatAIInsightSourceLabel(aiMode);
-  const strongestSignals = uniqueDisplayValues(user.strongestSignals, 4);
-  const strongestSignalSummary =
-    strongestSignals.length > 0 ? strongestSignals.join(", ") : "recent contribution";
-  const unlockedBadges = deduplicateBadgesByName(user.badges)
-    .filter((badge) => badge.unlocked)
-    .slice(0, 3);
-  const evidenceRows = user.contributions.length;
-  const effectiveSyncState = deriveEffectiveSyncState(user);
-  const needsSyncRecovery =
-    evidenceRows === 0 ||
-    effectiveSyncState === "never_synced" ||
-    effectiveSyncState === "partially_synced" ||
-    effectiveSyncState === "failed" ||
-    effectiveSyncState === "rate_limited";
-  const recoveryActionLabel =
-    effectiveSyncState === "failed" || effectiveSyncState === "rate_limited"
-      ? "Retry sync analysis"
-      : "Continue sync analysis";
-  const nextActions =
-    user.mergedPrCount === 0
-      ? [
-          "Merge your first meaningful PR so score movement can activate.",
-          "Open sync settings to refresh and attach fresh GitHub evidence to this profile.",
-          "Open quests to target your first high-signal contribution type.",
-        ]
-      : [
-          "Open dashboard to inspect score movement and weekly XP.",
-          "Review contribution drill-down for high-impact PR evidence cards.",
-          "Share your public profile once privacy toggles are set.",
-        ];
+  const reveal = buildRevealPanelModel({ user, aiMode });
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -76,38 +42,35 @@ export function RevealPanel({
             {archetype ? ` Archetype: ${archetype}.` : ""}
           </p>
           <p className="mx-auto max-w-2xl text-base text-muted">
-            This snapshot highlights recurring signals in {strongestSignalSummary} work.
+            This snapshot highlights recurring signals in {reveal.strongestSignalSummary} work.
           </p>
           <div className="mx-auto grid w-full max-w-4xl gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <RevealMetric label="Merged PRs" value={formatNumber(user.mergedPrCount)} />
-            <RevealMetric label="Reviewed PRs" value={formatNumber(user.reviewedPrCount)} />
-            <RevealMetric label="Unlocked badges" value={formatNumber(unlockedBadges.length)} />
-            <RevealMetric label="Evidence rows" value={formatNumber(evidenceRows)} />
+            {reveal.metrics.map((metric) => (
+              <RevealMetric key={metric.id} label={metric.label} value={metric.value} />
+            ))}
           </div>
-            <div className="mx-auto max-w-3xl rounded-[var(--radius-universal)] border border-primary/24 bg-primary/10 px-4 py-3 text-left text-sm text-foreground">
-              <p className="text-xs font-medium text-primary">Snapshot state</p>
-              <p className="mt-2 leading-6">
-                Sync status is <span className="font-semibold text-white">{formatSyncStateLabel(effectiveSyncState)}</span>.
-                {" "}
-                {user.syncStatus.lastSyncedAt ? (
-                  <>
-                    Last sync{" "}
-                    <RelativeTime
-                      value={user.syncStatus.lastSyncedAt}
-                      fallback="time unavailable"
-                      exactLabel="Last sync time"
-                    />
-                    .
-                  </>
-                ) : null}
-                {evidenceRows > 0
-                ? ` This reveal includes ${formatPluralCount(evidenceRows, "persisted contribution evidence row")}.`
-                : " No scored contribution evidence is attached yet; merge one PR and re-sync to unlock deeper profile interpretation."}
-              </p>
-            </div>
+          <div className="mx-auto max-w-3xl rounded-[var(--radius-universal)] border border-primary/24 bg-primary/10 px-4 py-3 text-left text-sm text-foreground">
+            <p className="text-xs font-medium text-primary">Snapshot state</p>
+            <p className="mt-2 leading-6">
+              Sync status is <span className="font-semibold text-white">{formatSyncStateLabel(reveal.effectiveSyncState)}</span>.
+              {" "}
+              {user.syncStatus.lastSyncedAt ? (
+                <>
+                  Last sync{" "}
+                  <RelativeTime
+                    value={user.syncStatus.lastSyncedAt}
+                    fallback="time unavailable"
+                    exactLabel="Last sync time"
+                  />
+                  .
+                </>
+              ) : null}
+              {reveal.evidenceRowsLabel}
+            </p>
+          </div>
           {identitySummary ? (
             <div className="mx-auto max-w-3xl rounded-[var(--radius-universal)] border border-fuchsia-300/25 bg-fuchsia-400/9 px-4 py-3 text-left text-sm text-foreground">
-              <p className="text-xs font-medium text-fuchsia-100">Identity summary ({aiSourceLabel})</p>
+              <p className="text-xs font-medium text-fuchsia-100">Identity summary ({reveal.aiSourceLabel})</p>
               <p className="mt-2 leading-6">{identitySummary}</p>
             </div>
           ) : null}
@@ -115,19 +78,19 @@ export function RevealPanel({
         <div className="flex flex-wrap items-center justify-center gap-3">
           <RankBadge rank={user.level.rankTier} />
           <div className="neon-chip neon-chip-muted rounded-full px-4 py-2 text-sm text-muted">
-            <span className="numeric-readout">{formatXpLabel(user.level.currentXp)} / {formatXpLabel(user.level.nextLevelXp)}</span>
+            <span className="numeric-readout">{reveal.xpProgressLabel}</span>
           </div>
         </div>
         <div className="space-y-4">
           <div className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="text-sm font-semibold text-white text-left">
-                Unlock preview ({unlockedBadges.length > 0 ? `${unlockedBadges.length} earned` : "next badge targets"})
+                Unlock preview ({reveal.unlockPreviewLabel})
               </h2>
             </div>
             <ul id="reveal-unlock-preview" role="list" className="grid gap-4 sm:grid-cols-3">
-              {unlockedBadges.length > 0 ? (
-                unlockedBadges.map((badge, index) => (
+              {reveal.unlockedBadges.length > 0 ? (
+                reveal.unlockedBadges.map((badge, index) => (
                   <li key={`${badge.id}-${index}`} className="list-none rounded-[var(--radius-universal)] border border-cyan-300/16 bg-gradient-to-br from-slate-950/88 to-fuchsia-950/22 p-5 text-left">
                     <div className="flex items-center justify-between">
                       <Award className="h-5 w-5 text-primary" aria-hidden="true" />
@@ -151,12 +114,12 @@ export function RevealPanel({
           <div className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="text-sm font-semibold text-white text-left">
-                What to do next ({nextActions.length} steps)
+                What to do next ({reveal.nextActions.length} steps)
               </h2>
             </div>
             <div id="reveal-next-actions" className="neon-surface rounded-[var(--radius-universal)] px-5 py-4 text-left">
               <ol className="mt-1 grid gap-3 sm:grid-cols-3">
-                {nextActions.map((item, index) => (
+                {reveal.nextActions.map((item, index) => (
                   <li key={`${item}-${index}`} className="neon-metric rounded-[var(--radius-universal)] px-3 py-3">
                     <p className="text-xs font-medium text-cyan-100">Step {index + 1}</p>
                     <p className="mt-2 text-sm leading-6 text-muted">{item}</p>
@@ -167,15 +130,15 @@ export function RevealPanel({
           </div>
         </div>
         <div className="flex flex-wrap justify-center gap-3">
-          {needsSyncRecovery ? (
+          {reveal.needsSyncRecovery ? (
             <Button asChild size="lg">
               <IntentPrefetchLink href="/onboarding/analyzing">
-                {recoveryActionLabel}
+                {reveal.recoveryActionLabel}
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </IntentPrefetchLink>
             </Button>
           ) : null}
-          <Button asChild size="lg" variant={needsSyncRecovery ? "secondary" : "default"}>
+          <Button asChild size="lg" variant={reveal.needsSyncRecovery ? "secondary" : "default"}>
             <IntentPrefetchLink href="/dashboard">
               Enter dashboard
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -189,7 +152,7 @@ export function RevealPanel({
             size="lg"
             username={user.username}
             displayName={user.displayName}
-            shareHeadline={`${user.displayName} is ${user.title} on GitRank.`}
+            shareHeadline={reveal.shareHeadline}
             analyticsTargetPrefix="onboarding-reveal"
           />
           <Button asChild variant="secondary" size="lg">
