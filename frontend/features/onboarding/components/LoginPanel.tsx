@@ -6,6 +6,10 @@ import { TextScaleQuickSwitcher } from "@/components/shared/TextScaleQuickSwitch
 import { ThemeQuickSwitcher } from "@/components/shared/ThemeQuickSwitcher";
 import { Button } from "@/components/ui/button";
 import { OnboardingStepper } from "@/features/onboarding/components/OnboardingStepper";
+import {
+  LOGIN_PANEL_STEPS,
+  LOGIN_SCORE_RULES,
+} from "@/features/onboarding/lib/onboarding-entry-model";
 
 export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
   const oauthURL = `/oauth/github/start?return_to=${encodeURIComponent(returnTo)}`;
@@ -30,12 +34,8 @@ export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
             Evidence-first scoring for meaningful merged work.
           </p>
           <ol className="grid gap-3 sm:grid-cols-3">
-            {[
-              { step: "Step 1", text: "Sign in with GitHub OAuth." },
-              { step: "Step 2", text: "GitRank syncs contribution evidence." },
-              { step: "Step 3", text: "Open your dashboard and quests." },
-            ].map((item) => (
-              <li key={item.step} className="neon-surface space-y-2 rounded-[var(--radius-universal)] px-4 py-3 text-sm text-muted">
+            {LOGIN_PANEL_STEPS.map((item) => (
+              <li key={item.id} className="neon-surface space-y-2 rounded-[var(--radius-universal)] px-4 py-3 text-sm text-muted">
                 <p className="text-xs font-medium text-primary">{item.step}</p>
                 <p className="text-xs leading-6 text-muted">{item.text}</p>
               </li>
@@ -60,13 +60,8 @@ export function LoginPanel({ returnTo = "/dashboard" }: { returnTo?: string }) {
           <h2 className="text-2xl font-semibold text-white">How scoring works</h2>
           <div className="space-y-3">
             <ul role="list" className="grid gap-3">
-              {[
-                "Merged work outranks streak volume.",
-                "Review depth matters.",
-                "Tests and repo context affect XP.",
-                "Spam-like PR floods get reduced multipliers.",
-              ].map((line, index) => (
-                <li key={`score-rule-${index}-${line}`} className="neon-surface rounded-[var(--radius-universal)] px-4 py-3 text-sm text-muted">{line}</li>
+              {LOGIN_SCORE_RULES.map((rule) => (
+                <li key={rule.id} className="neon-surface rounded-[var(--radius-universal)] px-4 py-3 text-sm text-muted">{rule.text}</li>
               ))}
             </ul>
           </div>

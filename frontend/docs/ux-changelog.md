@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Onboarding entry model:
+  - moved sign-in steps, connection steps, scoring rules, data-access rows, and privacy controls into `onboarding-entry-model`.
+  - kept `LoginPanel` and `ConnectGithubPanel` focused on layout and analytics side effects while mapped rows use stable IDs.
 - Social image chips:
   - moved home, profile, and PR OpenGraph/Twitter chip labels into shared `social-image-chips` presentation data.
   - replaced repeated inline chip arrays and index-derived keys in share-card routes with stable chip IDs while preserving the rendered labels.
