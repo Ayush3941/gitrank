@@ -1,8 +1,12 @@
 # Contributing to GitRank
 
-Last reviewed: June 7, 2026
+Last reviewed: June 8, 2026
 
 This document is intentionally detailed.
+
+## Session Notes (June 8, 2026)
+
+- Split quest spotlight rendering into `QuestsSpotlightSection` and moved spotlight ranking/progress logic into `quest-spotlight`, keeping quest data loading and selected spotlight ownership in `QuestsPageClient`.
 
 ## Session Notes (June 7, 2026)
 

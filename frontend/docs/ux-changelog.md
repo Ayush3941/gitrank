@@ -1,5 +1,11 @@
 # Frontend UX Changelog
 
+## 2026-06-08
+
+- Quest spotlight:
+  - moved daily, weekly, and long-term mission spotlight cards into `QuestsSpotlightSection`.
+  - moved spotlight ranking and progress percent calculation into `quest-spotlight` so presentation and selection rules are testable outside the page client.
+
 ## 2026-06-07
 
 - Leaderboard controls:
