@@ -5,6 +5,9 @@ import MarketingLoading from "@/app/(marketing)/loading";
 import { MarketingLayout } from "@/components/shared/MarketingLayout";
 import { LandingPage } from "@/features/marketing/components/LandingPage";
 
+const antiSpamCopy =
+  "GitRank rewards merged evidence, review depth, tests, and project impact. Repeated low-signal PRs receive reduced weight.";
+
 vi.mock("next/link", () => ({
   default: ({ href, children, className }: { href: string; children: ReactNode; className?: string }) => (
     <a href={href} className={className}>{children}</a>
@@ -24,11 +27,7 @@ describe("marketing shell copy", () => {
         name: "Low-signal volume does not outrank meaningful work.",
       }),
     ).not.toBeNull();
-    expect(
-      screen.getByText(
-        "GitRank rewards merged evidence, review depth, tests, and project impact. Repeated low-signal PRs receive reduced weight.",
-      ),
-    ).not.toBeNull();
+    expect(screen.getAllByText(antiSpamCopy).length).toBeGreaterThanOrEqual(1);
     expect(screen.queryByText(/do not make you powerful/i)).toBeNull();
 
     const nav = screen.getByRole("navigation", { name: "Marketing routes" });

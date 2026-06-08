@@ -13,17 +13,14 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { Button } from "@/components/ui/button";
-
-const loop = [
-  "Connect GitHub",
-  "Analyze merged PRs",
-  "Reveal rank",
-  "Unlock badges",
-  "Complete quests",
-  "Share profile",
-];
+import {
+  buildLandingPageModel,
+  type LandingIconKey,
+} from "@/features/marketing/lib/landing-page-model";
 
 export function LandingPage() {
+  const landing = buildLandingPageModel();
+
   return (
     <div className="space-y-8">
       <section className="glass-panel-strong overflow-hidden px-6 py-10 sm:px-10 sm:py-14">
@@ -96,29 +93,18 @@ export function LandingPage() {
             description="Contribution quality needs more than activity volume."
           />
           <div className="grid gap-6 lg:grid-cols-3">
-          {[
-          {
-            icon: <ChartNoAxesCombined className="h-5 w-5 text-primary" aria-hidden="true" />,
-            title: "Skill needs evidence.",
-            text: "Commits, stars, and streaks miss difficulty and real impact.",
-          },
-          {
-            icon: <GitPullRequestArrow className="h-5 w-5 text-primary" aria-hidden="true" />,
-            title: "PRs carry different impact.",
-            text: "A typo fix and a deep runtime patch deserve different score weight.",
-          },
-          {
-            icon: <ShieldCheck className="h-5 w-5 text-primary" aria-hidden="true" />,
-            title: "Quality needs evidence.",
-            text: "GitRank weights merged outcomes, review depth, tests, and repo context.",
-          },
-        ].map((item, index) => (
-          <GlowCard key={`problem-card-${index}-${item.title}`} className="space-y-3">
-            <div className="neon-tile inline-flex rounded-[var(--radius-universal)] p-3">{item.icon}</div>
-            <h3 className="text-xl font-semibold text-white">{item.title}</h3>
-            <p className="text-sm text-muted">{item.text}</p>
-          </GlowCard>
-        ))}
+            {landing.problemCards.map((item) => {
+              const Icon = landingIconFor(item.icon);
+              return (
+                <GlowCard key={item.id} className="space-y-3">
+                  <div className="neon-tile inline-flex rounded-[var(--radius-universal)] p-3">
+                    <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-white">{item.title}</h3>
+                  <p className="text-sm text-muted">{item.text}</p>
+                </GlowCard>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -131,40 +117,18 @@ export function LandingPage() {
             description="Onboarding, progression, and profile sharing."
           />
           <ul role="list" className="grid gap-6 lg:grid-cols-3">
-            {[
-          {
-            persona: "New contributor",
-            mission: "Connect GitHub and unlock your first score snapshot.",
-            success: "First synced PR appears with XP and evidence status.",
-            href: "/onboarding/connect-github",
-            cta: "Start onboarding",
-          },
-          {
-            persona: "Returning contributor",
-            mission: "Track weekly movement, quests, and impact quality.",
-            success: "Rank movement updates after a merged high-signal PR.",
-            href: "/dashboard/contributions",
-            cta: "Open contributions",
-          },
-          {
-            persona: "Profile sharer",
-            mission: "Turn contribution history into a public credibility card.",
-            success: "Public headline and share-ready profile card update.",
-            href: "/dashboard",
-            cta: "Open dashboard",
-          },
-          ].map((journey, index) => (
-          <li key={`journey-${index}-${journey.persona}`}>
-            <GlowCard className="space-y-3">
-            <p className="text-xs font-medium text-primary">{journey.persona}</p>
-            <h3 className="text-xl font-semibold text-white">{journey.mission}</h3>
-            <p className="text-sm text-muted">{journey.success}</p>
-            <Button asChild variant="secondary" size="sm">
-              <IntentPrefetchLink href={journey.href}>{journey.cta}</IntentPrefetchLink>
-            </Button>
-            </GlowCard>
-          </li>
-          ))}
+            {landing.coreJourneys.map((journey) => (
+              <li key={journey.id}>
+                <GlowCard className="space-y-3">
+                  <p className="text-xs font-medium text-primary">{journey.persona}</p>
+                  <h3 className="text-xl font-semibold text-white">{journey.mission}</h3>
+                  <p className="text-sm text-muted">{journey.success}</p>
+                  <Button asChild variant="secondary" size="sm">
+                    <IntentPrefetchLink href={journey.href}>{journey.cta}</IntentPrefetchLink>
+                  </Button>
+                </GlowCard>
+              </li>
+            ))}
           </ul>
         </div>
       </section>
@@ -177,13 +141,9 @@ export function LandingPage() {
             description="Merged PR evidence flows into explainable score movement and inspectable profile snapshots."
           />
           <ul role="list" className="grid gap-3">
-            {[
-              "Classifies documentation, tests, bug fixes, backend, infra, performance, and architecture work.",
-              "Turns verified work into XP, badge unlocks, league position, and public proof.",
-              "Explains score changes so maintainers and recruiters can inspect the evidence instead of trusting a black box.",
-            ].map((line, index) => (
-              <li key={`solution-line-${index}`} className="list-none neon-surface rounded-[var(--radius-universal)] px-4 py-3 text-sm text-muted">
-                {line}
+            {landing.solutionLines.map((line) => (
+              <li key={line.id} className="list-none neon-surface rounded-[var(--radius-universal)] px-4 py-3 text-sm text-muted">
+                {line.text}
               </li>
             ))}
           </ul>
@@ -196,13 +156,13 @@ export function LandingPage() {
             description="RPG-style progression grounded in maintainers' evidence."
           />
           <ol className="grid gap-3 sm:grid-cols-2">
-            {loop.map((step, index) => (
-              <li key={`loop-step-${index}`} className="neon-surface rounded-[var(--radius-universal)] p-4">
+            {landing.loopSteps.map((step, index) => (
+              <li key={step.id} className="neon-surface rounded-[var(--radius-universal)] p-4">
                 <p className="text-xs font-medium text-primary">Step {index + 1}</p>
-                <p className="mt-2 text-lg font-medium text-white">{step}</p>
+                <p className="mt-2 text-lg font-medium text-white">{step.label}</p>
               </li>
             ))}
-            </ol>
+          </ol>
         </GlowCard>
       </section>
 
@@ -231,15 +191,10 @@ export function LandingPage() {
             description="Badges unlock from sustained evidence and meaningful activity."
           />
           <ul role="list" className="grid gap-3 sm:grid-cols-2">
-            {[
-              "Merged contribution cadence",
-              "Review depth consistency",
-              "Testing and reliability signal",
-              "Cross-repository impact",
-            ].map((track, index) => (
-              <li key={`badge-track-${index}`} className="neon-surface rounded-[var(--radius-universal)] p-4">
+            {landing.badgeTracks.map((track) => (
+              <li key={track.id} className="neon-surface rounded-[var(--radius-universal)] p-4">
                 <p className="text-xs font-medium text-primary">Badge track</p>
-                <h3 className="mt-3 text-lg font-semibold text-white">{track}</h3>
+                <h3 className="mt-3 text-lg font-semibold text-white">{track.title}</h3>
               </li>
             ))}
           </ul>
@@ -252,9 +207,9 @@ export function LandingPage() {
             <Swords className="h-3.5 w-3.5" aria-hidden="true" />
             Anti-spam promise
           </div>
-          <h2 className="text-2xl font-semibold text-foreground">Low-signal volume does not outrank meaningful work.</h2>
+          <h2 className="text-2xl font-semibold text-foreground">{landing.antiSpamPromise.title}</h2>
           <p className="readable-measure max-w-[68ch] text-sm leading-7 text-amber-50">
-            Low-context noise, unreviewed changes, and thin contribution floods are scored down.
+            {landing.antiSpamPromise.body}
           </p>
         </GlowCard>
 
@@ -278,6 +233,16 @@ export function LandingPage() {
       </section>
     </div>
   );
+}
+
+function landingIconFor(icon: LandingIconKey) {
+  if (icon === "chart") {
+    return ChartNoAxesCombined;
+  }
+  if (icon === "pull-request") {
+    return GitPullRequestArrow;
+  }
+  return ShieldCheck;
 }
 
 function Metric({ label, value }: { label: string; value: string | number }) {
