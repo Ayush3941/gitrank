@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Quest page model:
+  - moved cadence grouping, visible mission lanes, journey progress, spotlight selection, and stale quest-evidence notice projection into `quests-page-model`.
+  - kept `QuestsPageClient` focused on React state, sync refresh orchestration, and composing controls, journey, spotlight, and mission sections.
 - Badge page model:
   - moved stale badge-evidence notice projection and stale-state visibility into `badges-page-model`.
   - kept `BadgesPageClient` focused on sync refresh orchestration, unlock announcements, and composing the overview, shelf, and locked-path sections.

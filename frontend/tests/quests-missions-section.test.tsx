@@ -1,9 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import {
-  QuestsMissionsSection,
-  type QuestGroupMap,
-} from "@/features/quests/components/QuestsMissionsSection";
+import { QuestsMissionsSection } from "@/features/quests/components/QuestsMissionsSection";
+import type { QuestGroupMap } from "@/features/quests/lib/quests-page-model";
 import { buildQuest } from "@/tests/helpers/quest-fixture";
 import type { Quest } from "@/types/gitrank";
 

@@ -22,37 +22,31 @@ import { useProfileSyncRuns } from "@/hooks/use-profile-sync-runs";
 import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
 import { useStaleSyncRefresh } from "@/hooks/use-stale-sync-refresh";
 import { useQuests } from "@/hooks/use-quests";
-import {
-  QuestsCadenceControls,
-  type QuestCadenceFilter,
-  type QuestCadenceCounts,
-} from "@/features/quests/components/QuestsCadenceControls";
-import {
-  QuestsMissionsSection,
-  type QuestGroupMap,
-} from "@/features/quests/components/QuestsMissionsSection";
+import { QuestsCadenceControls } from "@/features/quests/components/QuestsCadenceControls";
+import { QuestsMissionsSection } from "@/features/quests/components/QuestsMissionsSection";
 import { QuestsSpotlightSection } from "@/features/quests/components/QuestsSpotlightSection";
-import { selectQuestSpotlight } from "@/features/quests/lib/quest-spotlight";
-import { formatNumber, toRatioPercent } from "@/lib/formatters";
-import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
+import {
+  buildInitialVisibleQuestGroupCounts,
+  buildQuestsPageModel,
+  resolveQuestGroupPageSize,
+  type QuestCadenceFilter,
+} from "@/features/quests/lib/quests-page-model";
+import { formatNumber } from "@/lib/formatters";
 import { shouldShowProfileFreshnessPill } from "@/lib/presentation/sync-evidence";
 import {
   isGitHubAppInstallationBlocked,
   selectLatestActionableSyncRunOutcome,
 } from "@/lib/presentation/sync-run-diagnostics";
-import { buildStaleSyncNotice } from "@/lib/presentation/stale-sync-notice";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
 import type { Quest } from "@/types/gitrank";
 
-const groups: Array<Quest["cadence"]> = ["Daily", "Weekly", "Long-term", "Skill-based"];
-const QUEST_GROUP_PAGE_SIZE_DEFAULT = 5;
-const QUEST_GROUP_PAGE_SIZE_CONSTRAINED = 3;
 const QUESTS_SECTION_LINKS = [
   { id: "quests-filters", label: "Filters" },
   { id: "quests-journey", label: "Journey" },
   { id: "quests-spotlight", label: "Spotlight" },
   { id: "quests-missions", label: "Missions" },
 ];
+const EMPTY_QUESTS: Quest[] = [];
 
 export function QuestsPageClient() {
   const questsMissionsRegionId = useId();
@@ -61,20 +55,13 @@ export function QuestsPageClient() {
   const runUserSync = useRunUserSync();
   const { data, isLoading, isError, refetch } = useQuests();
   const syncRunsQuery = useProfileSyncRuns();
-  const questGroupPageSize = constrainedNetwork
-    ? QUEST_GROUP_PAGE_SIZE_CONSTRAINED
-    : QUEST_GROUP_PAGE_SIZE_DEFAULT;
+  const questGroupPageSize = resolveQuestGroupPageSize(constrainedNetwork);
   const [visibleGroupCounts, setVisibleGroupCounts] = useState<
     Record<Quest["cadence"], number>
-  >(() => ({
-    Daily: questGroupPageSize,
-    Weekly: questGroupPageSize,
-    "Long-term": questGroupPageSize,
-    "Skill-based": questGroupPageSize,
-  }));
+  >(() => buildInitialVisibleQuestGroupCounts(questGroupPageSize));
   const [cadenceFilter, setCadenceFilter] = useState<QuestCadenceFilter>("All");
   const deferredCadenceFilter = useDeferredValue(cadenceFilter);
-  const quests = data?.quests ?? [];
+  const quests = data?.quests ?? EMPTY_QUESTS;
   const profile = data?.profile;
   const { syncStateForDisplay, showRefreshPill } = useProfileSyncState(
     profile?.user,
@@ -86,6 +73,33 @@ export function QuestsPageClient() {
   );
   const appInstallationBlocked = isGitHubAppInstallationBlocked(latestSyncOutcome);
   const displaySyncState = appInstallationBlocked ? "failed" : syncStateForDisplay;
+  const questSnapshotRefreshedAt =
+    data?.staleness?.refreshedAt ?? profile?.refreshedAt;
+  const questPage = useMemo(
+    () =>
+      buildQuestsPageModel({
+        quests,
+        profile,
+        cadenceFilter,
+        deferredCadenceFilter,
+        visibleGroupCounts,
+        constrainedNetwork,
+        displaySyncState,
+        latestSyncOutcome,
+        questSnapshotRefreshedAt,
+      }),
+    [
+      cadenceFilter,
+      constrainedNetwork,
+      deferredCadenceFilter,
+      displaySyncState,
+      latestSyncOutcome,
+      profile,
+      questSnapshotRefreshedAt,
+      quests,
+      visibleGroupCounts,
+    ],
+  );
   const staleSyncRefresh = useStaleSyncRefresh({
     runs: syncRunsQuery.data?.runs,
     isSyncPending: runUserSync.isPending,
@@ -94,49 +108,6 @@ export function QuestsPageClient() {
       await refetch();
     },
   });
-  const questSnapshotRefreshedAt =
-    data?.staleness?.refreshedAt ?? profile?.refreshedAt;
-  const contributionRows = profile?.user.contributions ?? [];
-  const streak = summarizeContributionStreak(contributionRows);
-  const dayOfYear = dayOfYearUTC(new Date());
-  const dayProgress = toRatioPercent(dayOfYear / 365);
-  const questMap: QuestGroupMap = {
-    Daily: quests.filter((quest) => quest.cadence === "Daily"),
-    Weekly: quests.filter((quest) => quest.cadence === "Weekly"),
-    "Long-term": quests.filter((quest) => quest.cadence === "Long-term"),
-    "Skill-based": quests.filter((quest) => quest.cadence === "Skill-based"),
-  };
-  const questCadenceCounts: QuestCadenceCounts = {
-    Daily: questMap.Daily.length,
-    Weekly: questMap.Weekly.length,
-    "Long-term": questMap["Long-term"].length,
-    "Skill-based": questMap["Skill-based"].length,
-  };
-  const todayQuest = selectQuestSpotlight(
-    questMap.Daily.length > 0 ? questMap.Daily : quests,
-  );
-  const weeklyQuest = selectQuestSpotlight(questMap.Weekly);
-  const longTermQuest = selectQuestSpotlight(questMap["Long-term"]);
-  const visibleGroups =
-    deferredCadenceFilter === "All"
-      ? groups.filter((group) => questMap[group].length > 0)
-      : groups.filter((group) => group === deferredCadenceFilter && questMap[group].length > 0);
-  const canResetCadenceFilter = cadenceFilter !== "All";
-  const isFiltering = deferredCadenceFilter !== cadenceFilter;
-  const staleNotice = useMemo(
-    () =>
-      buildStaleSyncNotice({
-        syncState: displaySyncState === "partially_synced" ? "partially_synced" : "stale",
-        refreshedAt: questSnapshotRefreshedAt,
-        latestSyncOutcome,
-        snapshotLabel: "Quest snapshot",
-        partialFallback:
-          "Quest snapshot exists, but scored PR evidence is still empty. Keep auto-sync active and refresh after GitHub processing completes.",
-        staleFallback:
-          "Live quest signals may lag until the next sync completes.",
-      }),
-    [displaySyncState, latestSyncOutcome, questSnapshotRefreshedAt],
-  );
 
   function handleCadenceFilterChange(next: QuestCadenceFilter) {
     startTransition(() => {
@@ -164,7 +135,11 @@ export function QuestsPageClient() {
         actions={(
           <div className="flex flex-wrap items-center gap-2">
             <ProfileEvidenceStateChip
-              showFreshness={shouldShowProfileFreshnessPill(showRefreshPill, displaySyncState, appInstallationBlocked)}
+              showFreshness={shouldShowProfileFreshnessPill(
+                showRefreshPill,
+                displaySyncState,
+                appInstallationBlocked,
+              )}
               refreshedAt={questSnapshotRefreshedAt}
               syncState={displaySyncState}
             />
@@ -184,21 +159,21 @@ export function QuestsPageClient() {
         {!isLoading && !isError ? (
           <QuestsCadenceControls
             totalQuestCount={quests.length}
-            cadenceCounts={questCadenceCounts}
+            cadenceCounts={questPage.questCadenceCounts}
             value={cadenceFilter}
             displayValue={deferredCadenceFilter}
-            isFiltering={isFiltering}
-            canReset={canResetCadenceFilter}
+            isFiltering={questPage.isFiltering}
+            canReset={questPage.canResetCadenceFilter}
             filterStatusId={questsFilterStatusId}
             missionsRegionId={questsMissionsRegionId}
             onValueChange={handleCadenceFilterChange}
           />
         ) : null}
       </section>
-      {displaySyncState === "stale" || displaySyncState === "partially_synced" ? (
+      {questPage.shouldShowStaleState ? (
         <StaleState
-          message={staleNotice.message}
-          reasonMessage={staleNotice.reasonMessage}
+          message={questPage.staleNotice.message}
+          reasonMessage={questPage.staleNotice.reasonMessage}
           updatedAt={questSnapshotRefreshedAt}
           syncState={displaySyncState === "partially_synced" ? "partially_synced" : "stale"}
           onRefresh={staleSyncRefresh.onRefresh}
@@ -220,40 +195,40 @@ export function QuestsPageClient() {
                       <CalendarClock className="h-3.5 w-3.5" aria-hidden="true" />
                       365-day contributor journey
                     </p>
-                    <h2 className="mt-3 text-2xl font-semibold text-white">Day {dayOfYear} of 365</h2>
+                    <h2 className="mt-3 text-2xl font-semibold text-white">Day {questPage.dayOfYear} of 365</h2>
                     <p className="mt-2 text-sm text-muted">
                       Keep contribution momentum steady.
                     </p>
                   </div>
                   <div className="grid gap-2 rounded-[var(--radius-universal)] border border-fuchsia-300/28 bg-fuchsia-400/10 px-4 py-3 text-sm text-fuchsia-100">
-                    <span className="inline-flex items-center gap-2"><Flame className="h-4 w-4" aria-hidden="true" /> Current streak: <span className="numeric-readout">{formatNumber(streak.currentStreakDays)}d</span></span>
-                    <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4" aria-hidden="true" /> Best streak: <span className="numeric-readout">{formatNumber(streak.bestStreakDays)}d</span></span>
+                    <span className="inline-flex items-center gap-2"><Flame className="h-4 w-4" aria-hidden="true" /> Current streak: <span className="numeric-readout">{formatNumber(questPage.streak.currentStreakDays)}d</span></span>
+                    <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4" aria-hidden="true" /> Best streak: <span className="numeric-readout">{formatNumber(questPage.streak.bestStreakDays)}d</span></span>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs text-muted">
                     <span>Annual progression</span>
-                    <span className="numeric-readout">{dayProgress}%</span>
+                    <span className="numeric-readout">{questPage.dayProgress}%</span>
                   </div>
-                  <Progress value={dayProgress} aria-label="Annual quest progression" />
+                  <Progress value={questPage.dayProgress} aria-label="Annual quest progression" />
                 </div>
               </div>
             </GlowCard>
           ) : null}
         </section>
         <QuestsSpotlightSection
-          dailyQuest={todayQuest}
-          weeklyQuest={weeklyQuest}
-          longTermQuest={longTermQuest}
+          dailyQuest={questPage.todayQuest}
+          weeklyQuest={questPage.weeklyQuest}
+          longTermQuest={questPage.longTermQuest}
           isLoading={isLoading}
           isError={isError}
         />
         <QuestsMissionsSection
           quests={quests}
-          visibleGroups={visibleGroups}
-          questMap={questMap}
-          visibleGroupCounts={visibleGroupCounts}
-          questGroupPageSize={questGroupPageSize}
+          visibleGroups={questPage.visibleGroups}
+          questMap={questPage.questMap}
+          visibleGroupCounts={questPage.visibleGroupCounts}
+          questGroupPageSize={questPage.questGroupPageSize}
           isLoading={isLoading}
           isError={isError}
           onRetry={() => {
@@ -265,7 +240,7 @@ export function QuestsPageClient() {
                 ...current,
                 [group]: Math.min(
                   totalCount,
-                  (current[group] ?? questGroupPageSize) + questGroupPageSize,
+                  (current[group] ?? questPage.questGroupPageSize) + questPage.questGroupPageSize,
                 ),
               }));
             });
@@ -274,10 +249,4 @@ export function QuestsPageClient() {
       </div>
     </div>
   );
-}
-
-function dayOfYearUTC(date: Date): number {
-  const start = Date.UTC(date.getUTCFullYear(), 0, 0);
-  const current = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
-  return Math.floor((current - start) / 86_400_000);
 }

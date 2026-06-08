@@ -1,9 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import {
-  QuestsCadenceControls,
-  type QuestCadenceFilter,
-} from "@/features/quests/components/QuestsCadenceControls";
+import { QuestsCadenceControls } from "@/features/quests/components/QuestsCadenceControls";
+import type { QuestCadenceFilter } from "@/features/quests/lib/quests-page-model";
 
 describe("QuestsCadenceControls", () => {
   it("renders mission counts and routes cadence changes", () => {

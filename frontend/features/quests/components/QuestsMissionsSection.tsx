@@ -6,9 +6,8 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { PanelLoadingPlaceholder } from "@/components/shared/PanelLoadingPlaceholder";
 import { Button } from "@/components/ui/button";
+import type { QuestGroupMap } from "@/features/quests/lib/quests-page-model";
 import type { Quest } from "@/types/gitrank";
-
-export type QuestGroupMap = Record<Quest["cadence"], Quest[]>;
 
 const QuestCard = dynamic(
   () =>

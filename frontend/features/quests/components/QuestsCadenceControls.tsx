@@ -10,10 +10,10 @@ import {
 import { ControlSurface } from "@/components/shared/ControlSurface";
 import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
-import type { Quest } from "@/types/gitrank";
-
-export type QuestCadenceFilter = "All" | Quest["cadence"];
-export type QuestCadenceCounts = Record<Quest["cadence"], number>;
+import type {
+  QuestCadenceCounts,
+  QuestCadenceFilter,
+} from "@/features/quests/lib/quests-page-model";
 
 const QUEST_FILTERS: Array<{ value: QuestCadenceFilter; label: string }> = [
   { value: "All", label: "All" },
