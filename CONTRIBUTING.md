@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 7, 2026)
 
+- Split public-profile best-PR rendering into `PublicProfileBestPRsSection`, moving constrained-network report previews, empty battle-report routing, deferred `BestPRsPanel` loading, and report placeholders out of `PublicProfilePageClient`.
 - Split public-profile timeline rendering into `PublicProfileTimelineCard`, moving the timeline empty state, constrained-network summary, deferred chart loading, and timeline placeholder out of `PublicProfilePageClient`.
 - Split public-profile skill rendering into `PublicProfileSkillCard`, moving the skill map empty state, constrained-network summary, and deferred radar chart loading out of `PublicProfilePageClient`.
 - Split public-profile top badge rendering into `PublicProfileBadgesCard`, keeping badge rarity, expandable descriptions, and empty quest routing out of `PublicProfilePageClient`.

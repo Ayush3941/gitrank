@@ -2,6 +2,9 @@
 
 ## 2026-06-07
 
+- Public profile best PRs:
+  - moved constrained-network report previews, empty battle-report routing, deferred `BestPRsPanel` loading, and report placeholders into `PublicProfileBestPRsSection`.
+  - kept featured-report and detailed-report selection in `PublicProfilePageClient`, with the section now owning presentation and loading behavior.
 - Public profile timeline:
   - moved timeline shell, empty evidence routing, constrained-network summary, deferred chart loading, and timeline placeholder into `PublicProfileTimelineCard`.
   - kept the public profile page focused on passing normalized profile evidence and layout composition.

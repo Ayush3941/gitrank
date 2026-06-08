@@ -1,14 +1,9 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useMemo } from "react";
-import { CompactEmptyState } from "@/components/shared/CompactEmptyState";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
-import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
-import { GlowCard } from "@/components/shared/GlowCard";
 import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
-import { PanelLoadingPlaceholder } from "@/components/shared/PanelLoadingPlaceholder";
 import { RouteLoadingState } from "@/components/shared/RouteLoadingState";
 import { RelativeTime } from "@/components/shared/RelativeTime";
 import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
@@ -17,6 +12,7 @@ import { useAbraInsights } from "@/hooks/use-abra-insights";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { useProfile } from "@/hooks/use-profile";
 import { PublicProfileBadgesCard } from "@/features/profile/components/PublicProfileBadgesCard";
+import { PublicProfileBestPRsSection } from "@/features/profile/components/PublicProfileBestPRsSection";
 import { PublicProfileHero } from "@/features/profile/components/PublicProfileHero";
 import { PublicProfileRepositoriesCard } from "@/features/profile/components/PublicProfileRepositoriesCard";
 import { PublicProfileSkillCard } from "@/features/profile/components/PublicProfileSkillCard";
@@ -26,21 +22,9 @@ import {
   deriveDeterministicArchetype,
   shouldRequestAbraInsights,
 } from "@/lib/ai/deterministic-identity-summary";
-import { formatSignedXp } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
-import { formatContributionStatusLabel } from "@/lib/presentation/contribution-status";
 import { deduplicateSkillNodes } from "@/lib/presentation/skill-normalization";
-
-const BestPRsPanel = dynamic(
-  () =>
-    import("@/features/profile/components/BestPRsPanel").then(
-      (mod) => mod.BestPRsPanel,
-    ),
-  {
-    loading: () => <PublicLanePlaceholder label="Loading battle reports" />,
-  },
-);
 
 const PUBLIC_PROFILE_SECTION_LINKS = [
   { id: "public-profile-overview", label: "Overview" },
@@ -255,13 +239,11 @@ export function PublicProfilePageClient({
         className="render-opt-section space-y-4"
         aria-label="Top PR battle reports"
       >
-        {constrainedNetwork ? (
-          <LiteBestPRSummary reports={data.featuredContributions} />
-        ) : (
-          <DeferUntilVisible fallback={<PublicLanePlaceholder label="Loading battle reports" />}>
-            <BestPRsPanel reports={data.featuredContributions} reportDetails={data.recentReports} />
-          </DeferUntilVisible>
-        )}
+        <PublicProfileBestPRsSection
+          reports={data.featuredContributions}
+          reportDetails={data.recentReports}
+          constrainedNetwork={constrainedNetwork}
+        />
       </section>
       <section
         id="public-profile-timeline-repos"
@@ -279,67 +261,5 @@ export function PublicProfilePageClient({
         </div>
       </section>
     </div>
-  );
-}
-
-function LiteBestPRSummary({
-  reports,
-}: {
-  reports: Array<{
-    id: string;
-    owner: string;
-    repo: string;
-    number: number;
-    title: string;
-    xpEarned: number;
-    status: string;
-  }>;
-}) {
-  if (reports.length === 0) {
-    return (
-      <GlowCard className="space-y-3">
-        <CompactEmptyState
-          title="No public battle reports yet"
-          description="This profile snapshot has no visible battle reports yet."
-          primaryAction={{
-            label: "Open contributions",
-            href: "/dashboard/contributions",
-            prefetchMode: "never",
-          }}
-        />
-      </GlowCard>
-    );
-  }
-
-  return (
-    <GlowCard className="space-y-4">
-      <ul role="list" className="space-y-3">
-        {reports.slice(0, 4).map((report) => (
-          <li
-            key={report.id}
-            className="neon-surface rounded-[var(--radius-universal)] px-4 py-3"
-          >
-            <p className="break-anywhere text-sm font-medium text-white">{report.title}</p>
-            <p className="mt-1 break-anywhere text-xs text-muted">
-              {report.owner}/{report.repo} #{report.number} • {formatContributionStatusLabel(report.status)}
-            </p>
-            <p className="mt-2 text-xs font-semibold text-primary">{formatSignedXp(report.xpEarned)}</p>
-          </li>
-        ))}
-      </ul>
-    </GlowCard>
-  );
-}
-
-function PublicLanePlaceholder({ label }: { label: string }) {
-  return (
-    <PanelLoadingPlaceholder
-      label={label}
-      minHeightClassName="min-h-[16rem]"
-      skeletons={[
-        { className: "h-10 w-2/5" },
-        { className: "h-24 w-full" },
-      ]}
-    />
   );
 }
