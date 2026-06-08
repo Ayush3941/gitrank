@@ -2,6 +2,7 @@ import { Award } from "lucide-react";
 import { CompactEmptyState } from "@/components/shared/CompactEmptyState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { formatPluralCount, formatXp } from "@/lib/formatters";
+import { buildStableRenderRows } from "@/lib/presentation/render-identity";
 import type { ProfileRepositorySummary } from "@/types/gitrank";
 
 export function PublicProfileRepositoriesCard({
@@ -9,6 +10,11 @@ export function PublicProfileRepositoriesCard({
 }: {
   repositories: ProfileRepositorySummary[];
 }) {
+  const repositoryRows = buildStableRenderRows(
+    repositories.slice(0, 3),
+    (repository) => `${repository.owner}/${repository.repo}:${repository.totalXp}:${repository.contributionCount}`,
+  );
+
   return (
     <GlowCard className="space-y-5">
       <div className="inline-flex rounded-[var(--radius-universal)] bg-primary/12 p-3 text-primary">
@@ -31,9 +37,9 @@ export function PublicProfileRepositoriesCard({
           />
         ) : (
           <ul role="list" className="space-y-3">
-            {repositories.slice(0, 3).map((repository, index) => (
+            {repositoryRows.map(({ renderId, item: repository }, index) => (
               <li
-                key={`${repository.name}-${repository.contributionCount}-${repository.totalXp}`}
+                key={renderId}
                 className="render-opt-card neon-surface rounded-[var(--radius-universal)] px-4 py-3"
               >
                 <div className="flex items-start justify-between gap-3">

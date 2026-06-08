@@ -16,4 +16,19 @@ describe("ContributionList", () => {
     expect(meter.getAttribute("aria-valuenow")).toBe("63");
     expect(meter.getAttribute("aria-valuetext")).toBe("Rising signal, 63 of 100");
   });
+
+  it("renders repeated contribution titles when PR identities differ", () => {
+    render(
+      <ContributionList
+        items={[
+          buildContribution({ id: "contribution-a", number: 42 }),
+          buildContribution({ id: "contribution-b", number: 43 }),
+        ]}
+      />,
+    );
+
+    expect(screen.getAllByText("Semantic signal")).toHaveLength(2);
+    expect(screen.getByText("PR #42")).toBeTruthy();
+    expect(screen.getByText("PR #43")).toBeTruthy();
+  });
 });

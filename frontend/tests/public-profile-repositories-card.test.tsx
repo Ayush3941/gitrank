@@ -37,6 +37,21 @@ describe("PublicProfileRepositoriesCard", () => {
     expect(screen.getByText("1 scored contribution")).toBeTruthy();
     expect(screen.getByText(/Backend/)).toBeTruthy();
   });
+
+  it("renders repeated repository names when repository metrics differ", () => {
+    render(
+      <PublicProfileRepositoriesCard
+        repositories={[
+          buildRepository({ name: "octo/api", totalXp: 420, contributionCount: 2 }),
+          buildRepository({ name: "octo/api", totalXp: 120, contributionCount: 1 }),
+        ]}
+      />,
+    );
+
+    expect(screen.getAllByText("octo/api")).toHaveLength(2);
+    expect(screen.getByText("420")).toBeTruthy();
+    expect(screen.getByText("120")).toBeTruthy();
+  });
 });
 
 function buildRepository(

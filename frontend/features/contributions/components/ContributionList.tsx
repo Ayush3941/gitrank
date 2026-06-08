@@ -12,6 +12,7 @@ import {
   buildDeterministicImpactSummary,
   shouldUseDeterministicImpactSummary,
 } from "@/lib/presentation/deterministic-impact-summary";
+import { buildStableRenderRows } from "@/lib/presentation/render-identity";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import type { Contribution } from "@/types/gitrank";
 
@@ -34,10 +35,15 @@ export function ContributionList({
 }) {
   const fullSetCount = Math.max(items.length, totalCount ?? items.length);
   const isPartialSet = fullSetCount > items.length;
+  const rows = buildStableRenderRows(
+    items,
+    (item) => `${item.owner}/${item.repo}#${item.number}:${item.scoreEventId ?? item.pullRequestId ?? item.id}`,
+    (item) => item.id,
+  );
 
   return (
     <ol className="grid gap-4" aria-busy={isBusy || undefined}>
-      {items.map((item, index) => {
+      {rows.map(({ renderId, item }, index) => {
         const tier = contributionTier(item);
         const position = startPosition + index;
         const signalIndex = contributionSignalIndex(item);
@@ -47,7 +53,7 @@ export function ContributionList({
         const reportState = contributionReportState(item);
         return (
           <li
-            key={`${item.owner}/${item.repo}#${item.number}-${item.id}-${index}`}
+            key={renderId}
             className="list-none"
             aria-posinset={isPartialSet ? position : undefined}
             aria-setsize={isPartialSet ? fullSetCount : undefined}

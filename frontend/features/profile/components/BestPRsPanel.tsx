@@ -5,6 +5,7 @@ import { ClampedText } from "@/components/shared/ClampedText";
 import { CompactEmptyState } from "@/components/shared/CompactEmptyState";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { formatXp } from "@/lib/formatters";
+import { buildStableRenderRows } from "@/lib/presentation/render-identity";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import type { FeaturedContribution, PullRequestAnalysis } from "@/types/gitrank";
 
@@ -16,6 +17,11 @@ export function BestPRsPanel({
   reportDetails?: PullRequestAnalysis[];
 }) {
   const uniqueReports = deduplicateFeaturedContributionsByPR(reports);
+  const visibleRows = buildStableRenderRows(
+    uniqueReports.slice(0, 5),
+    (report) => `${report.owner}/${report.repo}#${report.number}:${report.scoreEventId ?? report.pullRequestId ?? report.id}`,
+    (report) => report.id,
+  );
   const detailByPR = new Map<string, PullRequestAnalysis>();
   for (const detail of reportDetails) {
     detailByPR.set(detailKey(detail.contribution.owner, detail.contribution.repo, detail.contribution.number), detail);
@@ -40,13 +46,13 @@ export function BestPRsPanel({
           />
         ) : (
           <ol role="list" className="space-y-3">
-            {uniqueReports.slice(0, 5).map((report, index) => {
+            {visibleRows.map(({ renderId, item: report }) => {
               const detail = detailByPR.get(detailKey(report.owner, report.repo, report.number));
               const summary = sanitizeReportSummary(detail?.contribution.aiSummary ?? report.summary);
               const evidencePill = bestPREvidencePill(report, detail);
               return (
             <li
-              key={`${report.owner}/${report.repo}#${report.number}-${report.id}-${index}`}
+              key={renderId}
               className="render-opt-card neon-surface cyber-sheen rounded-[var(--radius-universal)] border-cyan-300/18 p-4"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">

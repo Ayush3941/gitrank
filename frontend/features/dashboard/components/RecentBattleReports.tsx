@@ -5,6 +5,7 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { Button } from "@/components/ui/button";
 import { formatRatioPercent, formatXp } from "@/lib/formatters";
+import { buildStableRenderRows } from "@/lib/presentation/render-identity";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import type { PullRequestAnalysis } from "@/types/gitrank";
 
@@ -12,6 +13,12 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
   const uniqueReports = deduplicateReportsByPR(reports);
   const sortedReports = [...uniqueReports].sort(
     (left, right) => right.contribution.xpEarned - left.contribution.xpEarned,
+  );
+  const reportRows = buildStableRenderRows(
+    sortedReports,
+    (report) =>
+      `${report.contribution.owner}/${report.contribution.repo}#${report.contribution.number}:${report.contribution.id}`,
+    (report) => report.contribution.id,
   );
 
   return (
@@ -42,12 +49,12 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
             />
           </li>
         ) : null}
-        {sortedReports.map((report, index) => {
+        {reportRows.map(({ renderId, item: report }) => {
           const evidencePill = reportEvidencePill(report);
           const nextMove = reportNextMove(report);
           return (
             <li
-              key={`${report.contribution.owner}/${report.contribution.repo}#${report.contribution.number}-${report.contribution.id}-${index}`}
+              key={renderId}
               className="list-none render-opt-card neon-surface rounded-[var(--radius-universal)] p-4"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">

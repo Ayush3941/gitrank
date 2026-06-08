@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Contribution/report card identity:
+  - routed contribution cards, dashboard battle-report cards, public best-PR cards, and public repository rows through stable render identities.
+  - added duplicate-label coverage so repeated PR titles or repository names render as separate evidence rows without relying on array position.
 - Shared render identity:
   - added shared render-row identity normalization for duplicate-prone rows.
   - routed header meta chips, panel loading skeletons, timeline rows, and theme swatches away from array-position keys without changing visible UI.
