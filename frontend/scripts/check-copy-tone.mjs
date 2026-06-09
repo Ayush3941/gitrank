@@ -31,8 +31,8 @@ const bannedPhrases = [
 
 const bannedPatterns = [
   {
-    regex: /loading\s+[^"`'\n]*\.\.\./i,
-    label: "loading copy with trailing ellipses",
+    regex: /(["'`])[^"'`\n]*(?:loading|updating|saving|refreshing)[^"'`\n]*(?:\.\.\.|\u2026)[^"'`\n]*\1/i,
+    label: "pending-state copy with trailing ellipses",
   },
 ];
 

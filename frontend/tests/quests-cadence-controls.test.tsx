@@ -58,8 +58,9 @@ describe("QuestsCadenceControls", () => {
       />,
     );
 
-    expect(screen.getByRole("status").textContent).toContain("Updating missions");
-    expect(screen.getByText("Updating missions...")).toBeTruthy();
+    expect(screen.getByRole("status").textContent).toBe("Updating mission lanes");
+    expect(screen.getByText("Updating missions")).toBeTruthy();
+    expect(screen.queryByText("Updating missions...")).toBeNull();
     expect(screen.getByText("1 active filter")).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Reset" }));

@@ -78,12 +78,12 @@ export function BadgesShelfControls({
   return (
     <div className="space-y-3">
       <p id={filterStatusId} role="status" aria-live="polite" aria-atomic="true" className="sr-only">
-        Showing {badgeCountSummary}
+        {isFiltering ? "Updating badge shelf" : `Showing ${badgeCountSummary}`}
       </p>
       <ControlSurface>
         <FilterControlsHeader
           label="Badge controls"
-          summary={isFiltering ? "Updating shelf..." : badgeCountSummary}
+          summary={isFiltering ? "Updating shelf" : badgeCountSummary}
           activeFilterCount={activeFilterCount}
           resetAction={{
             onReset: onResetFilters,

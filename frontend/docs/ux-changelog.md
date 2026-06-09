@@ -1,5 +1,12 @@
 # Frontend UX Changelog
 
+## 2026-06-09
+
+- Pending control copy:
+  - normalized contribution, badge, quest, leaderboard, and settings saving progress labels to concise non-ellipsis copy.
+  - added focused coverage for visible summaries and live-region announcements.
+  - extended the copy-tone guard so loading, updating, saving, and refreshing copy cannot regress to trailing progress dots in production source.
+
 ## 2026-06-08
 
 - Contribution export feedback:

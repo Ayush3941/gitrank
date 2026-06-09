@@ -100,12 +100,12 @@ export function LeaderboardControls({
       className="render-opt-section space-y-3"
     >
       <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">
-        {isBusy ? `Refreshing ${tab}...` : `Viewing ${tab}`}
+        {isBusy ? `Refreshing ${tab} lane` : `Viewing ${tab}`}
       </p>
       <ControlSurface>
         <FilterControlsHeader
           label="Leaderboard controls"
-          summary={isBusy ? "Updating lane..." : rowsCountLabel}
+          summary={isBusy ? "Updating lane" : rowsCountLabel}
           activeFilterCount={activeFilterCount}
           secondaryLabel={`Lane: ${LEADERBOARD_TAB_LABELS[tab]}`}
           extraControls={(

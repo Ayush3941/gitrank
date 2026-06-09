@@ -33,6 +33,20 @@ describe("LeaderboardControls", () => {
     expect(screen.getByText("1 row")).toBeTruthy();
   });
 
+  it("uses concise pending copy while leaderboard lanes refresh", () => {
+    render(
+      <LeaderboardControls
+        {...baseProps()}
+        tab="Backend"
+        isBusy
+      />,
+    );
+
+    expect(screen.getByRole("status").textContent).toBe("Refreshing Backend lane");
+    expect(screen.getByText("Updating lane")).toBeTruthy();
+    expect(screen.queryByText("Updating lane...")).toBeNull();
+  });
+
   it("renders active control chips and delegates reset", () => {
     const onReset = vi.fn();
 

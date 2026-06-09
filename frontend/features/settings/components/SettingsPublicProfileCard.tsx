@@ -56,7 +56,11 @@ export function SettingsPublicProfileCard({
     <GlowCard className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-xl font-semibold text-white">Public profile</h2>
-        {isSaving ? <p className="text-sm text-primary">Saving...</p> : null}
+        {isSaving ? (
+          <p role="status" aria-live="polite" aria-atomic="true" className="text-sm text-primary">
+            Saving privacy preferences
+          </p>
+        ) : null}
       </div>
       {errorMessage ? (
         <p

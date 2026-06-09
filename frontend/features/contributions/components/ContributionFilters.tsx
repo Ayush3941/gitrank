@@ -174,13 +174,11 @@ export function ContributionFilters({
         aria-atomic="true"
         className="sr-only"
       >
-        {isFiltering
-          ? "Updating..."
-          : resultCountLabel}
+        {isFiltering ? "Updating contribution cards" : resultCountLabel}
       </p>
       <FilterControlsHeader
         label="Contribution controls"
-        summary={isFiltering ? "Updating cards..." : resultCountLabel}
+        summary={isFiltering ? "Updating cards" : resultCountLabel}
         activeFilterCount={activeFilterCount}
         secondaryLabel={activeFilterCount > 0 ? `Lane: ${activeViewLabel}` : undefined}
         extraControls={

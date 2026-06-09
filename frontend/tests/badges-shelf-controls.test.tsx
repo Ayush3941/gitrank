@@ -41,6 +41,19 @@ describe("BadgesShelfControls", () => {
     expect(screen.getByText("1 of 1 badge")).toBeTruthy();
   });
 
+  it("uses concise pending copy while badge filters update", () => {
+    render(
+      <BadgesShelfControls
+        {...baseProps()}
+        isFiltering
+      />,
+    );
+
+    expect(screen.getByRole("status").textContent).toBe("Updating badge shelf");
+    expect(screen.getByText("Updating shelf")).toBeTruthy();
+    expect(screen.queryByText("Updating shelf...")).toBeNull();
+  });
+
   it("toggles advanced rarity controls and routes reset", () => {
     const onToggleAdvancedFilters = vi.fn();
     const onResetFilters = vi.fn();

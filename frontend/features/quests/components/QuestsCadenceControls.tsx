@@ -52,12 +52,12 @@ export function QuestsCadenceControls({
   return (
     <div className="space-y-3">
       <p id={filterStatusId} role="status" aria-live="polite" aria-atomic="true" className="sr-only">
-        {isFiltering ? "Updating missions…" : `Showing ${statusMissionLabel}`}
+        {isFiltering ? "Updating mission lanes" : `Showing ${statusMissionLabel}`}
       </p>
       <ControlSurface>
         <FilterControlsHeader
           label="Mission controls"
-          summary={isFiltering ? "Updating missions..." : summaryMissionLabel}
+          summary={isFiltering ? "Updating missions" : summaryMissionLabel}
           activeFilterCount={canReset ? 1 : 0}
           resetAction={{
             onReset: () => {

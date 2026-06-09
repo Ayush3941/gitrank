@@ -73,4 +73,23 @@ describe("ContributionFilters", () => {
     fireEvent.click(screen.getByRole("button", { name: /Clear contribution search/i }));
     expect(onSearchChange).toHaveBeenCalledWith("");
   });
+
+  it("uses concise pending copy while filters update", () => {
+    render(
+      <ContributionFilters
+        value="All"
+        onValueChange={() => undefined}
+        search=""
+        onSearchChange={() => undefined}
+        sort="Newest"
+        onSortChange={() => undefined}
+        resultCount={8}
+        isFiltering
+      />,
+    );
+
+    expect(screen.getByRole("status").textContent).toBe("Updating contribution cards");
+    expect(screen.getByText("Updating cards")).toBeTruthy();
+    expect(screen.queryByText("Updating cards...")).toBeNull();
+  });
 });

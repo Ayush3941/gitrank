@@ -28,4 +28,19 @@ describe("SettingsPublicProfileCard", () => {
       screen.getByRole("switch", { name: "Show leaderboard participation" }).id,
     ).toBe("public-profile-leaderboard-participation");
   });
+
+  it("announces privacy save progress with concise status copy", () => {
+    render(
+      <SettingsPublicProfileCard
+        privacy={buildPrivacy()}
+        isSaving
+        disabled
+        errorMessage=""
+        onPrivacyChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole("status").textContent).toBe("Saving privacy preferences");
+    expect(screen.queryByText("Saving...")).toBeNull();
+  });
 });

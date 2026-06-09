@@ -1,8 +1,13 @@
 # Contributing to GitRank
 
-Last reviewed: June 8, 2026
+Last reviewed: June 9, 2026
 
 This document is intentionally detailed.
+
+## Session Notes (June 9, 2026)
+
+- Normalized filter and saving progress copy across contribution, badge, quest, leaderboard, and settings controls so pending states avoid trailing ellipses and expose concise live-region text.
+- Extended the frontend copy-tone guard to block loading, updating, saving, and refreshing strings that regress to trailing progress dots in production source.
 
 ## Session Notes (June 8, 2026)
 
