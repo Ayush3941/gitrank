@@ -2,6 +2,9 @@
 
 ## 2026-06-09
 
+- Shared charts:
+  - routed radar and timeline chart accessible labels through shared plural formatting.
+  - added coverage for one-lane radar charts and one-window timeline charts.
 - Settings sync activity:
   - routed the sync-run live result count through shared count-of-total formatting.
   - updated coverage so a one-run log announces `1 of 1 run`.

@@ -9,7 +9,13 @@ import {
   useNetworkConstraintPreference,
   useReducedGamification,
 } from "@/hooks/use-gamification-preference";
-import { formatSignedXp, formatXp, formatXpLabel, toRatioPercent } from "@/lib/formatters";
+import {
+  formatPluralCount,
+  formatSignedXp,
+  formatXp,
+  formatXpLabel,
+  toRatioPercent,
+} from "@/lib/formatters";
 import { buildStableRenderRows } from "@/lib/presentation/render-identity";
 
 const TimelineChartInner = dynamic(
@@ -68,7 +74,7 @@ export function TimelineChart({ data }: { data: TimelineChartPoint[] }) {
         ref={viewportRef}
         className="neon-tile relative h-72 w-full overflow-hidden rounded-[var(--radius-universal)] p-3"
         role="img"
-        aria-label={`Contribution timeline chart across ${safeData.length} windows.`}
+        aria-label={`Contribution timeline chart across ${formatPluralCount(safeData.length, "window")}.`}
         aria-describedby={summaryId}
       >
         {useLiteRenderer ? (

@@ -9,7 +9,7 @@ import {
   useNetworkConstraintPreference,
   useReducedGamification,
 } from "@/hooks/use-gamification-preference";
-import { toRatioPercent } from "@/lib/formatters";
+import { formatPluralCount, toRatioPercent } from "@/lib/formatters";
 import { deduplicateSkillNodes } from "@/lib/presentation/skill-normalization";
 import type { SkillNode } from "@/types/gitrank";
 
@@ -52,7 +52,7 @@ export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
         ref={viewportRef}
         className="neon-tile relative h-80 w-full overflow-hidden rounded-[var(--radius-universal)] p-3"
         role="img"
-        aria-label={`Skill radar chart across ${sortedSkills.length} lanes.`}
+        aria-label={`Skill radar chart across ${formatPluralCount(sortedSkills.length, "lane")}.`}
         aria-describedby={summaryId}
       >
         {useLiteRenderer ? (

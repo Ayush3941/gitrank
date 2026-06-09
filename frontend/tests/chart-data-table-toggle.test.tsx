@@ -16,6 +16,24 @@ vi.mock("@/hooks/use-lazy-in-view", () => ({
 }));
 
 describe("chart data-table toggles", () => {
+  it("uses singular chart accessible labels for one data lane", () => {
+    render(
+      <>
+        <SkillRadarChart
+          skills={[{ category: "Backend", score: 42, delta: 5, note: "Strong backend" }]}
+        />
+        <TimelineChart data={[{ id: "may", label: "May", xp: 180 }]} />
+      </>,
+    );
+
+    expect(
+      screen.getByRole("img", { name: "Skill radar chart across 1 lane." }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("img", { name: "Contribution timeline chart across 1 window." }),
+    ).toBeTruthy();
+  });
+
   it("shows and hides skill radar data table", () => {
     render(
       <SkillRadarChart
