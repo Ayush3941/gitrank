@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 8, 2026)
 
+- Added plural-aware batch and remaining-count copy to the leaderboard "Show more rows" action.
 - Added plural-aware remaining-count copy and lane-specific accessible context to quest mission pagination.
 - Added plural-aware batch and remaining-count copy to the contributions "Show more cards" action.
 - Added plural-aware remaining-count copy and accessible remaining context to the locked badge paths "Show more locked paths" action.

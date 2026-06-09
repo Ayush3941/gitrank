@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Leaderboard row pagination:
+  - changed show-more ranked-row batch and remaining labels to use shared plural-count formatting.
+  - added focused coverage so the accessible name matches the exact row batch that will render.
 - Quest mission pagination:
   - changed quest mission remaining labels to use shared plural-count formatting.
   - added lane-specific context and list-region wiring to the show-more mission action.

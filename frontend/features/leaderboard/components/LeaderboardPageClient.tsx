@@ -33,7 +33,7 @@ import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
 import { useStaleSyncRefresh } from "@/hooks/use-stale-sync-refresh";
 import { useMyProfile } from "@/hooks/use-profile";
 import type { LeaderboardTab } from "@/lib/api/leaderboard-api";
-import { formatXpLabel } from "@/lib/formatters";
+import { formatPluralCount, formatXpLabel } from "@/lib/formatters";
 import { shouldShowProfileFreshnessPill } from "@/lib/presentation/sync-evidence";
 import {
   isGitHubAppInstallationBlocked,
@@ -125,6 +125,14 @@ export function LeaderboardPageClient() {
       tab,
       visibleRowCount,
     ],
+  );
+  const nextRowBatchLabel = formatPluralCount(
+    Math.min(leaderboardModel.rowPageSize, leaderboardModel.remainingRows),
+    "ranked row",
+  );
+  const remainingRowLabel = formatPluralCount(
+    leaderboardModel.remainingRows,
+    "ranked row",
   );
   const staleSyncRefresh = useStaleSyncRefresh({
     runs: syncRunsQuery.data?.runs,
@@ -345,10 +353,7 @@ export function LeaderboardPageClient() {
                   variant="secondary"
                   size="sm"
                   aria-controls={leaderboardRowsRegionId}
-                  aria-label={`Show ${Math.min(
-                    leaderboardModel.rowPageSize,
-                    leaderboardModel.remainingRows,
-                  )} more ranked rows. ${leaderboardModel.remainingRows} remaining.`}
+                  aria-label={`Show ${nextRowBatchLabel}. ${remainingRowLabel} remaining.`}
                   onClick={() => {
                     startTransition(() => {
                       setVisibleRowCount((current) =>
@@ -360,7 +365,7 @@ export function LeaderboardPageClient() {
                     });
                   }}
                 >
-                  Show more rows ({leaderboardModel.remainingRows} left)
+                  Show more rows ({remainingRowLabel} left)
                 </Button>
               ) : null}
             </div>
