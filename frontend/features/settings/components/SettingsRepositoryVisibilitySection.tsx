@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { PanelLoadingPlaceholder } from "@/components/shared/PanelLoadingPlaceholder";
+import { formatPluralCount } from "@/lib/formatters";
 import type { RepositoryVisibility } from "@/types/gitrank";
 
 const PrivacyRepositoryToggleList = dynamic(
@@ -31,6 +32,11 @@ export function SettingsRepositoryVisibilitySection({
   const hiddenRepositoryCount = repositories.filter(
     (repository) => repository.visibility !== "Public",
   ).length;
+  const repositoryCountLabel = formatPluralCount(
+    repositories.length,
+    "repository",
+    "repositories",
+  );
 
   return (
     <DeferUntilVisible fallback={<SettingsPanelPlaceholder label="Loading repository controls" />}>
@@ -40,7 +46,7 @@ export function SettingsRepositoryVisibilitySection({
           <h2 className="mt-2 text-xl font-semibold text-white">Repository visibility</h2>
         </div>
         <p className="text-sm text-muted">
-          {repositories.length} repositories
+          {repositoryCountLabel}
           {hiddenRepositoryCount > 0 ? ` \u00b7 ${hiddenRepositoryCount} hidden` : ""}
         </p>
         <PrivacyRepositoryToggleList

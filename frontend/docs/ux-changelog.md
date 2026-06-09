@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Repository visibility section:
+  - routed the section-level repository count through shared plural formatting.
+  - added focused coverage for the single-repository settings summary.
 - Shared count summaries:
   - added `formatCountOfTotal()` for singular-safe "shown of total" labels.
   - routed badge, repository, contribution-card, and leaderboard-row control summaries through shared count formatting.
