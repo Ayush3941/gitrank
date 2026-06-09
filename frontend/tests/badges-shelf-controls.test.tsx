@@ -27,6 +27,20 @@ describe("BadgesShelfControls", () => {
     expect(onVisibilityChange).toHaveBeenCalledWith("Locked");
   });
 
+  it("renders singular count summaries when only one badge is available", () => {
+    render(
+      <BadgesShelfControls
+        {...baseProps()}
+        filteredCount={1}
+        totalCount={1}
+        unlockedCount={1}
+      />,
+    );
+
+    expect(screen.getByRole("status").textContent).toContain("Showing 1 of 1 badge");
+    expect(screen.getByText("1 of 1 badge")).toBeTruthy();
+  });
+
   it("toggles advanced rarity controls and routes reset", () => {
     const onToggleAdvancedFilters = vi.fn();
     const onResetFilters = vi.fn();

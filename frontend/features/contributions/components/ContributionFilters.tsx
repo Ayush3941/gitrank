@@ -21,6 +21,7 @@ import { FilterControlsHeader } from "@/components/shared/FilterControlsHeader";
 import { RemovableFilterChip } from "@/components/shared/RemovableFilterChip";
 import { SearchInputWithClear } from "@/components/shared/SearchInputWithClear";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
+import { formatPluralCount } from "@/lib/formatters";
 import {
   contributionFocusFilters,
   CONTRIBUTION_DEFAULT_FILTER,
@@ -125,6 +126,7 @@ export function ContributionFilters({
 
   const activeViewLabel =
     activeStatus !== "All" ? activeStatus : activeFocus !== "Any" ? activeFocus : "All";
+  const resultCountLabel = formatPluralCount(resultCount ?? 0, "card");
   const activeFilterCount =
     (value !== CONTRIBUTION_DEFAULT_FILTER ? 1 : 0) +
     (search.trim().length > 0 ? 1 : 0) +
@@ -174,11 +176,11 @@ export function ContributionFilters({
       >
         {isFiltering
           ? "Updating..."
-          : `${resultCount ?? 0} cards`}
+          : resultCountLabel}
       </p>
       <FilterControlsHeader
         label="Contribution controls"
-        summary={isFiltering ? "Updating cards..." : `${resultCount ?? 0} cards`}
+        summary={isFiltering ? "Updating cards..." : resultCountLabel}
         activeFilterCount={activeFilterCount}
         secondaryLabel={activeFilterCount > 0 ? `Lane: ${activeViewLabel}` : undefined}
         extraControls={

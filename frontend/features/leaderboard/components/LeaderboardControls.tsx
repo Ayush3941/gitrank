@@ -14,6 +14,7 @@ import { ControlSurface } from "@/components/shared/ControlSurface";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { Button } from "@/components/ui/button";
 import type { LeaderboardTab } from "@/lib/api/leaderboard-api";
+import { formatPluralCount } from "@/lib/formatters";
 
 export const LEADERBOARD_TABS: LeaderboardTab[] = [
   "Global",
@@ -90,6 +91,8 @@ export function LeaderboardControls({
   onToggleLaneDetails: () => void;
   onToggleNearbyMode: () => void;
 }) {
+  const rowsCountLabel = formatPluralCount(rowsCount, "row");
+
   return (
     <section
       id="leaderboard-controls"
@@ -102,7 +105,7 @@ export function LeaderboardControls({
       <ControlSurface>
         <FilterControlsHeader
           label="Leaderboard controls"
-          summary={isBusy ? "Updating lane..." : `${rowsCount} rows`}
+          summary={isBusy ? "Updating lane..." : rowsCountLabel}
           activeFilterCount={activeFilterCount}
           secondaryLabel={`Lane: ${LEADERBOARD_TAB_LABELS[tab]}`}
           extraControls={(

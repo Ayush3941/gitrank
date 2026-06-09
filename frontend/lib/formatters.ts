@@ -23,6 +23,18 @@ export function formatPluralCount(value: number, singular: string, plural = `${s
   return `${formatNumber(count)} ${Math.abs(count) === 1 ? singular : plural}`;
 }
 
+export function formatCountOfTotal(
+  value: number,
+  total: number,
+  singular: string,
+  plural = `${singular}s`,
+) {
+  const count = Number.isFinite(value) ? Math.round(value) : 0;
+  const totalCount = Number.isFinite(total) ? Math.round(total) : 0;
+  const noun = Math.abs(totalCount) === 1 ? singular : plural;
+  return `${formatNumber(count)} of ${formatNumber(totalCount)} ${noun}`;
+}
+
 export function formatSignedXp(value: number) {
   if (!Number.isFinite(value)) {
     return "0 XP";

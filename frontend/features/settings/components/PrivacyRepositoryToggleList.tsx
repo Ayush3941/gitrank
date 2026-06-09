@@ -9,6 +9,7 @@ import { ScrollableRegion } from "@/components/shared/ScrollableRegion";
 import { SearchInputWithClear } from "@/components/shared/SearchInputWithClear";
 import { SegmentedControl } from "@/components/shared/SegmentedControl";
 import { Switch } from "@/components/ui/switch";
+import { formatCountOfTotal } from "@/lib/formatters";
 import type { RepositoryVisibility } from "@/types/gitrank";
 
 export function PrivacyRepositoryToggleList({
@@ -55,6 +56,12 @@ export function PrivacyRepositoryToggleList({
       return visibilityMatch && searchMatch;
     });
   }, [deferredSearch, visibilityFilter, visibleItems]);
+  const repositoryCountSummary = formatCountOfTotal(
+    filteredItems.length,
+    counts.total,
+    "repository",
+    "repositories",
+  );
 
   function handleReset() {
     startTransition(() => {
@@ -73,12 +80,12 @@ export function PrivacyRepositoryToggleList({
     <div className="repository-visibility-panel-shell space-y-3">
       <ControlSurface as="section">
         <p id={statusId} role="status" aria-live="polite" aria-atomic="true" className="sr-only">
-          {`${filteredItems.length} of ${counts.total} repositories`}
+          {repositoryCountSummary}
         </p>
         <FilterControlsHeader
           labelId={controlsHeadingId}
           label="Repository controls"
-          summary={`${filteredItems.length} of ${counts.total} repositories`}
+          summary={repositoryCountSummary}
           activeFilterCount={activeFilterCount}
           extraControls={
             searchTerm.length > 0 ? (

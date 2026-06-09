@@ -14,6 +14,7 @@ import type {
   BadgeRarityFilter,
   BadgeVisibilityFilter,
 } from "@/features/badges/lib/badge-shelf-model";
+import { formatCountOfTotal } from "@/lib/formatters";
 
 const BADGE_RARITY_FILTERS: BadgeRarityFilter[] = [
   "All",
@@ -72,15 +73,17 @@ export function BadgesShelfControls({
   onResetFilters: () => void;
   onToggleAdvancedFilters: () => void;
 }) {
+  const badgeCountSummary = formatCountOfTotal(filteredCount, totalCount, "badge");
+
   return (
     <div className="space-y-3">
       <p id={filterStatusId} role="status" aria-live="polite" aria-atomic="true" className="sr-only">
-        Showing {filteredCount} of {totalCount} badges
+        Showing {badgeCountSummary}
       </p>
       <ControlSurface>
         <FilterControlsHeader
           label="Badge controls"
-          summary={isFiltering ? "Updating shelf..." : `${filteredCount} of ${totalCount} badges`}
+          summary={isFiltering ? "Updating shelf..." : badgeCountSummary}
           activeFilterCount={activeFilterCount}
           resetAction={{
             onReset: onResetFilters,

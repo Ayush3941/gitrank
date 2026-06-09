@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Shared count summaries:
+  - added `formatCountOfTotal()` for singular-safe "shown of total" labels.
+  - routed badge, repository, contribution-card, and leaderboard-row control summaries through shared count formatting.
 - Shared filter controls:
   - changed active-filter chips from terse route-specific labels to shared plural-aware labels.
   - kept route-specific lane/search chips while centralizing the active-count copy in `FilterControlsHeader`.

@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   formatDate,
   formatDateTime,
+  formatCountOfTotal,
   formatMonthDay,
   formatMonthDayYear,
   formatNumber,
@@ -55,6 +56,15 @@ describe("number formatters", () => {
     expect(formatPluralCount(1, "repository", "repositories")).toBe("1 repository");
     expect(formatPluralCount(1200, "repository", "repositories")).toBe("1,200 repositories");
     expect(formatPluralCount(Number.NaN, "row")).toBe("0 rows");
+  });
+
+  it("formats count-of-total labels with the total-owned noun", () => {
+    expect(formatCountOfTotal(1, 1, "badge")).toBe("1 of 1 badge");
+    expect(formatCountOfTotal(1, 9, "badge")).toBe("1 of 9 badges");
+    expect(formatCountOfTotal(1200, 1500, "repository", "repositories")).toBe(
+      "1,200 of 1,500 repositories",
+    );
+    expect(formatCountOfTotal(Number.NaN, Number.NaN, "row")).toBe("0 of 0 rows");
   });
 });
 

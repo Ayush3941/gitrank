@@ -13,11 +13,14 @@ describe("ContributionFilters", () => {
         onSearchChange={() => undefined}
         sort="Newest"
         onSortChange={() => undefined}
+        resultCount={1}
       />,
     );
 
     expect(screen.queryByRole("button", { name: /Remove .* filter/i })).toBeNull();
     expect(screen.queryByText(/Active:/)).toBeNull();
+    expect(screen.getByRole("status").textContent).toContain("1 card");
+    expect(screen.getAllByText("1 card")).toHaveLength(2);
     expect(screen.getByRole("radiogroup", { name: "Contribution status filters" })).toBeTruthy();
     expect(screen.getByRole("radio", { name: "All" })).toBeTruthy();
     expect(screen.queryByRole("radiogroup", { name: "Contribution sort options" })).toBeNull();

@@ -58,10 +58,14 @@ describe("accessibility control naming", () => {
         continue;
       }
       const name = computeAccessibleName(element);
-      expect(name.trim().length, `${element.outerHTML} should expose an accessible name`).toBeGreaterThan(0);
+      expect(
+        name.trim().length,
+        `${element.outerHTML} should expose an accessible name`,
+      ).toBeGreaterThan(0);
     }
 
     expect(rendered.getAllByText("Dashboard").length).toBeGreaterThan(0);
+    expect(rendered.getAllByText("1 of 1 repository").length).toBeGreaterThan(0);
   }, 15_000);
 
   it("exposes actionable controls when repository privacy list is empty", () => {

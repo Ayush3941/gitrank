@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 8, 2026)
 
+- Added shared count-summary formatting for badge, repository, contribution-card, and leaderboard-row control summaries.
 - Normalized shared filter-control active-count chips to read as plural-aware active-filter labels across dashboard routes.
 - Normalized quest cadence-control mission counts through the shared plural formatter so single-result lanes read naturally.
 - Added plural-aware batch and remaining-count copy to the leaderboard "Show more rows" action.

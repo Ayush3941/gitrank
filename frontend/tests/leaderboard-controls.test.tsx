@@ -22,6 +22,17 @@ describe("LeaderboardControls", () => {
     expect(onTabChange).toHaveBeenCalledWith("Backend");
   });
 
+  it("renders singular row summaries", () => {
+    render(
+      <LeaderboardControls
+        {...baseProps()}
+        rowsCount={1}
+      />,
+    );
+
+    expect(screen.getByText("1 row")).toBeTruthy();
+  });
+
   it("renders active control chips and delegates reset", () => {
     const onReset = vi.fn();
 
