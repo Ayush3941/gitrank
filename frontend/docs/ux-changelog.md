@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Quest cadence controls:
+  - routed all visible and screen-reader mission-count summaries through shared plural-count formatting.
+  - added coverage for one-result cadence lanes so controls do not announce awkward plural copy.
 - Leaderboard row pagination:
   - changed show-more ranked-row batch and remaining labels to use shared plural-count formatting.
   - added focused coverage so the accessible name matches the exact row batch that will render.

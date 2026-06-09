@@ -14,6 +14,7 @@ import type {
   QuestCadenceCounts,
   QuestCadenceFilter,
 } from "@/features/quests/lib/quests-page-model";
+import { formatPluralCount } from "@/lib/formatters";
 
 const QUEST_FILTERS: Array<{ value: QuestCadenceFilter; label: string }> = [
   { value: "All", label: "All" },
@@ -105,16 +106,16 @@ function questCountForFilter(
 
 function missionStatusLabel(filter: QuestCadenceFilter, count: number) {
   if (filter === "All") {
-    return `all ${count} missions`;
+    return `all ${formatPluralCount(count, "mission")}`;
   }
-  return `${count} ${filter.toLowerCase()} missions`;
+  return formatPluralCount(count, `${filter.toLowerCase()} mission`);
 }
 
 function missionSummaryLabel(filter: QuestCadenceFilter, count: number) {
   if (filter === "All") {
-    return `${count} missions`;
+    return formatPluralCount(count, "mission");
   }
-  return `${count} ${filter.toLowerCase()} missions`;
+  return formatPluralCount(count, `${filter.toLowerCase()} mission`);
 }
 
 function iconForFilter(filter: QuestCadenceFilter) {

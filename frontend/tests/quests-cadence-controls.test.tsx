@@ -31,6 +31,19 @@ describe("QuestsCadenceControls", () => {
     expect(onValueChange).toHaveBeenCalledWith("Weekly");
   });
 
+  it("uses singular mission labels for one filtered cadence result", () => {
+    render(
+      <QuestsCadenceControls
+        {...baseProps()}
+        value="Daily"
+        displayValue="Daily"
+      />,
+    );
+
+    expect(screen.getByRole("status").textContent).toContain("Showing 1 daily mission");
+    expect(screen.getByText("1 daily mission")).toBeTruthy();
+  });
+
   it("renders active filter reset and updating state", () => {
     const onValueChange = vi.fn<(value: QuestCadenceFilter) => void>();
 
