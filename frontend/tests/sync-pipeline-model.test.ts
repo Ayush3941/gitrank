@@ -19,6 +19,10 @@ describe("buildSyncPipelineModel", () => {
     expect(model.completedSteps).toBe(1);
     expect(model.pipelineProgress).toBe(13);
     expect(model.currentPhaseLabel).toBe("Fetching repositories");
+    expect(model.steps[0]).toEqual({
+      id: "connect-github",
+      label: "Connecting GitHub",
+    });
     expect(model.pollCadenceSeconds).toBe(5);
     expect(model.canRetrySync).toBe(false);
     expect(model.actionError).toBe("");

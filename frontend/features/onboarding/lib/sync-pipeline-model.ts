@@ -2,15 +2,20 @@ import { toRatioPercent } from "@/lib/formatters";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import type { SyncState } from "@/types/gitrank";
 
-export const SYNC_PIPELINE_STEPS: readonly string[] = [
-  "Connecting GitHub",
-  "Fetching repositories",
-  "Reading merged PRs",
-  "Analyzing review depth",
-  "Classifying contribution type",
-  "Calculating PR intensity",
-  "Assigning badges",
-  "Building public profile",
+export type SyncPipelineStep = {
+  id: string;
+  label: string;
+};
+
+export const SYNC_PIPELINE_STEPS: readonly SyncPipelineStep[] = [
+  { id: "connect-github", label: "Connecting GitHub" },
+  { id: "fetch-repositories", label: "Fetching repositories" },
+  { id: "read-merged-prs", label: "Reading merged PRs" },
+  { id: "analyze-review-depth", label: "Analyzing review depth" },
+  { id: "classify-contribution-type", label: "Classifying contribution type" },
+  { id: "calculate-pr-intensity", label: "Calculating PR intensity" },
+  { id: "assign-badges", label: "Assigning badges" },
+  { id: "build-public-profile", label: "Building public profile" },
 ];
 
 const POLL_INTERVAL_STEPS_MS = [5000, 7000, 10000, 15000, 20000] as const;
@@ -50,7 +55,7 @@ export function buildSyncPipelineModel({
   const pipelineProgress = toRatioPercent(completedSteps / SYNC_PIPELINE_STEPS.length);
   const currentPhaseLabel =
     completedSteps < SYNC_PIPELINE_STEPS.length
-      ? SYNC_PIPELINE_STEPS[completedSteps]
+      ? SYNC_PIPELINE_STEPS[completedSteps].label
       : "Pipeline complete";
   const actionError = sanitizeUserFacingError(
     syncErrorMessage ||

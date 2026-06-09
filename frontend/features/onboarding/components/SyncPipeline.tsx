@@ -252,7 +252,7 @@ export function SyncPipeline() {
               const active = index === pipeline.completedSteps && !pipeline.isSynced;
               return (
                 <li
-                  key={`sync-step-${index}-${step}`}
+                  key={step.id}
                   className="list-none neon-surface flex items-center gap-4 rounded-[var(--radius-universal)] px-4 py-4"
                 >
                   <div className="neon-tile rounded-[var(--radius-universal)] p-2 text-primary">
@@ -263,7 +263,7 @@ export function SyncPipeline() {
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium text-white">{step}</p>
+                    <p className="font-medium text-white">{step.label}</p>
                     <p className="text-sm text-muted">
                       {done
                         ? "Completed from live sync evidence."

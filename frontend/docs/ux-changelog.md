@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Onboarding render identity:
+  - added model-owned IDs to sync pipeline phases so phase rows render from durable step identity.
+  - replaced reveal skeleton position keys with named placeholder IDs while preserving the same loading layout.
 - Badge detail evidence identity:
   - routed badge detail evidence PR chips through stable render identities.
   - added duplicate-evidence coverage so repeated persisted PR IDs render without relying on array position.

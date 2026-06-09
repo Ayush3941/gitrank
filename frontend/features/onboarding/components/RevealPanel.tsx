@@ -12,6 +12,12 @@ import type { AbraInsightSource } from "@/lib/ai/abra-insights-types";
 import { formatSyncStateLabel } from "@/lib/presentation/status-tone";
 import type { UserProfile } from "@/types/gitrank";
 
+const REVEAL_SKELETON_ROWS = [
+  "rank-preview",
+  "unlock-preview",
+  "next-actions",
+] as const;
+
 export function RevealPanel({
   user,
   archetype,
@@ -203,8 +209,8 @@ export function RevealPanelSkeleton() {
         <div className="neon-skeleton mx-auto h-16 w-full max-w-2xl rounded-[var(--radius-universal)]" />
         <div className="neon-skeleton mx-auto h-10 w-72 rounded-full" />
         <div className="grid gap-4 sm:grid-cols-3">
-          {[0, 1, 2].map((item, index) => (
-            <div key={`reveal-skeleton-${index}-${item}`} className="neon-skeleton h-40 rounded-[var(--radius-universal)]" />
+          {REVEAL_SKELETON_ROWS.map((rowId) => (
+            <div key={rowId} className="neon-skeleton h-40 rounded-[var(--radius-universal)]" />
           ))}
         </div>
       </GlowCard>
