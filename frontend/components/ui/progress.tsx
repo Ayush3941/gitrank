@@ -9,6 +9,7 @@ export function Progress({
   className,
   value,
   indicatorClassName,
+  ...props
 }: React.ComponentProps<typeof ProgressPrimitive.Root> & {
   indicatorClassName?: string;
 }) {
@@ -16,6 +17,7 @@ export function Progress({
 
   return (
     <ProgressPrimitive.Root
+      {...props}
       className={cn("neon-track relative h-3 overflow-hidden rounded-full", className)}
       value={safeValue}
     >

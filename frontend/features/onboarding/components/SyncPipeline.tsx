@@ -176,7 +176,7 @@ export function SyncPipeline() {
         <OnboardingStepper currentStep="analyze" />
         <div className="space-y-3">
           <p className="text-xs font-semibold text-primary">Analyzing</p>
-          <h1 className="text-4xl font-semibold text-white">Reading your GitHub history...</h1>
+          <h1 className="text-4xl font-semibold text-white">Reading your GitHub history</h1>
           <p className="max-w-2xl text-base text-muted">
             GitRank is processing your GitHub data and waiting for a refreshed profile snapshot.
           </p>

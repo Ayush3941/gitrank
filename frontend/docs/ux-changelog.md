@@ -2,6 +2,12 @@
 
 ## 2026-06-09
 
+- Onboarding progress:
+  - removed trailing progress dots from the sync-analysis heading.
+  - added component coverage for the concise onboarding sync heading.
+- Progress accessibility:
+  - fixed the shared `Progress` primitive to forward ARIA props to the progressbar root.
+  - added primitive coverage so caller-provided progress names remain available to assistive technology.
 - Pending control copy:
   - normalized contribution, badge, quest, leaderboard, and settings saving progress labels to concise non-ellipsis copy.
   - added focused coverage for visible summaries and live-region announcements.
