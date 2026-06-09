@@ -9,6 +9,7 @@ import {
   type SyncRunStatusCounts,
   type SyncRunStatusFilter,
 } from "@/features/settings/lib/sync-run-activity-model";
+import { formatCountOfTotal } from "@/lib/formatters";
 
 const SYNC_RUN_STATUS_META: Record<SyncRunStatusFilter, { countKey: keyof SyncRunStatusCounts }> = {
   All: { countKey: "all" },
@@ -44,10 +45,12 @@ export function SyncRunActivityFilters({
   onStatusFilterChange: (value: SyncRunStatusFilter) => void;
   onResetFilters: () => void;
 }) {
+  const runCountSummary = formatCountOfTotal(filteredCount, statusCounts.all, "run");
+
   return (
     <ControlSurface as="section">
       <p id={filterStatusId} role="status" aria-live="polite" aria-atomic="true" className="sr-only">
-        {`${filteredCount} of ${statusCounts.all} runs`}
+        {runCountSummary}
       </p>
       <div className="space-y-3">
         <SearchInputWithClear

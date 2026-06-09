@@ -141,7 +141,7 @@ describe("SyncRunActivityPanel", () => {
     const region = screen.getByRole("region", { name: "Recent sync runs" });
     expect(region.getAttribute("aria-live")).toBeNull();
     expect(region.getAttribute("aria-busy")).toBe("false");
-    expect(screen.getByRole("status").textContent).toBe("1 of 1 runs");
+    expect(screen.getByRole("status").textContent).toBe("1 of 1 run");
   });
 
   it("keeps sync-log recovery controls outside the assertive error message", () => {

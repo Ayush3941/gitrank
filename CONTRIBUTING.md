@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 9, 2026)
 
+- Routed settings sync-run live result counts through shared count-of-total formatting so one-run logs announce `1 of 1 run`.
 - Routed badge locked-path heading counts through shared plural formatting so one locked path no longer appears as a raw parenthesized count.
 - Routed PR report badge-reward headings and unlocked-state chips through shared plural formatting so single-reward reports read naturally.
 - Routed deterministic evidence-signal chip counts through shared plural formatting so PR reports, badge rewards, quests, and dashboard evidence chips avoid awkward labels such as `1 files changed`.

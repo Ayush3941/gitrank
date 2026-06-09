@@ -2,6 +2,9 @@
 
 ## 2026-06-09
 
+- Settings sync activity:
+  - routed the sync-run live result count through shared count-of-total formatting.
+  - updated coverage so a one-run log announces `1 of 1 run`.
 - Badge locked paths:
   - routed locked-path heading counts through shared plural formatting.
   - added coverage for one locked path and multiple locked paths.
