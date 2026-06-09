@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 8, 2026)
 
+- Replaced settings public-profile switch IDs derived from label plus row position with explicit row-owned control IDs and focused coverage for label/control wiring.
 - Added model-owned onboarding sync phase IDs and named reveal skeleton placeholders so onboarding list rendering no longer derives keys from array position.
 - Routed badge detail evidence PR chips through stable render identities instead of array-position keys.
 - Routed shared route-loading skeleton rows and compact empty-state recovery actions through explicit render identities instead of array-position keys.

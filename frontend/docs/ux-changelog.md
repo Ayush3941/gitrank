@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Settings privacy controls:
+  - replaced label-plus-index switch IDs with explicit row-owned control IDs.
+  - added focused coverage so public-profile privacy labels stay wired to durable switch IDs.
 - Onboarding render identity:
   - added model-owned IDs to sync pipeline phases so phase rows render from durable step identity.
   - replaced reveal skeleton position keys with named placeholder IDs while preserving the same loading layout.
