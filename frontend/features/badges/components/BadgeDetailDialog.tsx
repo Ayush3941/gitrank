@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import type { BadgeStory } from "@/lib/ai/abra-insights-types";
 import { formatDate } from "@/lib/formatters";
+import { buildStableRenderRows } from "@/lib/presentation/render-identity";
 import type { Badge } from "@/types/gitrank";
 
 export function BadgeDetailDialog({
@@ -22,6 +23,11 @@ export function BadgeDetailDialog({
   story?: BadgeStory;
   children: ReactNode;
 }) {
+  const evidencePrRows = buildStableRenderRows(
+    badge.evidencePrIds,
+    (prId) => `${badge.id}:${prId}`,
+  );
+
   return (
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
@@ -123,9 +129,9 @@ export function BadgeDetailDialog({
           <div className="space-y-2">
             <p className="text-xs font-medium text-primary">Evidence PRs</p>
             <div className="flex flex-wrap gap-2">
-              {badge.evidencePrIds.length ? (
-                badge.evidencePrIds.map((prId, index) => (
-                  <span key={`${badge.id}-${prId}-${index}`} className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 text-sm">
+              {evidencePrRows.length ? (
+                evidencePrRows.map(({ renderId, item: prId }) => (
+                  <span key={renderId} className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 text-sm">
                     {prId}
                   </span>
                 ))

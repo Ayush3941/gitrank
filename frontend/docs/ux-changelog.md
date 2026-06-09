@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Badge detail evidence identity:
+  - routed badge detail evidence PR chips through stable render identities.
+  - added duplicate-evidence coverage so repeated persisted PR IDs render without relying on array position.
 - Shared loading and empty states:
   - routed route-loading skeleton rows and compact empty-state actions through explicit render identities.
   - kept loading announcements, empty-state recovery links, and visual skeleton structure unchanged while removing array-position keys.
