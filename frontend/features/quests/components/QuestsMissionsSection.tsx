@@ -7,6 +7,7 @@ import { LoadingState } from "@/components/shared/LoadingState";
 import { PanelLoadingPlaceholder } from "@/components/shared/PanelLoadingPlaceholder";
 import { Button } from "@/components/ui/button";
 import type { QuestGroupMap } from "@/features/quests/lib/quests-page-model";
+import { buildStableRenderRows } from "@/lib/presentation/render-identity";
 import type { Quest } from "@/types/gitrank";
 
 const QuestCard = dynamic(
@@ -68,6 +69,11 @@ export function QuestsMissionsSection({
           const grouped = questMap[group];
           const visibleCount = visibleGroupCounts[group] ?? questGroupPageSize;
           const visibleGroup = grouped.slice(0, visibleCount);
+          const visibleRows = buildStableRenderRows(
+            visibleGroup,
+            (quest) => `${quest.cadence}:${quest.title}:${quest.rewardXp}`,
+            (quest) => quest.id,
+          );
           const hasMoreInGroup = grouped.length > visibleGroup.length;
           const remainingInGroup = Math.max(0, grouped.length - visibleGroup.length);
 
@@ -78,8 +84,8 @@ export function QuestsMissionsSection({
               </h3>
               <div>
                 <ul role="list" className="grid gap-4 xl:grid-cols-2">
-                  {visibleGroup.map((quest, index) => (
-                    <li key={`${quest.id}-${index}`} className="list-none">
+                  {visibleRows.map(({ renderId, item: quest }) => (
+                    <li key={renderId} className="list-none">
                       <QuestCard quest={quest} />
                     </li>
                   ))}

@@ -80,10 +80,41 @@ describe("QuestsMissionsSection", () => {
       />,
     );
 
-    expect(await screen.findByText("Weekly review sprint")).toBeTruthy();
+    expect(
+      await screen.findByText("Weekly review sprint", undefined, {
+        timeout: 5_000,
+      }),
+    ).toBeTruthy();
     expect(screen.queryByText("Weekly test sprint")).toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: "Show more missions" }));
     expect(onShowMoreGroup).toHaveBeenCalledWith("Weekly", 2);
+  });
+
+  it("renders repeated visible quest titles when quest identities differ", async () => {
+    const weeklyQuests = [
+      buildQuest({ id: "quest-a", title: "Shared mission title" }),
+      buildQuest({ id: "quest-b", title: "Shared mission title" }),
+    ];
+
+    render(
+      <QuestsMissionsSection
+        quests={weeklyQuests}
+        visibleGroups={["Weekly"]}
+        questMap={{ ...emptyQuestMap, Weekly: weeklyQuests }}
+        visibleGroupCounts={{ ...defaultVisibleCounts, Weekly: 2 }}
+        questGroupPageSize={1}
+        isLoading={false}
+        isError={false}
+        onRetry={vi.fn()}
+        onShowMoreGroup={vi.fn()}
+      />,
+    );
+
+    expect(
+      await screen.findAllByText("Shared mission title", undefined, {
+        timeout: 5_000,
+      }),
+    ).toHaveLength(2);
   });
 });

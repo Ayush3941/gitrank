@@ -9,6 +9,7 @@ import {
   toRatioPercent,
 } from "@/lib/formatters";
 import { buildEvidenceSignalChips } from "@/lib/presentation/evidence-signal";
+import { buildStableRenderRows } from "@/lib/presentation/render-identity";
 import type { Quest } from "@/types/gitrank";
 
 export function QuestCard({ quest }: { quest: Quest }) {
@@ -21,6 +22,10 @@ export function QuestCard({ quest }: { quest: Quest }) {
         ? "neon-chip neon-chip-warning"
         : "neon-chip neon-chip-info";
   const visibleSignals = buildEvidenceSignalChips(quest.evidenceSignals, 4);
+  const visibleSignalRows = buildStableRenderRows(
+    visibleSignals,
+    (signal) => `${quest.id}:${signal}`,
+  );
 
   return (
     <GlowCard className="render-opt-card cyber-hero-shell relative space-y-4 overflow-hidden">
@@ -58,8 +63,8 @@ export function QuestCard({ quest }: { quest: Quest }) {
         <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusTone}`}>{quest.status}</span>
       </div>
       <ul role="list" className="flex flex-wrap gap-2">
-        {visibleSignals.map((signal, index) => (
-          <li key={`${quest.id}-${signal}-${index}`}>
+        {visibleSignalRows.map(({ renderId, item: signal }) => (
+          <li key={renderId}>
             <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
               {signal}
             </span>

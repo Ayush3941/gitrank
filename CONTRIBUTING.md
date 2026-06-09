@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 8, 2026)
 
+- Routed dashboard quest cards, full quest-board mission rows, and quest evidence chips through stable render identities instead of array-position keys.
 - Routed contribution cards, dashboard battle-report cards, public best-PR cards, and public repository rows through stable render identities instead of array-position keys.
 - Added shared render-row identity normalization for meta chips, loading skeletons, timeline rows, and theme swatches so shared UI lists no longer depend on array-position keys.
 - Routed PR report proof checks, evidence chips, badge rewards, suggested-quest chips, and XP breakdown rows to stable model/source IDs instead of index-derived render keys.

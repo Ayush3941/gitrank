@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Quest card identity:
+  - routed dashboard quest cards, quest-board mission rows, and quest evidence chips through stable quest/evidence render identities.
+  - added duplicate-title coverage so repeated quest titles render as separate missions without relying on array position.
 - Contribution/report card identity:
   - routed contribution cards, dashboard battle-report cards, public best-PR cards, and public repository rows through stable render identities.
   - added duplicate-label coverage so repeated PR titles or repository names render as separate evidence rows without relying on array position.

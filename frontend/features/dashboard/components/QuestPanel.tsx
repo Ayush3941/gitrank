@@ -10,9 +10,16 @@ import {
   toRatioPercent,
 } from "@/lib/formatters";
 import { buildEvidenceSignalChips } from "@/lib/presentation/evidence-signal";
+import { buildStableRenderRows } from "@/lib/presentation/render-identity";
 import type { Quest } from "@/types/gitrank";
 
 export function QuestPanel({ quests }: { quests: Quest[] }) {
+  const visibleQuestRows = buildStableRenderRows(
+    quests.slice(0, 3),
+    (quest) => `${quest.cadence}:${quest.title}:${quest.rewardXp}`,
+    (quest) => quest.id,
+  );
+
   return (
     <GlowCard className="space-y-5">
       <div className="flex items-center justify-between">
@@ -39,11 +46,15 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
           />
         ) : null}
         <ol role="list" className="space-y-3">
-          {quests.slice(0, 3).map((quest, questIndex) => {
+          {visibleQuestRows.map(({ renderId, item: quest }) => {
             const progress = safeQuestProgress(quest.progress, quest.goal);
             const visibleSignals = buildEvidenceSignalChips(quest.evidenceSignals, 3);
+            const visibleSignalRows = buildStableRenderRows(
+              visibleSignals,
+              (signal) => `${quest.id}:${signal}`,
+            );
             return (
-              <li key={`${quest.id}-${questIndex}`} className="list-none">
+              <li key={renderId} className="list-none">
                 <article className="render-opt-card neon-surface rounded-[var(--radius-universal)] p-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
@@ -66,8 +77,8 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
                     <span>{quest.weakAreaTarget ? `Targets ${quest.weakAreaTarget}` : quest.cadence}</span>
                   </div>
                   <ul role="list" className="mt-3 flex flex-wrap gap-2">
-                    {visibleSignals.map((signal, index) => (
-                      <li key={`${quest.id}-${signal}-${index}`}>
+                    {visibleSignalRows.map(({ renderId: chipRowId, item: signal }) => (
+                      <li key={chipRowId}>
                         <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 text-xs">
                           {signal}
                         </span>
