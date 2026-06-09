@@ -2,6 +2,9 @@
 
 ## 2026-06-09
 
+- Badge locked paths:
+  - routed locked-path heading counts through shared plural formatting.
+  - added coverage for one locked path and multiple locked paths.
 - PR report badge rewards:
   - routed badge-reward heading counts and unlocked-state copy through shared plural formatting.
   - added focused coverage for empty, single-reward, and multi-reward rendering.

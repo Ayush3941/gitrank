@@ -39,6 +39,8 @@ export function BadgesLockedPathsSection({
   onToggleLockedBadges: () => void;
   onShowMoreLockedBadges: () => void;
 }) {
+  const lockedPathCountLabel = formatPluralCount(lockedBadges.length, "locked path");
+
   return (
     <section
       id="badges-locked"
@@ -49,7 +51,7 @@ export function BadgesLockedPathsSection({
         <>
           <div className="neon-surface flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-universal)] px-4 py-3">
             <h2 className="text-sm font-semibold text-white">
-              Locked paths ({lockedBadges.length})
+              Locked paths <span className="text-muted">({lockedPathCountLabel})</span>
             </h2>
             <DisclosureToggle
               id={toggleId}

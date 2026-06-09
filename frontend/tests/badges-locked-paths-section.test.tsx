@@ -11,6 +11,32 @@ vi.mock("next/link", () => ({
 }));
 
 describe("BadgesLockedPathsSection", () => {
+  it("uses singular heading copy for one locked badge path", () => {
+    render(
+      <BadgesLockedPathsSection
+        lockedBadges={[
+          buildBadge({ id: "locked-a", name: "Locked A", unlocked: false, progress: 40 }),
+        ]}
+        lockedBadgePreview={[]}
+        visibleLockedBadges={[
+          buildBadge({ id: "locked-a", name: "Locked A", unlocked: false, progress: 40 }),
+        ]}
+        hasMoreLockedBadges={false}
+        remainingLockedBadges={0}
+        showLockedBadges
+        isLoading={false}
+        isError={false}
+        regionId="single-locked-badges-region"
+        toggleId="single-locked-badges-toggle"
+        onToggleLockedBadges={vi.fn()}
+        onShowMoreLockedBadges={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("Locked paths", { exact: false })).toBeTruthy();
+    expect(screen.getByText("(1 locked path)")).toBeTruthy();
+  });
+
   it("renders plural-aware remaining copy and contextual show-more action", () => {
     const onShowMoreLockedBadges = vi.fn();
     render(
@@ -35,6 +61,7 @@ describe("BadgesLockedPathsSection", () => {
       />,
     );
 
+    expect(screen.getByText("(2 locked paths)")).toBeTruthy();
     expect(screen.getByText("1 locked path remaining")).toBeTruthy();
     fireEvent.click(
       screen.getByRole("button", {
