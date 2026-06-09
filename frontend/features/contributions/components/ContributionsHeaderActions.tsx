@@ -4,6 +4,7 @@ import { Download, LayoutList, Rows3 } from "lucide-react";
 import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
 import { Button } from "@/components/ui/button";
 import { downloadContributionsCSV } from "@/features/contributions/lib/contribution-csv-export";
+import { formatPluralCount } from "@/lib/formatters";
 import type { Contribution, SyncState } from "@/types/gitrank";
 
 export function ContributionsHeaderActions({
@@ -66,7 +67,9 @@ export function ContributionsHeaderActions({
             return;
           }
           downloadContributionsCSV(rows);
-          onExportStatusChange(`Exported ${rows.length} contribution rows as CSV.`);
+          onExportStatusChange(
+            `Exported ${formatPluralCount(rows.length, "contribution row")} as CSV.`,
+          );
         }}
       >
         <Download className="h-4 w-4" aria-hidden="true" />

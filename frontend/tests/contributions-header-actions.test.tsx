@@ -82,7 +82,31 @@ describe("ContributionsHeaderActions", () => {
     fireEvent.click(screen.getByRole("button", { name: "Export CSV" }));
     expect(downloadContributionsCSVMock).toHaveBeenCalledWith([row]);
     expect(onExportStatusChange).toHaveBeenCalledWith(
-      "Exported 1 contribution rows as CSV.",
+      "Exported 1 contribution row as CSV.",
+    );
+  });
+
+  it("reports plural exported counts", () => {
+    const rows = [buildContribution({ id: "first" }), buildContribution({ id: "second" })];
+    const onExportStatusChange = vi.fn();
+
+    render(
+      <ContributionsHeaderActions
+        cardsRegionId="contribution-cards"
+        rows={rows}
+        showFreshness={false}
+        syncState="synced"
+        useLiteCards={false}
+        showCardDetails
+        onToggleCardDetails={vi.fn()}
+        onExportStatusChange={onExportStatusChange}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Export CSV" }));
+    expect(downloadContributionsCSVMock).toHaveBeenCalledWith(rows);
+    expect(onExportStatusChange).toHaveBeenCalledWith(
+      "Exported 2 contribution rows as CSV.",
     );
   });
 });

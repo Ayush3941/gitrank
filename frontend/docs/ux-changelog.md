@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Contribution export feedback:
+  - routed CSV export success notices through shared plural formatting.
+  - added coverage for one-row and multi-row export announcements.
 - Repository hidden-count summary:
   - expanded settings hidden-repository copy through shared plural formatting.
   - added focused coverage for both single and multiple hidden repositories.

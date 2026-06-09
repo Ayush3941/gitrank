@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 8, 2026)
 
+- Routed contribution CSV export success notices through shared plural formatting so one-row exports read naturally.
 - Expanded the repository visibility hidden-count summary to use shared plural formatting so settings reads `1 hidden repository` and `2 hidden repositories` instead of terse count-only copy.
 - Routed the repository visibility section count through shared plural formatting so single-repository settings views read naturally.
 - Added shared count-summary formatting for badge, repository, contribution-card, and leaderboard-row control summaries.
