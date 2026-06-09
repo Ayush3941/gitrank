@@ -7,6 +7,7 @@ import { LoadingState } from "@/components/shared/LoadingState";
 import { PanelLoadingPlaceholder } from "@/components/shared/PanelLoadingPlaceholder";
 import { Button } from "@/components/ui/button";
 import type { BadgeStory } from "@/lib/ai/abra-insights-types";
+import { formatPluralCount } from "@/lib/formatters";
 import type { Badge } from "@/types/gitrank";
 
 const BadgeGrid = dynamic(
@@ -89,12 +90,13 @@ export function BadgesShelfResults({
       <BadgeGrid badges={visibleBadges} stories={stories} />
       {hasMoreBadges ? (
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-xs text-muted">{remainingBadges} badges remaining</p>
+          <p className="text-xs text-muted">{formatPluralCount(remainingBadges, "badge")} remaining</p>
           <Button
             type="button"
             size="sm"
             variant="secondary"
             aria-controls={regionId}
+            aria-label={`Show more badges. ${formatPluralCount(remainingBadges, "badge")} remaining.`}
             onClick={onShowMoreBadges}
           >
             Show more badges

@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Badge shelf pagination:
+  - changed remaining badge copy to use shared plural-count formatting.
+  - added remaining-count context to the show-more action's accessible name.
 - Onboarding unavailable copy:
   - replaced implementation-facing sample-data wording with recovery-focused profile snapshot guidance.
   - added coverage to keep the unavailable reveal panel free of demo/sample-data language.

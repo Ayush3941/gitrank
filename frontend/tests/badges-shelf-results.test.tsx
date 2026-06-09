@@ -50,8 +50,8 @@ describe("BadgesShelfResults", () => {
     );
 
     expect(await screen.findByText("Shipwright")).toBeTruthy();
-    expect(screen.getByText("1 badges remaining")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Show more badges" }));
+    expect(screen.getByText("1 badge remaining")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Show more badges. 1 badge remaining." }));
     expect(onShowMoreBadges).toHaveBeenCalledTimes(1);
   });
 });
