@@ -5,7 +5,7 @@ import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { formatPercent } from "@/lib/formatters";
+import { formatPercent, formatPluralCount } from "@/lib/formatters";
 import {
   badgeUnlockRecoveryHref,
   badgeUnlockRecoveryLabel,
@@ -82,12 +82,14 @@ export function BadgesLockedPathsSection({
                 {hasMoreLockedBadges ? (
                   <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                     <p className="text-xs text-muted">
-                      {remainingLockedBadges} locked paths remaining
+                      {formatPluralCount(remainingLockedBadges, "locked path")} remaining
                     </p>
                     <Button
                       type="button"
                       size="sm"
                       variant="secondary"
+                      aria-controls={regionId}
+                      aria-label={`Show more locked paths. ${formatPluralCount(remainingLockedBadges, "locked path")} remaining.`}
                       onClick={onShowMoreLockedBadges}
                     >
                       Show more locked paths

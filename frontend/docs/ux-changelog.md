@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Locked badge path pagination:
+  - changed remaining locked-path copy to use shared plural-count formatting.
+  - added remaining-count context to the locked-path show-more action's accessible name.
 - Badge shelf pagination:
   - changed remaining badge copy to use shared plural-count formatting.
   - added remaining-count context to the show-more action's accessible name.
