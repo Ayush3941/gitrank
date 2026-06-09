@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Onboarding unavailable copy:
+  - replaced implementation-facing sample-data wording with recovery-focused profile snapshot guidance.
+  - added coverage to keep the unavailable reveal panel free of demo/sample-data language.
 - Pending action feedback:
   - normalized settings, stale-refresh, sync-log, and PR-report retry pending labels to concise non-ellipsis copy.
   - added or preserved `aria-busy` on pending action buttons so disabled controls still expose active work to assistive technology.

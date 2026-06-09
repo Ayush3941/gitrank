@@ -231,7 +231,7 @@ export function RevealPanelUnavailable() {
           Connect GitHub to reveal your first GitRank snapshot.
         </h1>
         <p className="text-sm text-muted">
-          Reveal now reads the authenticated profile snapshot instead of static sample data. Start or refresh GitHub connection to generate the live view.
+          GitRank needs a live authenticated profile snapshot before it can show your reveal. Connect GitHub or refresh your connection to generate one.
         </p>
         <Button asChild size="lg">
           <IntentPrefetchLink href="/oauth/github/start?return_to=/dashboard" prefetchMode="never">

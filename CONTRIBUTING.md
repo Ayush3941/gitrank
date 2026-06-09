@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 8, 2026)
 
+- Replaced onboarding reveal-unavailable implementation copy about sample data with recovery-focused profile snapshot guidance and direct coverage.
 - Normalized pending action labels and `aria-busy` state across settings account/data controls, sync-log refresh/retry actions, stale refresh cards, and PR-report AI retry.
 - Replaced settings public-profile switch IDs derived from label plus row position with explicit row-owned control IDs and focused coverage for label/control wiring.
 - Added model-owned onboarding sync phase IDs and named reveal skeleton placeholders so onboarding list rendering no longer derives keys from array position.
