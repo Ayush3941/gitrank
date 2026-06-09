@@ -30,15 +30,17 @@ describe("ErrorState", () => {
       <ErrorState
         title="Sync failed"
         description="Retry is already active."
-        retryLabel="Retrying..."
+        retryLabel="Retrying"
         retryDisabled
+        retryBusy
         fallbackHref=""
         onRetry={onRetry}
       />,
     );
 
-    const retry = screen.getByRole("button", { name: "Retrying..." });
+    const retry = screen.getByRole("button", { name: "Retrying" });
     expect(retry.hasAttribute("disabled")).toBe(true);
+    expect(retry.getAttribute("aria-busy")).toBe("true");
 
     fireEvent.click(retry);
     expect(onRetry).not.toHaveBeenCalled();

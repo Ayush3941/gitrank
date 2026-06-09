@@ -50,10 +50,11 @@ export function SyncRunActivitySummary({
             size="sm"
             variant="secondary"
             disabled={isRefreshing}
+            aria-busy={isRefreshing || undefined}
             onClick={onRefresh}
           >
             <RefreshCw className="h-4 w-4" aria-hidden="true" />
-            {isRefreshing ? "Refreshing..." : "Refresh log"}
+            {isRefreshing ? "Refreshing log" : "Refresh log"}
           </Button>
         </div>
       </div>

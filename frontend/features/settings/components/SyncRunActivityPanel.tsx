@@ -100,8 +100,9 @@ export function SyncRunActivityPanel({
         <ErrorState
           title="Sync log unavailable"
           description={errorMessage || "Sync activity is temporarily unavailable."}
-          retryLabel={isRefreshing ? "Refreshing..." : "Retry log fetch"}
+          retryLabel={isRefreshing ? "Refreshing log" : "Retry log fetch"}
           retryDisabled={isRefreshing}
+          retryBusy={isRefreshing}
           fallbackHref=""
           onRetry={onRefresh}
         />

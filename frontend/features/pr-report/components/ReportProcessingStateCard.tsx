@@ -56,11 +56,12 @@ export function ReportProcessingStateCard({
               size="sm"
               variant="secondary"
               disabled={isRetrying}
+              aria-busy={isRetrying || undefined}
               onClick={() => {
                 void onRetryAiSummary();
               }}
             >
-              {isRetrying ? "Retrying..." : "Retry AI summary"}
+              {isRetrying ? "Retrying AI summary" : "Retry AI summary"}
             </Button>
           ) : null}
           <Button asChild size="sm" variant="secondary">

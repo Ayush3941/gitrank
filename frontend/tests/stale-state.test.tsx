@@ -62,6 +62,20 @@ describe("StaleState", () => {
     });
   });
 
+  it("marks refresh action busy with concise pending copy", () => {
+    render(
+      <StaleState
+        message="Profile data is stale."
+        updatedAt="2026-05-17T18:10:00.000Z"
+        isRefreshing
+        onRefresh={() => undefined}
+      />,
+    );
+
+    const refresh = screen.getByRole("button", { name: "Refreshing data" });
+    expect(refresh.getAttribute("aria-busy")).toBe("true");
+  });
+
   it("shows sanitized refresh errors when refresh fails", async () => {
     render(
       <StaleState

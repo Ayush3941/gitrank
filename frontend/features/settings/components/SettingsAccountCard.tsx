@@ -74,25 +74,27 @@ export function SettingsAccountCard({
           variant="secondary"
           className="w-full justify-center"
           disabled={appInstallationBlocked || isActing || isFetchingProfile}
+          aria-busy={isUserSyncPending || isFetchingProfile || undefined}
           onClick={onRefreshProfile}
         >
           <RefreshCw className="h-4 w-4" aria-hidden="true" />
           {appInstallationBlocked
             ? "Install app to sync"
             : isUserSyncPending
-              ? "Refreshing profile..."
+              ? "Refreshing profile"
               : isFetchingProfile
-                ? "Refreshing..."
+                ? "Refreshing snapshot"
                 : "Refresh profile"}
         </Button>
         <Button
           variant="secondary"
           className="w-full justify-center"
           disabled={isActing}
+          aria-busy={isRelinkPending || undefined}
           onClick={onReconnectGitHub}
         >
           <FolderGit2 className="h-4 w-4" aria-hidden="true" />
-          {isRelinkPending ? "Starting relink..." : "Reconnect GitHub"}
+          {isRelinkPending ? "Starting relink" : "Reconnect GitHub"}
         </Button>
         {!appInstallationBlocked ? (
           isActing ? (
@@ -115,19 +117,21 @@ export function SettingsAccountCard({
           variant="secondary"
           className="w-full justify-center"
           disabled={isActing}
+          aria-busy={isLogoutPending || undefined}
           onClick={onSignOut}
         >
           <LogOut className="h-4 w-4" aria-hidden="true" />
-          {isLogoutPending ? "Signing out..." : "Sign out"}
+          {isLogoutPending ? "Signing out" : "Sign out"}
         </Button>
         <Button
           variant="secondary"
           className="w-full justify-center"
           disabled={isActing}
+          aria-busy={isUnlinkPending || undefined}
           onClick={onDisconnectGitHub}
         >
           <FolderGit2 className="h-4 w-4" aria-hidden="true" />
-          {isUnlinkPending ? "Disconnecting..." : "Disconnect GitHub"}
+          {isUnlinkPending ? "Disconnecting" : "Disconnect GitHub"}
         </Button>
       </div>
       {appInstallationBlocked ? (

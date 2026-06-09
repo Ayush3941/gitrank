@@ -167,6 +167,40 @@ describe("SyncRunActivityPanel", () => {
     expect(onRefresh).toHaveBeenCalledTimes(1);
   });
 
+  it("marks sync-log refresh actions as busy while refresh is active", () => {
+    render(
+      <SyncRunActivityPanel
+        runs={[sampleRun]}
+        isLoading={false}
+        isRefreshing
+        isError={false}
+        onRefresh={() => undefined}
+      />,
+    );
+
+    const refresh = screen.getByRole("button", { name: "Refreshing log" });
+    expect(refresh.getAttribute("aria-busy")).toBe("true");
+  });
+
+  it("marks every sync-log refresh action as busy while refresh is active", () => {
+    render(
+      <SyncRunActivityPanel
+        runs={[]}
+        isLoading={false}
+        isRefreshing
+        isError
+        errorMessage="Sync log fetch failed."
+        onRefresh={() => undefined}
+      />,
+    );
+
+    const refreshActions = screen.getAllByRole("button", { name: "Refreshing log" });
+    expect(refreshActions).toHaveLength(2);
+    for (const action of refreshActions) {
+      expect(action.getAttribute("aria-busy")).toBe("true");
+    }
+  });
+
   it("keeps filter reset flow consistent with minimal controls", () => {
     render(
       <SyncRunActivityPanel

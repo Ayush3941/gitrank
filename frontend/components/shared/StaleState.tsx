@@ -121,7 +121,7 @@ export function StaleState({
               disabled={refreshBusy}
               aria-busy={refreshBusy || undefined}
             >
-              {refreshBusy ? "Refreshing..." : refreshLabel}
+              {refreshBusy ? "Refreshing data" : refreshLabel}
             </Button>
           ) : null}
           <Button asChild variant="secondary">

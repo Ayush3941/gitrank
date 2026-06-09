@@ -28,10 +28,11 @@ export function SettingsDataControlsCard({
           variant="secondary"
           className="w-full justify-center"
           disabled={isActing}
+          aria-busy={isExportPending || undefined}
           onClick={onExportAccountData}
         >
           <Download className="h-4 w-4" aria-hidden="true" />
-          {isExportPending ? "Exporting..." : "Export data"}
+          {isExportPending ? "Exporting data" : "Export data"}
         </Button>
       </div>
       <div className="space-y-2 rounded-[var(--radius-universal)] border border-rose-300/24 bg-rose-500/8 px-3 py-3">
@@ -42,10 +43,11 @@ export function SettingsDataControlsCard({
           variant="danger"
           className="w-full justify-center"
           disabled={isActing}
+          aria-busy={isDeletePending || undefined}
           onClick={onDeleteAccount}
         >
           <Trash2 className="h-4 w-4" aria-hidden="true" />
-          {isDeletePending ? "Deleting account..." : "Delete account"}
+          {isDeletePending ? "Deleting account" : "Delete account"}
         </Button>
       </div>
     </GlowCard>

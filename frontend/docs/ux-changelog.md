@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Pending action feedback:
+  - normalized settings, stale-refresh, sync-log, and PR-report retry pending labels to concise non-ellipsis copy.
+  - added or preserved `aria-busy` on pending action buttons so disabled controls still expose active work to assistive technology.
 - Settings privacy controls:
   - replaced label-plus-index switch IDs with explicit row-owned control IDs.
   - added focused coverage so public-profile privacy labels stay wired to durable switch IDs.
