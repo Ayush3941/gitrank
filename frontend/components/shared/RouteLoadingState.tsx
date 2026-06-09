@@ -2,6 +2,10 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { formatLoadingAnnouncement } from "@/lib/presentation/loading-copy";
 import { shouldShowHeaderEyebrow } from "@/lib/presentation/header-eyebrow";
 
+type LoadingCardRow = {
+  id: string;
+};
+
 export function RouteLoadingState({
   eyebrow,
   title,
@@ -15,7 +19,7 @@ export function RouteLoadingState({
   cardCount?: number;
   variant?: "default" | "dashboard" | "marketing" | "profile" | "report";
 }) {
-  const cards = Array.from({ length: Math.max(1, cardCount) });
+  const cards = buildLoadingCardRows("route-loading-card", cardCount);
   const showEyebrow = shouldShowHeaderEyebrow(eyebrow, title);
   const announcement = formatLoadingAnnouncement(title, description);
 
@@ -38,11 +42,11 @@ export function RouteLoadingState({
   );
 }
 
-function DefaultLoadingGrid({ cards }: { cards: unknown[] }) {
+function DefaultLoadingGrid({ cards }: { cards: LoadingCardRow[] }) {
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-      {cards.map((_, index) => (
-        <GlowCard variant="loading" key={`route-loading-default-${index}`} className="space-y-3">
+      {cards.map((card) => (
+        <GlowCard variant="loading" key={`route-loading-default-${card.id}`} className="space-y-3">
           <div className="neon-skeleton h-5 w-32 rounded-full" />
           <div className="neon-skeleton h-10 w-24 rounded-full" />
           <div className="neon-skeleton h-4 w-full rounded-full" />
@@ -52,7 +56,7 @@ function DefaultLoadingGrid({ cards }: { cards: unknown[] }) {
   );
 }
 
-function DashboardLoadingGrid({ cards }: { cards: unknown[] }) {
+function DashboardLoadingGrid({ cards }: { cards: LoadingCardRow[] }) {
   return (
     <div className="space-y-4">
       <div className="grid gap-4 xl:grid-cols-[1.1fr,0.9fr]">
@@ -72,8 +76,8 @@ function DashboardLoadingGrid({ cards }: { cards: unknown[] }) {
         </GlowCard>
       </div>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {cards.slice(0, 2).map((_, index) => (
-          <GlowCard variant="loading" key={`route-loading-dashboard-${index}`} className="space-y-3">
+        {cards.slice(0, 2).map((card) => (
+          <GlowCard variant="loading" key={`route-loading-dashboard-${card.id}`} className="space-y-3">
             <div className="neon-skeleton h-5 w-32 rounded-full" />
             <div className="neon-skeleton h-10 w-24 rounded-full" />
             <div className="neon-skeleton h-4 w-full rounded-full" />
@@ -84,7 +88,7 @@ function DashboardLoadingGrid({ cards }: { cards: unknown[] }) {
   );
 }
 
-function MarketingLoadingGrid({ cards }: { cards: unknown[] }) {
+function MarketingLoadingGrid({ cards }: { cards: LoadingCardRow[] }) {
   return (
     <div className="space-y-4">
       <GlowCard variant="loading" className="space-y-4">
@@ -96,8 +100,8 @@ function MarketingLoadingGrid({ cards }: { cards: unknown[] }) {
         </div>
       </GlowCard>
       <div className="grid gap-4 md:grid-cols-3">
-        {cards.slice(0, 2).map((_, index) => (
-          <GlowCard variant="loading" key={`route-loading-marketing-${index}`} className="space-y-3">
+        {cards.slice(0, 2).map((card) => (
+          <GlowCard variant="loading" key={`route-loading-marketing-${card.id}`} className="space-y-3">
             <div className="neon-skeleton h-9 w-9 rounded-[var(--radius-universal)]" />
             <div className="neon-skeleton h-6 w-3/4 rounded-full" />
             <div className="neon-skeleton h-4 w-full rounded-full" />
@@ -108,7 +112,7 @@ function MarketingLoadingGrid({ cards }: { cards: unknown[] }) {
   );
 }
 
-function ProfileLoadingGrid({ cards }: { cards: unknown[] }) {
+function ProfileLoadingGrid({ cards }: { cards: LoadingCardRow[] }) {
   return (
     <div className="space-y-4">
       <GlowCard variant="loading" className="space-y-4">
@@ -130,8 +134,8 @@ function ProfileLoadingGrid({ cards }: { cards: unknown[] }) {
           <div className="neon-skeleton h-52 rounded-[var(--radius-universal)]" />
         </GlowCard>
         <GlowCard variant="loading" className="space-y-3">
-          {cards.slice(0, 2).map((_, index) => (
-            <div key={`route-loading-profile-${index}`} className="neon-skeleton h-20 rounded-[var(--radius-universal)]" />
+          {cards.slice(0, 2).map((card) => (
+            <div key={`route-loading-profile-${card.id}`} className="neon-skeleton h-20 rounded-[var(--radius-universal)]" />
           ))}
         </GlowCard>
       </div>
@@ -139,7 +143,7 @@ function ProfileLoadingGrid({ cards }: { cards: unknown[] }) {
   );
 }
 
-function ReportLoadingGrid({ cards }: { cards: unknown[] }) {
+function ReportLoadingGrid({ cards }: { cards: LoadingCardRow[] }) {
   return (
     <div className="space-y-4">
       <GlowCard variant="loading" className="space-y-4">
@@ -152,16 +156,22 @@ function ReportLoadingGrid({ cards }: { cards: unknown[] }) {
       </GlowCard>
       <div className="grid gap-4 xl:grid-cols-2">
         <GlowCard variant="loading" className="space-y-3">
-          {cards.slice(0, 1).map((_, index) => (
-            <div key={`route-loading-report-left-${index}`} className="neon-skeleton h-28 rounded-[var(--radius-universal)]" />
+          {cards.slice(0, 1).map((card) => (
+            <div key={`route-loading-report-left-${card.id}`} className="neon-skeleton h-28 rounded-[var(--radius-universal)]" />
           ))}
         </GlowCard>
         <GlowCard variant="loading" className="space-y-3">
-          {cards.slice(1, 2).map((_, index) => (
-            <div key={`route-loading-report-right-${index}`} className="neon-skeleton h-28 rounded-[var(--radius-universal)]" />
+          {cards.slice(1, 2).map((card) => (
+            <div key={`route-loading-report-right-${card.id}`} className="neon-skeleton h-28 rounded-[var(--radius-universal)]" />
           ))}
         </GlowCard>
       </div>
     </div>
   );
+}
+
+function buildLoadingCardRows(prefix: string, count: number): LoadingCardRow[] {
+  return Array.from({ length: Math.max(1, count) }, (_unused, offset) => ({
+    id: `${prefix}-${offset + 1}`,
+  }));
 }

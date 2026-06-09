@@ -40,4 +40,27 @@ describe("CompactEmptyState", () => {
       "/dashboard/settings",
     );
   });
+
+  it("keeps repeated action labels separate through explicit action roles", () => {
+    render(
+      <CompactEmptyState
+        title="No reports"
+        description="Retry from either destination."
+        primaryAction={{
+          label: "Open",
+          href: "/dashboard/contributions",
+        }}
+        secondaryAction={{
+          label: "Open",
+          href: "/dashboard/settings",
+        }}
+      />,
+    );
+
+    const links = screen.getAllByRole("link", { name: "Open" });
+    expect(links.map((link) => link.getAttribute("href"))).toEqual([
+      "/dashboard/contributions",
+      "/dashboard/settings",
+    ]);
+  });
 });

@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Shared loading and empty states:
+  - routed route-loading skeleton rows and compact empty-state actions through explicit render identities.
+  - kept loading announcements, empty-state recovery links, and visual skeleton structure unchanged while removing array-position keys.
 - Quest card identity:
   - routed dashboard quest cards, quest-board mission rows, and quest evidence chips through stable quest/evidence render identities.
   - added duplicate-title coverage so repeated quest titles render as separate missions without relying on array position.

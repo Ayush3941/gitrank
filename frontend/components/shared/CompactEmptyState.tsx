@@ -12,6 +12,12 @@ type CompactEmptyStateAction = {
   prefetchMode?: "intent" | "never";
 };
 
+type CompactEmptyStateActionRow = {
+  id: "primary" | "secondary";
+  action: CompactEmptyStateAction;
+  defaultVariant: "secondary" | "ghost";
+};
+
 export function CompactEmptyState({
   eyebrow = "Evidence pending",
   title,
@@ -27,9 +33,14 @@ export function CompactEmptyState({
   secondaryAction?: CompactEmptyStateAction;
   className?: string;
 }) {
-  const actions = [primaryAction, secondaryAction].filter(
-    (action): action is CompactEmptyStateAction => Boolean(action),
-  );
+  const actions: CompactEmptyStateActionRow[] = [
+    primaryAction
+      ? { id: "primary", action: primaryAction, defaultVariant: "secondary" }
+      : null,
+    secondaryAction
+      ? { id: "secondary", action: secondaryAction, defaultVariant: "ghost" }
+      : null,
+  ].filter((row): row is CompactEmptyStateActionRow => Boolean(row));
 
   return (
     <div
@@ -49,12 +60,12 @@ export function CompactEmptyState({
       </div>
       {actions.length > 0 ? (
         <div className="flex flex-wrap gap-2">
-          {actions.map((action, index) => (
+          {actions.map(({ id, action, defaultVariant }) => (
             <Button
-              key={`${action.href}-${action.label}`}
+              key={`${id}:${action.href}:${action.label}`}
               asChild
               size="sm"
-              variant={action.variant ?? (index === 0 ? "secondary" : "ghost")}
+              variant={action.variant ?? defaultVariant}
             >
               <IntentPrefetchLink href={action.href} prefetchMode={action.prefetchMode}>
                 {action.label}

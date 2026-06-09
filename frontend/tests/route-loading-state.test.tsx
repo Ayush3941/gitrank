@@ -53,4 +53,18 @@ describe("RouteLoadingState", () => {
       "Preparing your dashboard. GitRank is loading contribution signals, scores, quests, and leaderboard context for this view.",
     );
   });
+
+  it("renders at least one default loading card even when card count is zero", () => {
+    const { container } = render(
+      <RouteLoadingState
+        eyebrow="Reports"
+        title="Battle reports"
+        description="Loading report evidence."
+        cardCount={0}
+      />,
+    );
+
+    expect(container.querySelectorAll(".glass-panel").length).toBeGreaterThanOrEqual(2);
+    expect(container.querySelectorAll(".neon-skeleton").length).toBeGreaterThanOrEqual(3);
+  });
 });
