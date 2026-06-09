@@ -39,7 +39,7 @@ describe("ContributionFilters", () => {
       />,
     );
 
-    expect(screen.getByText("Active filters: 3")).toBeTruthy();
+    expect(screen.getByText("3 active filters")).toBeTruthy();
     expect(screen.getByText("Lane: Docs")).toBeTruthy();
     expect(screen.queryByText(/Order:/)).toBeNull();
     expect(screen.getByText("Search: very-specific-repo-name")).toBeTruthy();

@@ -37,7 +37,7 @@ describe("LeaderboardControls", () => {
       />,
     );
 
-    expect(screen.getByText("Active: 3")).toBeTruthy();
+    expect(screen.getByText("3 active filters")).toBeTruthy();
     expect(screen.getByText("Lane: Backend")).toBeTruthy();
     expect(screen.getByText("View: Full board")).toBeTruthy();
     expect(screen.getByText("Details: On")).toBeTruthy();

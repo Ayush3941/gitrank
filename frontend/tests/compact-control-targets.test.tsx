@@ -29,6 +29,28 @@ describe("compact control targets", () => {
     expect(screen.getByRole("button", { name: "Reset" }).className).toContain("h-10");
   });
 
+  it("renders plural-aware active-filter count chips", () => {
+    const { rerender } = render(
+      <FilterControlsHeader
+        label="Filters"
+        summary="One active filter"
+        activeFilterCount={1}
+      />,
+    );
+
+    expect(screen.getByText("1 active filter")).toBeTruthy();
+
+    rerender(
+      <FilterControlsHeader
+        label="Filters"
+        summary="Two active filters"
+        activeFilterCount={2}
+      />,
+    );
+
+    expect(screen.getByText("2 active filters")).toBeTruthy();
+  });
+
   it("keeps dialog close actions comfortably touchable", () => {
     render(
       <Dialog open>

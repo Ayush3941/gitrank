@@ -60,7 +60,7 @@ describe("QuestsCadenceControls", () => {
 
     expect(screen.getByRole("status").textContent).toContain("Updating missions");
     expect(screen.getByText("Updating missions...")).toBeTruthy();
-    expect(screen.getByText("Active: 1")).toBeTruthy();
+    expect(screen.getByText("1 active filter")).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Reset" }));
     expect(onValueChange).toHaveBeenCalledWith("All");

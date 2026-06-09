@@ -104,7 +104,6 @@ export function LeaderboardControls({
           label="Leaderboard controls"
           summary={isBusy ? "Updating lane..." : `${rowsCount} rows`}
           activeFilterCount={activeFilterCount}
-          activeCountLabel={`Active: ${activeFilterCount}`}
           secondaryLabel={`Lane: ${LEADERBOARD_TAB_LABELS[tab]}`}
           extraControls={(
             <>

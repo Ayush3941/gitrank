@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Shared filter controls:
+  - changed active-filter chips from terse route-specific labels to shared plural-aware labels.
+  - kept route-specific lane/search chips while centralizing the active-count copy in `FilterControlsHeader`.
 - Quest cadence controls:
   - routed all visible and screen-reader mission-count summaries through shared plural-count formatting.
   - added coverage for one-result cadence lanes so controls do not announce awkward plural copy.

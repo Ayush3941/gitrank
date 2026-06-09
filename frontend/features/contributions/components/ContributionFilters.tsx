@@ -180,7 +180,6 @@ export function ContributionFilters({
         label="Contribution controls"
         summary={isFiltering ? "Updating cards..." : `${resultCount ?? 0} cards`}
         activeFilterCount={activeFilterCount}
-        activeCountLabel={activeFilterCount > 0 ? `Active filters: ${activeFilterCount}` : undefined}
         secondaryLabel={activeFilterCount > 0 ? `Lane: ${activeViewLabel}` : undefined}
         extraControls={
           trimmedSearch.length > 0 ? (

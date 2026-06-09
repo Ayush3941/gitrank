@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
+import { formatPluralCount } from "@/lib/formatters";
 
 type FilterResetAction = {
   enabled?: boolean;
@@ -29,6 +30,8 @@ export function FilterControlsHeader({
   resetAction?: FilterResetAction;
 }) {
   const showReset = resetAction && (resetAction.enabled ?? true);
+  const resolvedActiveCountLabel =
+    activeCountLabel ?? formatPluralCount(activeFilterCount, "active filter");
 
   return (
     <>
@@ -41,7 +44,7 @@ export function FilterControlsHeader({
       <div className="flex flex-wrap items-center gap-2">
         {activeFilterCount > 0 ? (
           <span className="neon-chip neon-chip-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold">
-            {activeCountLabel ?? `Active: ${activeFilterCount}`}
+            {resolvedActiveCountLabel}
           </span>
         ) : null}
         {secondaryLabel ? (

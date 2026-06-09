@@ -92,12 +92,12 @@ describe("live fixture frontend smoke coverage", () => {
     expect(
       await screen.findByText("Backed by live quest fixture evidence."),
     ).toBeTruthy();
-    expect(screen.queryByText("Active: 1")).toBeNull();
+    expect(screen.queryByText("1 active filter")).toBeNull();
     fireEvent.click(screen.getByRole("radio", { name: /Weekly/i }));
     await waitFor(() =>
       expect(screen.getByRole("radio", { name: /Weekly/i }).getAttribute("aria-checked")).toBe("true"),
     );
-    expect(await screen.findByText("Active: 1")).toBeTruthy();
+    expect(await screen.findByText("1 active filter")).toBeTruthy();
     const paths = nonAnalyticsPaths();
     expect(paths).toEqual(
       expect.arrayContaining([
@@ -112,7 +112,7 @@ describe("live fixture frontend smoke coverage", () => {
     renderWithClient(<BadgesPageClient />);
 
     expect(await screen.findByRole("heading", { name: "Badges" })).toBeTruthy();
-    expect(screen.queryByText("Active: 1")).toBeNull();
+    expect(screen.queryByText("1 active filter")).toBeNull();
     expect(screen.queryByRole("region", { name: /Hide details/i })).toBeNull();
     expect(screen.queryByRole("radio", { name: /Rare/i })).toBeNull();
 
@@ -121,7 +121,7 @@ describe("live fixture frontend smoke coverage", () => {
     await waitFor(() =>
       expect(screen.getByRole("radio", { name: /Rare/i }).getAttribute("aria-checked")).toBe("true"),
     );
-    expect(await screen.findByText("Active: 1")).toBeTruthy();
+    expect(await screen.findByText("1 active filter")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /^Show details$/i }));
     expect(await screen.findByRole("region", { name: /Hide details/i })).toBeTruthy();
     expect(nonAnalyticsPaths()).toEqual(
@@ -220,7 +220,7 @@ describe("live fixture frontend smoke coverage", () => {
     renderWithClient(<LeaderboardPageClient />);
 
     expect(await screen.findByText("Lane: Backend")).toBeTruthy();
-    expect(await screen.findByText("Active: 1")).toBeTruthy();
+    expect(await screen.findByText("1 active filter")).toBeTruthy();
     expect(nonAnalyticsPaths()).toEqual(
       expect.arrayContaining([
         "/api/leaderboard",
