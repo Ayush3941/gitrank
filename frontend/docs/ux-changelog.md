@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Quest mission pagination:
+  - changed quest mission remaining labels to use shared plural-count formatting.
+  - added lane-specific context and list-region wiring to the show-more mission action.
 - Contribution card pagination:
   - changed show-more contribution batch and remaining labels to use shared plural-count formatting.
   - kept the action's accessible name aligned with the exact number of cards that will be added.

@@ -87,7 +87,12 @@ describe("QuestsMissionsSection", () => {
     ).toBeTruthy();
     expect(screen.queryByText("Weekly test sprint")).toBeNull();
 
-    fireEvent.click(screen.getByRole("button", { name: "Show more missions" }));
+    expect(screen.getByText("1 mission remaining")).toBeTruthy();
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Show 1 mission in Weekly Challenge. 1 mission remaining.",
+      }),
+    );
     expect(onShowMoreGroup).toHaveBeenCalledWith("Weekly", 2);
   });
 

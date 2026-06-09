@@ -7,6 +7,7 @@ import { LoadingState } from "@/components/shared/LoadingState";
 import { PanelLoadingPlaceholder } from "@/components/shared/PanelLoadingPlaceholder";
 import { Button } from "@/components/ui/button";
 import type { QuestGroupMap } from "@/features/quests/lib/quests-page-model";
+import { formatPluralCount } from "@/lib/formatters";
 import { buildStableRenderRows } from "@/lib/presentation/render-identity";
 import type { Quest } from "@/types/gitrank";
 
@@ -69,6 +70,8 @@ export function QuestsMissionsSection({
           const grouped = questMap[group];
           const visibleCount = visibleGroupCounts[group] ?? questGroupPageSize;
           const visibleGroup = grouped.slice(0, visibleCount);
+          const groupLabel = labelForGroup(group);
+          const missionRegionId = `quests-missions-${group.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
           const visibleRows = buildStableRenderRows(
             visibleGroup,
             (quest) => `${quest.cadence}:${quest.title}:${quest.rewardXp}`,
@@ -76,14 +79,19 @@ export function QuestsMissionsSection({
           );
           const hasMoreInGroup = grouped.length > visibleGroup.length;
           const remainingInGroup = Math.max(0, grouped.length - visibleGroup.length);
+          const nextBatchLabel = formatPluralCount(
+            Math.min(questGroupPageSize, remainingInGroup),
+            "mission",
+          );
+          const remainingMissionLabel = formatPluralCount(remainingInGroup, "mission");
 
           return (
             <section key={group} className="space-y-4">
               <h3 className="text-sm font-semibold text-white">
-                {labelForGroup(group)} ({grouped.length})
+                {groupLabel} ({grouped.length})
               </h3>
               <div>
-                <ul role="list" className="grid gap-4 xl:grid-cols-2">
+                <ul id={missionRegionId} role="list" className="grid gap-4 xl:grid-cols-2">
                   {visibleRows.map(({ renderId, item: quest }) => (
                     <li key={renderId} className="list-none">
                       <QuestCard quest={quest} />
@@ -92,11 +100,13 @@ export function QuestsMissionsSection({
                 </ul>
                 {hasMoreInGroup ? (
                   <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-xs text-muted">{remainingInGroup} missions remaining</p>
+                    <p className="text-xs text-muted">{remainingMissionLabel} remaining</p>
                     <Button
                       type="button"
                       size="sm"
                       variant="secondary"
+                      aria-controls={missionRegionId}
+                      aria-label={`Show ${nextBatchLabel} in ${groupLabel}. ${remainingMissionLabel} remaining.`}
                       onClick={() => {
                         onShowMoreGroup(group, grouped.length);
                       }}
