@@ -52,7 +52,7 @@ describe("ContributionsCardsSection", () => {
     expect(await screen.findByText("Semantic signal")).toBeTruthy();
     fireEvent.click(
       screen.getByRole("button", {
-        name: "Show 1 more contribution cards. 1 remaining.",
+        name: "Show 1 contribution card. 1 contribution card remaining.",
       }),
     );
     expect(onShowMoreRows).toHaveBeenCalledTimes(1);

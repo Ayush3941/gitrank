@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 8, 2026)
 
+- Added plural-aware batch and remaining-count copy to the contributions "Show more cards" action.
 - Added plural-aware remaining-count copy and accessible remaining context to the locked badge paths "Show more locked paths" action.
 - Added plural-aware remaining-count copy and accessible remaining context to the badge shelf "Show more badges" action.
 - Replaced onboarding reveal-unavailable implementation copy about sample data with recovery-focused profile snapshot guidance and direct coverage.

@@ -5,6 +5,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { PanelLoadingPlaceholder } from "@/components/shared/PanelLoadingPlaceholder";
 import { Button } from "@/components/ui/button";
 import type { ContributionNarrative } from "@/lib/ai/abra-insights-types";
+import { formatPluralCount } from "@/lib/formatters";
 import type { Contribution } from "@/types/gitrank";
 
 const ContributionList = dynamic(
@@ -46,6 +47,10 @@ export function ContributionsCardsSection({
   onResetFilters: () => void;
   onShowMoreRows: () => void;
 }) {
+  const nextBatchCount = Math.min(cardPageSize, remainingRows);
+  const nextBatchLabel = formatPluralCount(nextBatchCount, "contribution card");
+  const remainingLabel = formatPluralCount(remainingRows, "contribution card");
+
   return (
     <section
       id="contributions-cards"
@@ -92,10 +97,10 @@ export function ContributionsCardsSection({
                 type="button"
                 variant="secondary"
                 aria-controls={regionId}
-                aria-label={`Show ${Math.min(cardPageSize, remainingRows)} more contribution cards. ${remainingRows} remaining.`}
+                aria-label={`Show ${nextBatchLabel}. ${remainingLabel} remaining.`}
                 onClick={onShowMoreRows}
               >
-                Show more cards ({remainingRows} left)
+                Show more cards ({remainingLabel} left)
               </Button>
             ) : null}
           </div>

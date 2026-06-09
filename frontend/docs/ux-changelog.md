@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Contribution card pagination:
+  - changed show-more contribution batch and remaining labels to use shared plural-count formatting.
+  - kept the action's accessible name aligned with the exact number of cards that will be added.
 - Locked badge path pagination:
   - changed remaining locked-path copy to use shared plural-count formatting.
   - added remaining-count context to the locked-path show-more action's accessible name.
