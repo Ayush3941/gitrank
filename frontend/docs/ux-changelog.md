@@ -2,6 +2,10 @@
 
 ## 2026-06-09
 
+- Evidence signal chips:
+  - routed deterministic evidence counts through shared plural formatting.
+  - replaced terse repository/span labels with clearer chip copy.
+  - added formatter coverage for singular and plural evidence labels.
 - Onboarding progress:
   - removed trailing progress dots from the sync-analysis heading.
   - added component coverage for the concise onboarding sync heading.

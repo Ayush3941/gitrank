@@ -1,4 +1,4 @@
-import { formatXpLabel } from "@/lib/formatters";
+import { formatPluralCount, formatXpLabel } from "@/lib/formatters";
 
 const SUMMARY_PREFIX = "summary=[";
 
@@ -67,23 +67,24 @@ function formatEvidenceSignal(signal: string): string | null {
 
   if (lower.startsWith("files=")) {
     const count = parsePositiveInteger(value.slice("files=".length));
-    return count == null ? "Files changed" : `${count} files changed`;
+    return count == null ? "Files changed" : `${formatPluralCount(count, "file")} changed`;
   }
   {
     const match = /^(\d+)\s+changed files persisted$/i.exec(value);
     if (match) {
-      return `${match[1]} files changed`;
+      const count = parsePositiveInteger(match[1]);
+      return count == null ? "Files changed" : `${formatPluralCount(count, "file")} changed`;
     }
   }
 
   if (lower.startsWith("source_files=")) {
     const count = parsePositiveInteger(value.slice("source_files=".length));
-    return count == null ? "Source files" : `${count} source files`;
+    return count == null ? "Source files" : formatPluralCount(count, "source file");
   }
 
   if (lower.startsWith("commits=")) {
     const count = parsePositiveInteger(value.slice("commits=".length));
-    return count == null ? "Commits" : `${count} commits`;
+    return count == null ? "Commits" : formatPluralCount(count, "commit");
   }
 
   if (lower.startsWith("languages=")) {
@@ -106,7 +107,7 @@ function formatEvidenceSignal(signal: string): string | null {
     if (count == null) {
       return "Linked issues";
     }
-    return `${count} linked ${count === 1 ? "issue" : "issues"}`;
+    return formatPluralCount(count, "linked issue");
   }
 
   if (lower.startsWith("criticality=")) {
@@ -129,12 +130,14 @@ function formatEvidenceSignal(signal: string): string | null {
 
   if (lower.startsWith("active_weeks=")) {
     const count = parsePositiveInteger(value.slice("active_weeks=".length));
-    return count == null ? "Active weeks" : `${count} active weeks`;
+    return count == null ? "Active weeks" : formatPluralCount(count, "active week");
   }
 
   if (lower.startsWith("repository_count=")) {
     const count = parsePositiveInteger(value.slice("repository_count=".length));
-    return count == null ? "Repo coverage" : `${count} repos touched`;
+    return count == null
+      ? "Repository coverage"
+      : `${formatPluralCount(count, "repository", "repositories")} touched`;
   }
 
   if (lower.startsWith("testing_xp=")) {
@@ -144,7 +147,9 @@ function formatEvidenceSignal(signal: string): string | null {
 
   if (lower.startsWith("contribution_span=")) {
     const span = parsePositiveInteger(value.slice("contribution_span=".length));
-    return span == null ? "Contribution span" : `${span} day contribution span`;
+    return span == null
+      ? "Contribution span"
+      : `Contribution span ${formatPluralCount(span, "day")}`;
   }
 
   if (lower.startsWith(SUMMARY_PREFIX)) {
