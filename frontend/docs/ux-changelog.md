@@ -2,6 +2,9 @@
 
 ## 2026-06-08
 
+- Repository hidden-count summary:
+  - expanded settings hidden-repository copy through shared plural formatting.
+  - added focused coverage for both single and multiple hidden repositories.
 - Repository visibility section:
   - routed the section-level repository count through shared plural formatting.
   - added focused coverage for the single-repository settings summary.

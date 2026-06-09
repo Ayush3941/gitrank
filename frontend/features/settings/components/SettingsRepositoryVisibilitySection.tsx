@@ -37,6 +37,11 @@ export function SettingsRepositoryVisibilitySection({
     "repository",
     "repositories",
   );
+  const hiddenRepositoryCountLabel = formatPluralCount(
+    hiddenRepositoryCount,
+    "hidden repository",
+    "hidden repositories",
+  );
 
   return (
     <DeferUntilVisible fallback={<SettingsPanelPlaceholder label="Loading repository controls" />}>
@@ -47,7 +52,7 @@ export function SettingsRepositoryVisibilitySection({
         </div>
         <p className="text-sm text-muted">
           {repositoryCountLabel}
-          {hiddenRepositoryCount > 0 ? ` \u00b7 ${hiddenRepositoryCount} hidden` : ""}
+          {hiddenRepositoryCount > 0 ? ` \u00b7 ${hiddenRepositoryCountLabel}` : ""}
         </p>
         <PrivacyRepositoryToggleList
           repositories={repositories}
