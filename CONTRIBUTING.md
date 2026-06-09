@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 9, 2026)
 
+- Routed PR report badge-reward headings and unlocked-state chips through shared plural formatting so single-reward reports read naturally.
 - Routed deterministic evidence-signal chip counts through shared plural formatting so PR reports, badge rewards, quests, and dashboard evidence chips avoid awkward labels such as `1 files changed`.
 - Removed the onboarding sync heading's trailing progress dots and extended copy-tone coverage to block `reading...` style progress copy.
 - Fixed the shared `Progress` primitive so caller-provided ARIA props reach the Radix progressbar root, restoring accessible names across dashboard, quest, badge, and onboarding meters.

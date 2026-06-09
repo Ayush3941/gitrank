@@ -2,6 +2,9 @@
 
 ## 2026-06-09
 
+- PR report badge rewards:
+  - routed badge-reward heading counts and unlocked-state copy through shared plural formatting.
+  - added focused coverage for empty, single-reward, and multi-reward rendering.
 - Evidence signal chips:
   - routed deterministic evidence counts through shared plural formatting.
   - replaced terse repository/span labels with clearer chip copy.
