@@ -34,6 +34,7 @@ import {
   selectLatestActionableSyncRunOutcome,
 } from "@/lib/presentation/sync-run-diagnostics";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
+import { formatPluralCount } from "@/lib/formatters";
 import {
   CONTRIBUTION_DEFAULT_FILTER,
   CONTRIBUTION_DEFAULT_SORT,
@@ -234,7 +235,12 @@ export function ContributionsPageClient() {
         meta={(
           <HeaderMetaChips
             items={[
-              { label: `Evidence rows ${contributionShelf.filteredRows.length}` },
+              {
+                label: formatPluralCount(
+                  contributionShelf.filteredRows.length,
+                  "evidence row",
+                ),
+              },
               {
                 label: `Sync ${formatSyncStateLabel(displaySyncState)}`,
                 tone: toneForSyncState(displaySyncState),

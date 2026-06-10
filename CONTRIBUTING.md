@@ -13,6 +13,7 @@ This document is intentionally detailed.
 - Routed PR report deterministic-ledger section counts through shared plural formatting so score-evidence sections keep readable metric-count labels.
 - Routed quest mission group headings through shared plural formatting so grouped quest lanes show readable counts such as `1 mission` and `2 missions`.
 - Normalized settings sync-run metric summaries so failure, timeout, skipped, conflict, and fetch-error counts read as natural count phrases.
+- Routed contribution and badge route header count chips through shared plural formatting so route metadata reads as natural phrases instead of raw counters.
 
 ## Session Notes (June 9, 2026)
 

@@ -23,6 +23,9 @@
 - Settings sync metrics:
   - normalized failure, timeout, skipped, conflict, and fetch-error summary fragments through shared plural formatting.
   - updated model and panel coverage for singular sync-log metric copy.
+- Route header counts:
+  - routed contribution evidence-row and badge earned-count metadata through shared plural formatting.
+  - extended live fixture coverage for singular header-count copy on contribution and badge routes.
 
 ## 2026-06-09
 

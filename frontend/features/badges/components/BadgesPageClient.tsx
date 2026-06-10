@@ -29,6 +29,7 @@ import { useProfileSyncRuns } from "@/hooks/use-profile-sync-runs";
 import { useProfileSyncState } from "@/hooks/use-profile-sync-state";
 import { useStaleSyncRefresh } from "@/hooks/use-stale-sync-refresh";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
+import { formatPluralCount } from "@/lib/formatters";
 import { shouldShowProfileFreshnessPill } from "@/lib/presentation/sync-evidence";
 import {
   isGitHubAppInstallationBlocked,
@@ -191,7 +192,12 @@ export function BadgesPageClient() {
         meta={(
           <HeaderMetaChips
             items={[
-              { label: `Earned ${badgePage.badgeShelf.unlockedCount}` },
+              {
+                label: formatPluralCount(
+                  badgePage.badgeShelf.unlockedCount,
+                  "earned badge",
+                ),
+              },
               {
                 label: `Sync ${formatSyncStateLabel(displaySyncState)}`,
                 tone: toneForSyncState(displaySyncState),

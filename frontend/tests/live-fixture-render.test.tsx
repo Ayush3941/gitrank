@@ -1,8 +1,9 @@
 import React, { type ReactNode } from "react";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { DashboardPageClient } from "@/features/dashboard/components/DashboardPageClient";
 import { BadgesPageClient } from "@/features/badges/components/BadgesPageClient";
+import { ContributionsPageClient } from "@/features/contributions/components/ContributionsPageClient";
+import { DashboardPageClient } from "@/features/dashboard/components/DashboardPageClient";
 import { LeaderboardPageClient } from "@/features/leaderboard/components/LeaderboardPageClient";
 import { PRBattleReportPageClient } from "@/features/pr-report/components/PRBattleReportPageClient";
 import { PublicProfilePageClient } from "@/features/profile/components/PublicProfilePageClient";
@@ -112,6 +113,7 @@ describe("live fixture frontend smoke coverage", () => {
     renderWithClient(<BadgesPageClient />);
 
     expect(await screen.findByRole("heading", { name: "Badges" })).toBeTruthy();
+    expect(await screen.findByText("1 earned badge")).toBeTruthy();
     expect(screen.queryByText("1 active filter")).toBeNull();
     expect(screen.queryByRole("region", { name: /Hide details/i })).toBeNull();
     expect(screen.queryByRole("radio", { name: /Rare/i })).toBeNull();
@@ -124,6 +126,16 @@ describe("live fixture frontend smoke coverage", () => {
     expect(await screen.findByText("1 active filter")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: /^Show details$/i }));
     expect(await screen.findByRole("region", { name: /Hide details/i })).toBeTruthy();
+    expect(nonAnalyticsPaths()).toEqual(
+      expect.arrayContaining(["/api/profile/me", "/api/sync/runs"]),
+    );
+  }, 15_000);
+
+  it("renders contributions view with plural-aware evidence-row header copy", async () => {
+    renderWithClient(<ContributionsPageClient />);
+
+    expect(await screen.findByRole("heading", { name: "Contributions" })).toBeTruthy();
+    expect(await screen.findByText("1 evidence row")).toBeTruthy();
     expect(nonAnalyticsPaths()).toEqual(
       expect.arrayContaining(["/api/profile/me", "/api/sync/runs"]),
     );
