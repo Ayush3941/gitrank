@@ -1,8 +1,12 @@
 # Contributing to GitRank
 
-Last reviewed: June 9, 2026
+Last reviewed: June 10, 2026
 
 This document is intentionally detailed.
+
+## Session Notes (June 10, 2026)
+
+- Normalized settings sync-run metric summaries so failure, timeout, skipped, conflict, and fetch-error counts read as natural count phrases.
 
 ## Session Notes (June 9, 2026)
 

@@ -1,5 +1,11 @@
 # Frontend UX Changelog
 
+## 2026-06-10
+
+- Settings sync metrics:
+  - normalized failure, timeout, skipped, conflict, and fetch-error summary fragments through shared plural formatting.
+  - updated model and panel coverage for singular sync-log metric copy.
+
 ## 2026-06-09
 
 - Shared charts:

@@ -53,7 +53,7 @@ describe("buildSyncRunActivityModel", () => {
       "octocat",
       "@octocat",
     ]);
-    expect(model.rows[0]?.metricsSummary).toBe("PRs 3/5 · Reviews 2/4 · Skipped 1");
+    expect(model.rows[0]?.metricsSummary).toBe("PRs 3/5 · Reviews 2/4 · 1 skipped item");
     expect(model.rows[1]?.uiStatus).toBe("Partial");
     expect(model.rows[2]?.safeLastError).toContain("GitHub timed out");
     expect(model.statusCounts).toMatchObject({
@@ -112,7 +112,7 @@ describe("sync run activity helpers", () => {
         file_fetch_errors: 3,
       }),
     ).toBe(
-      "Auth App token · PRs 2/4 · Issues 1 · Failures 1 · Timeout 2 · Refresh settled · Fetch errors 3",
+      "Auth App token · PRs 2/4 · Issues 1 · 1 failure · 2 timeouts · Refresh settled · 3 fetch errors",
     );
   });
 

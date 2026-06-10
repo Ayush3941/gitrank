@@ -243,7 +243,7 @@ describe("SyncRunActivityPanel", () => {
       />,
     );
 
-    expect(screen.getByText("PRs 3/5 · Reviews 2/4 · Skipped 1")).toBeTruthy();
+    expect(screen.getByText("PRs 3/5 · Reviews 2/4 · 1 skipped item")).toBeTruthy();
     expect(screen.getAllByText("Completed").length).toBeGreaterThan(0);
   });
 
@@ -310,7 +310,7 @@ describe("SyncRunActivityPanel", () => {
       />,
     );
 
-    expect(screen.getByText("Failures 1 · Timeout 1")).toBeTruthy();
+    expect(screen.getByText("1 failure · 1 timeout")).toBeTruthy();
     expect(screen.getByText(/Last error:/)).toBeTruthy();
   });
 
@@ -326,7 +326,7 @@ describe("SyncRunActivityPanel", () => {
       />,
     );
 
-    expect(screen.getByText("Failures 1 · In-progress conflicts 1")).toBeTruthy();
+    expect(screen.getByText("1 failure · 1 in-progress conflict")).toBeTruthy();
   });
 
   it("shows deterministic zero-discovery insight when history exists", () => {
@@ -376,7 +376,7 @@ describe("SyncRunActivityPanel", () => {
       />,
     );
 
-    expect(screen.getByText("Failures 1")).toBeTruthy();
+    expect(screen.getByText("1 failure")).toBeTruthy();
     expect(
       screen.getByText(/GitHub App installation is required for PR sync\./),
     ).toBeTruthy();

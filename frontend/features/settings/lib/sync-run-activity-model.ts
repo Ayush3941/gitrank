@@ -1,4 +1,5 @@
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
+import { formatPluralCount } from "@/lib/formatters";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import {
   describeSyncRunOutcome,
@@ -226,19 +227,19 @@ export function summarizeRunMetrics(metrics?: Record<string, number>): string {
   );
   const failures = metricCount(metrics, "fetched_failed", "failed");
   if (failures > 0) {
-    segments.push(`Failures ${failures}`);
+    pushCountSegment(segments, failures, "failure", "failures");
   }
   const timeoutErrors = metricCount(metrics, "fetched_timeout_errors", "timeout_errors");
   if (timeoutErrors > 0) {
-    segments.push(`Timeout ${timeoutErrors}`);
+    pushCountSegment(segments, timeoutErrors, "timeout");
   }
   const rateLimited = metricCount(metrics, "fetched_rate_limited", "rate_limited");
   if (rateLimited > 0) {
-    segments.push(`Rate limited ${rateLimited}`);
+    pushCountSegment(segments, rateLimited, "rate limit");
   }
   const upstreamErrors = metricCount(metrics, "fetched_upstream_errors", "upstream_errors");
   if (upstreamErrors > 0) {
-    segments.push(`Upstream ${upstreamErrors}`);
+    pushCountSegment(segments, upstreamErrors, "upstream error");
   }
   const scopeLimited = metricCount(metrics, "authored_pull_request_scope_limited");
   if (scopeLimited > 0) {
@@ -280,16 +281,16 @@ export function summarizeRunMetrics(metrics?: Record<string, number>): string {
     "lease_conflicts",
   );
   if (inProgressConflicts > 0) {
-    segments.push(`In-progress conflicts ${inProgressConflicts}`);
+    pushCountSegment(segments, inProgressConflicts, "in-progress conflict");
   }
 
   const skipped = metricSumBySuffix(metrics, "_skipped");
   if (skipped > 0) {
-    segments.push(`Skipped ${skipped}`);
+    pushCountSegment(segments, skipped, "skipped item");
   }
   const fetchErrors = metricSumBySuffix(metrics, "_fetch_errors");
   if (fetchErrors > 0) {
-    segments.push(`Fetch errors ${fetchErrors}`);
+    pushCountSegment(segments, fetchErrors, "fetch error");
   }
 
   return segments.join(" · ");
@@ -309,6 +310,15 @@ function pushMetricSegment(
     return;
   }
   segments.push(`${label} ${persisted}`);
+}
+
+function pushCountSegment(
+  segments: string[],
+  count: number,
+  singular: string,
+  plural?: string,
+) {
+  segments.push(formatPluralCount(count, singular, plural));
 }
 
 function metricSumBySuffix(metrics: Record<string, number>, suffix: string): number {
