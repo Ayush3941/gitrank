@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 10, 2026)
 
+- Routed deterministic ABRA badge-story evidence counts through shared plural formatting so one linked PR reads as `1 PR reference`.
 - Moved onboarding reveal next-action count copy into the reveal model with shared plural formatting so the heading no longer interpolates raw step counts.
 - Routed PR report deterministic-ledger section counts through shared plural formatting so score-evidence sections keep readable metric-count labels.
 - Routed quest mission group headings through shared plural formatting so grouped quest lanes show readable counts such as `1 mission` and `2 missions`.

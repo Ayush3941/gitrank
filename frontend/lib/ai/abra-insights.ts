@@ -219,7 +219,7 @@ function fallbackContributionNarrative(input: AbraContributionInput): Contributi
 
 function fallbackBadgeStory(input: AbraBadgeInput): BadgeStory {
   const progressNote = input.unlocked
-    ? `Unlocked with verified evidence from ${Math.max(1, input.evidencePrIds.length)} PR references.`
+    ? `Unlocked with verified evidence from ${formatPluralCount(Math.max(1, input.evidencePrIds.length), "PR reference")}.`
     : `${formatPercent(input.progress)} progress tracked against unlock criteria.`;
   return {
     story: `${input.name} (${input.rarity}) reflects a repeated contribution pattern: ${input.description}`,

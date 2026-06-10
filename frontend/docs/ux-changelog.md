@@ -2,6 +2,9 @@
 
 ## 2026-06-10
 
+- ABRA badge stories:
+  - routed deterministic badge evidence PR-reference copy through shared plural formatting.
+  - added fallback coverage for one and multiple evidence PR references.
 - Onboarding reveal actions:
   - moved the next-action step-count label into the reveal model.
   - routed the heading count through shared plural formatting with model coverage.
