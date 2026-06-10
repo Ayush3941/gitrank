@@ -2,6 +2,9 @@
 
 ## 2026-06-10
 
+- Contribution signal meters:
+  - routed contribution-card signal progress through the shared `Progress` primitive.
+  - extended contribution-list coverage so progress semantics and shared track styling stay intact.
 - Shared route errors:
   - normalized error digest metadata to the shared `text-muted` readable token.
   - added route-error coverage so digest copy does not regress to one-off color utilities.

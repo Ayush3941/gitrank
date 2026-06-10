@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 10, 2026)
 
+- Routed contribution-card signal meters through the shared `Progress` primitive while preserving bounded progress semantics and signal-band styling.
 - Normalized shared route-error digest metadata to the `text-muted` readable token instead of a one-off slate utility.
 - Routed deterministic ABRA badge-story evidence counts through shared plural formatting so one linked PR reads as `1 PR reference`.
 - Moved onboarding reveal next-action count copy into the reveal model with shared plural formatting so the heading no longer interpolates raw step counts.

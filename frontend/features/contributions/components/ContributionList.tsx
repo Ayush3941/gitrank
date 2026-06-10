@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, CalendarDays, ExternalLink, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { ClampedText } from "@/components/shared/ClampedText";
 import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { GlowCard } from "@/components/shared/GlowCard";
@@ -115,21 +116,13 @@ export function ContributionList({
                   {!useLiteCards && showDetails ? (
                     <>
                       <p className="mt-2 text-xs text-muted">Signal {signalBand.label}</p>
-                      <div
-                        className="mt-2 h-1.5 w-28 overflow-hidden rounded-full border border-primary/24 bg-card/80"
-                        role="progressbar"
+                      <Progress
+                        className="mt-2 h-1.5 w-28 border border-primary/24 bg-card/80"
+                        indicatorClassName={signalBand.barClassName}
+                        value={signalIndex}
                         aria-label={`${item.title} contribution signal`}
-                        aria-valuemin={0}
-                        aria-valuemax={100}
-                        aria-valuenow={signalIndex}
                         aria-valuetext={`${signalBand.label} signal, ${signalIndex} of 100`}
-                      >
-                        <div
-                          className={`h-full rounded-full ${signalBand.barClassName}`}
-                          style={{ width: `${signalIndex}%` }}
-                          aria-hidden="true"
-                        />
-                      </div>
+                      />
                     </>
                   ) : null}
                 </div>

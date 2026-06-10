@@ -15,6 +15,7 @@ describe("ContributionList", () => {
     expect(meter.getAttribute("aria-valuemax")).toBe("100");
     expect(meter.getAttribute("aria-valuenow")).toBe("63");
     expect(meter.getAttribute("aria-valuetext")).toBe("Rising signal, 63 of 100");
+    expect(meter.className).toContain("neon-track");
   });
 
   it("renders repeated contribution titles when PR identities differ", () => {
