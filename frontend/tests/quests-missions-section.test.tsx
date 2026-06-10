@@ -85,6 +85,9 @@ describe("QuestsMissionsSection", () => {
         timeout: 5_000,
       }),
     ).toBeTruthy();
+    expect(
+      screen.getByRole("heading", { name: "Weekly Challenge (2 missions)" }),
+    ).toBeTruthy();
     expect(screen.queryByText("Weekly test sprint")).toBeNull();
 
     expect(screen.getByText("1 mission remaining")).toBeTruthy();

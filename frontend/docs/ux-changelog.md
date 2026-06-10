@@ -2,6 +2,9 @@
 
 ## 2026-06-10
 
+- Quest mission headings:
+  - routed grouped mission heading counts through shared plural formatting.
+  - added component coverage so quest lanes announce readable counts such as `2 missions`.
 - Settings sync metrics:
   - normalized failure, timeout, skipped, conflict, and fetch-error summary fragments through shared plural formatting.
   - updated model and panel coverage for singular sync-log metric copy.

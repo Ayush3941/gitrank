@@ -83,12 +83,13 @@ export function QuestsMissionsSection({
             Math.min(questGroupPageSize, remainingInGroup),
             "mission",
           );
+          const groupMissionLabel = formatPluralCount(grouped.length, "mission");
           const remainingMissionLabel = formatPluralCount(remainingInGroup, "mission");
 
           return (
             <section key={group} className="space-y-4">
               <h3 className="text-sm font-semibold text-white">
-                {groupLabel} ({grouped.length})
+                {groupLabel} <span className="text-muted">({groupMissionLabel})</span>
               </h3>
               <div>
                 <ul id={missionRegionId} role="list" className="grid gap-4 xl:grid-cols-2">
