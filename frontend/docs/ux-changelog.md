@@ -2,6 +2,9 @@
 
 ## 2026-06-10
 
+- Onboarding reveal actions:
+  - moved the next-action step-count label into the reveal model.
+  - routed the heading count through shared plural formatting with model coverage.
 - PR report deterministic ledger:
   - routed score-ledger section counts through shared plural formatting.
   - extended PR report coverage so metric-count chips stay readable.

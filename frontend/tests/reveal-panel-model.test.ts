@@ -42,6 +42,7 @@ describe("buildRevealPanelModel", () => {
     expect(model.unlockPreviewLabel).toBe("2 earned");
     expect(model.xpProgressLabel).toBe("1,200 XP / 1,500 XP");
     expect(model.shareHeadline).toBe("Ada Builder is Systems Builder on GitRank.");
+    expect(model.nextActionsLabel).toBe("3 steps");
     expect(model.nextActions.map((action) => action.id)).toEqual([
       "open-dashboard",
       "review-contributions",

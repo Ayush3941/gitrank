@@ -27,6 +27,7 @@ export type RevealPanelModel = {
   needsSyncRecovery: boolean;
   recoveryActionLabel: string;
   nextActions: readonly RevealNextActionModel[];
+  nextActionsLabel: string;
   metrics: RevealMetricModel[];
   unlockPreviewLabel: string;
   xpProgressLabel: string;
@@ -112,6 +113,7 @@ export function buildRevealPanelModel({
     needsSyncRecovery,
     recoveryActionLabel,
     nextActions,
+    nextActionsLabel: formatPluralCount(nextActions.length, "step"),
     metrics,
     unlockPreviewLabel:
       unlockedBadges.length > 0 ? `${unlockedBadges.length} earned` : "next badge targets",

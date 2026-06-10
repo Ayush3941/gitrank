@@ -120,7 +120,7 @@ export function RevealPanel({
           <div className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="text-sm font-semibold text-white text-left">
-                What to do next ({reveal.nextActions.length} steps)
+                What to do next ({reveal.nextActionsLabel})
               </h2>
             </div>
             <div id="reveal-next-actions" className="neon-surface rounded-[var(--radius-universal)] px-5 py-4 text-left">
