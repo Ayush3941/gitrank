@@ -81,7 +81,7 @@ export function RouteErrorCard({
           </Button>
         ))}
       </div>
-      {errorDigest ? <p className="text-xs text-slate-400">Error digest: {errorDigest}</p> : null}
+      {errorDigest ? <p className="text-xs text-muted">Error digest: {errorDigest}</p> : null}
     </GlowCard>
   );
 }

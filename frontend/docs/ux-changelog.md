@@ -2,6 +2,9 @@
 
 ## 2026-06-10
 
+- Shared route errors:
+  - normalized error digest metadata to the shared `text-muted` readable token.
+  - added route-error coverage so digest copy does not regress to one-off color utilities.
 - ABRA badge stories:
   - routed deterministic badge evidence PR-reference copy through shared plural formatting.
   - added fallback coverage for one and multiple evidence PR references.

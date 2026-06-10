@@ -19,6 +19,7 @@ describe("RouteErrorCard", () => {
         description="Retry this panel."
         actions={[{ label: "Open settings", href: "/dashboard/settings" }]}
         analyticsTarget="dashboard:route-error"
+        errorDigest="digest-123"
         reset={reset}
       />,
     );
@@ -29,6 +30,7 @@ describe("RouteErrorCard", () => {
     expect(alert.textContent).toContain("Dashboard panel failed to render");
     expect(alert.contains(retry)).toBe(false);
     expect(alert.contains(fallback)).toBe(false);
+    expect(screen.getByText("Error digest: digest-123").className).toContain("text-muted");
 
     fireEvent.click(retry);
     expect(reset).toHaveBeenCalledTimes(1);
