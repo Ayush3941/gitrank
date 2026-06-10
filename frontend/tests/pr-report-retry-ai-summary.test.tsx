@@ -100,6 +100,10 @@ describe("pr report metric ledger", () => {
 
     render(<PRBattleReportPageClient owner="octo" repo="gitrank" number={42} />);
 
+    expect(screen.getByText("2 metrics")).toBeTruthy();
+    expect(screen.getByText("8 metrics")).toBeTruthy();
+    expect(screen.getByText("3 metrics")).toBeTruthy();
+
     const xpMetricLabel = screen.getByText((content, element) => {
       return element?.tagName.toLowerCase() === "dt" && content === "XP earned";
     });

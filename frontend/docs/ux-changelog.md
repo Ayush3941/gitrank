@@ -2,6 +2,9 @@
 
 ## 2026-06-10
 
+- PR report deterministic ledger:
+  - routed score-ledger section counts through shared plural formatting.
+  - extended PR report coverage so metric-count chips stay readable.
 - Quest mission headings:
   - routed grouped mission heading counts through shared plural formatting.
   - added component coverage so quest lanes announce readable counts such as `2 missions`.

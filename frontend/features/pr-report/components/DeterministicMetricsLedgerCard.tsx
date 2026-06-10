@@ -3,7 +3,7 @@
 import { useId, useState } from "react";
 import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { GlowCard } from "@/components/shared/GlowCard";
-import { formatNumber, formatXp } from "@/lib/formatters";
+import { formatNumber, formatPluralCount, formatXp } from "@/lib/formatters";
 import { formatContributionStatusLabel } from "@/lib/presentation/contribution-status";
 import type { PullRequestAnalysis } from "@/types/gitrank";
 
@@ -167,7 +167,7 @@ function LedgerSection({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-primary">{title}</h3>
         <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[11px] text-muted">
-          {metrics.length} metrics
+          {formatPluralCount(metrics.length, "metric")}
         </span>
       </div>
       <p className="text-xs text-muted">{description}</p>
