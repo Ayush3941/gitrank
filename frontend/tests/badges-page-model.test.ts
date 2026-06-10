@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  buildBadgeUnlockNotice,
   buildBadgesStaleNotice,
   buildBadgesPageModel,
   resolveBadgePageSizes,
@@ -106,5 +107,15 @@ describe("buildBadgesPageModel", () => {
 
     expect(notice.message).toContain("blocked until GitHub App access is restored");
     expect(notice.reasonMessage).toContain("installation is required");
+  });
+
+  it("builds plural-aware badge unlock notices", () => {
+    expect(buildBadgeUnlockNotice(0)).toBe("");
+    expect(buildBadgeUnlockNotice(1)).toBe(
+      "Badge unlocked. Your shelf gained 1 new achievement.",
+    );
+    expect(buildBadgeUnlockNotice(2)).toBe(
+      "Badges unlocked. Your shelf gained 2 new achievements.",
+    );
   });
 });

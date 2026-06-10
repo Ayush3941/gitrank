@@ -13,6 +13,7 @@ import {
   type BadgeRarityFilter,
   type BadgeVisibilityFilter,
 } from "@/features/badges/lib/badge-shelf-model";
+import { formatPluralCount } from "@/lib/formatters";
 
 const LOCKED_BADGE_PAGE_SIZE_DEFAULT = 8;
 const LOCKED_BADGE_PAGE_SIZE_CONSTRAINED = 4;
@@ -127,4 +128,13 @@ export function buildBadgesStaleNotice({
     staleFallback:
       "New unlocks can appear after the next completed sync.",
   });
+}
+
+export function buildBadgeUnlockNotice(delta: number) {
+  const safeDelta = Number.isFinite(delta) ? Math.max(0, Math.round(delta)) : 0;
+  if (safeDelta === 0) {
+    return "";
+  }
+  const headline = safeDelta === 1 ? "Badge unlocked." : "Badges unlocked.";
+  return `${headline} Your shelf gained ${formatPluralCount(safeDelta, "new achievement")}.`;
 }

@@ -18,6 +18,7 @@ import {
   type BadgeVisibilityFilter,
 } from "@/features/badges/lib/badge-shelf-model";
 import {
+  buildBadgeUnlockNotice,
   buildBadgesPageModel,
   resolveBadgePageSizes,
 } from "@/features/badges/lib/badges-page-model";
@@ -139,11 +140,7 @@ export function BadgesPageClient() {
       return;
     }
     const delta = badgePage.badgeShelf.unlockedCount - previous;
-    setUnlockNotice(
-      delta === 1
-        ? "Badge unlocked. Your shelf gained 1 new achievement."
-        : `Badges unlocked. Your shelf gained ${delta} new achievements.`,
-    );
+    setUnlockNotice(buildBadgeUnlockNotice(delta));
   }, [badgePage.badgeShelf.unlockedCount, data, isError, isLoading]);
 
   useEffect(() => {

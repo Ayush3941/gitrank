@@ -26,6 +26,9 @@
 - Route header counts:
   - routed contribution evidence-row and badge earned-count metadata through shared plural formatting.
   - extended live fixture coverage for singular header-count copy on contribution and badge routes.
+- Badge unlock notices:
+  - moved unlock feedback copy into the badge page model.
+  - routed new-achievement counts through shared plural formatting with singular, plural, and zero-delta coverage.
 
 ## 2026-06-09
 
