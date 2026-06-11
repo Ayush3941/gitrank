@@ -1,9 +1,12 @@
 import {
   canonicalizeSyncRunStatus,
+  normalizeSyncRunStatusToken,
 } from "@/lib/sync/sync-run-status-policy";
 import { hasPartialSyncRunMetrics } from "@/lib/sync/sync-run-metrics-policy";
+import { formatTokenLabel } from "@/lib/presentation/token-label";
 
-export type SyncRunUiStatus = "Completed" | "Partial" | "Failed" | "Queued" | "Running" | "Other";
+type KnownSyncRunUiStatus = "Completed" | "Partial" | "Failed" | "Queued" | "Running";
+export type SyncRunUiStatus = KnownSyncRunUiStatus | (string & {});
 
 export function isActiveSyncRunStatus(status: string): boolean {
   return canonicalizeSyncRunStatus(status) === "running";
@@ -16,6 +19,7 @@ export function isInFlightSyncRunStatus(status: string): boolean {
 
 export function syncRunStatusLabel(status: string): SyncRunUiStatus {
   const canonicalStatus = canonicalizeSyncRunStatus(status);
+  const normalizedToken = normalizeSyncRunStatusToken(status);
   if (canonicalStatus === "partial") {
     return "Partial";
   }
@@ -31,7 +35,10 @@ export function syncRunStatusLabel(status: string): SyncRunUiStatus {
   if (canonicalStatus === "running") {
     return "Running";
   }
-  return "Other";
+  if (!normalizedToken || normalizedToken === "unknown") {
+    return "Status unavailable";
+  }
+  return formatTokenLabel(normalizedToken);
 }
 
 export function syncRunStatusLabelWithMetrics(

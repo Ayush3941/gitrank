@@ -31,9 +31,10 @@ describe("syncRunStatusLabel", () => {
     expect(syncRunStatusLabel("timeout")).toBe("Failed");
   });
 
-  it("returns Other for unknown values", () => {
-    expect(syncRunStatusLabel("unknown")).toBe("Other");
-    expect(syncRunStatusLabel("")).toBe("Other");
+  it("returns readable fallback labels for unknown values", () => {
+    expect(syncRunStatusLabel("unknown")).toBe("Status unavailable");
+    expect(syncRunStatusLabel("")).toBe("Status unavailable");
+    expect(syncRunStatusLabel("waiting_for_backfill")).toBe("Waiting for backfill");
   });
 
   it("promotes completed runs to Partial when metrics show degraded evidence", () => {

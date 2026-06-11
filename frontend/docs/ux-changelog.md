@@ -2,6 +2,9 @@
 
 ## 2026-06-11
 
+- Settings sync-run status labels:
+  - replaced generic `Other` status copy with readable fallback labels for unexpected backend status tokens.
+  - kept blank or literal unknown statuses on the explicit `Status unavailable` path.
 - Token label readability:
   - changed generated machine-token labels from title case to sentence-style copy.
   - kept acronym preservation so labels read like `AI backfill pending` instead of `AI Backfill Pending`.

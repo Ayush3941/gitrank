@@ -138,6 +138,16 @@ const missingStatusRun = {
   metrics: {},
 };
 
+const unknownStatusRun = {
+  id: "run_unknown_status_1",
+  run_type: "user",
+  status: "waiting_for_backfill",
+  subject: "octocat",
+  started_at: "2026-05-25T00:11:00Z",
+  finished_at: "2026-05-25T00:11:02Z",
+  metrics: {},
+};
+
 describe("SyncRunActivityPanel", () => {
   it("uses the shared loading state for sync activity fetches", () => {
     render(
@@ -326,6 +336,22 @@ describe("SyncRunActivityPanel", () => {
 
     expect(screen.getByText("Status unavailable")).toBeTruthy();
     expect(screen.queryByText("Unknown")).toBeNull();
+  });
+
+  it("renders readable labels for unknown sync-run status tokens", () => {
+    render(
+      <SyncRunActivityPanel
+        runs={[unknownStatusRun]}
+        lastUpdatedAt="2026-05-25T02:00:00Z"
+        isLoading={false}
+        isRefreshing={false}
+        isError={false}
+        onRefresh={() => undefined}
+      />,
+    );
+
+    expect(screen.getByText("Waiting for backfill")).toBeTruthy();
+    expect(screen.queryByText("waiting_for_backfill")).toBeNull();
   });
 
   it("keeps sync-run timestamps semantic without hover-only title text", () => {
