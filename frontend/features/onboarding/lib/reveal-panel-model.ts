@@ -1,6 +1,10 @@
 import type { AbraInsightSource } from "@/lib/ai/abra-insights-types";
 import { uniqueDisplayValues } from "@/lib/display-values";
-import { formatNumber, formatPluralCount, formatXpLabel } from "@/lib/formatters";
+import {
+  formatNumber,
+  formatPluralCount,
+  formatXpProgressLabel,
+} from "@/lib/formatters";
 import { formatAIInsightSourceLabel } from "@/lib/presentation/ai-insight-source";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { deriveEffectiveSyncState } from "@/lib/presentation/sync-evidence";
@@ -117,7 +121,7 @@ export function buildRevealPanelModel({
     metrics,
     unlockPreviewLabel:
       unlockedBadges.length > 0 ? `${unlockedBadges.length} earned` : "next badge targets",
-    xpProgressLabel: `${formatXpLabel(user.level.currentXp)} / ${formatXpLabel(user.level.nextLevelXp)}`,
+    xpProgressLabel: formatXpProgressLabel(user.level.currentXp, user.level.nextLevelXp),
     shareHeadline: `${user.displayName} is ${user.title} on GitRank.`,
   };
 }

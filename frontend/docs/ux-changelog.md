@@ -17,6 +17,9 @@
 - Settings display summary:
   - replaced the slash-separated theme summary with labeled chips for theme, text scale, and preference source.
   - covered the Settings page fixture so the old slash summary does not return.
+- Onboarding reveal XP progress:
+  - replaced raw slash progress with shared XP progress wording.
+  - covered the shared formatter and reveal model so the label reads `1,200 XP toward 1,500 XP`.
 
 ## 2026-06-10
 

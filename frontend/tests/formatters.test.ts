@@ -15,6 +15,7 @@ import {
   formatUtcMonthDay,
   formatXp,
   formatXpLabel,
+  formatXpProgressLabel,
   normalizeDateTime,
   toBoundedPercent,
   toRatioPercent,
@@ -27,6 +28,8 @@ describe("number formatters", () => {
     expect(formatXp(Number.NaN)).toBe("0");
     expect(formatXpLabel(4200)).toBe("4,200 XP");
     expect(formatXpLabel(Number.NaN)).toBe("0 XP");
+    expect(formatXpProgressLabel(1200, 1500)).toBe("1,200 XP toward 1,500 XP");
+    expect(formatXpProgressLabel(Number.NaN, Number.NaN)).toBe("0 XP toward 0 XP");
     expect(formatSignedNumber(1200)).toBe("+1,200");
     expect(formatSignedNumber(-1200)).toBe("-1,200");
     expect(formatSignedNumber(0)).toBe("0");

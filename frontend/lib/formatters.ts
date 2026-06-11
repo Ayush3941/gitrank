@@ -18,6 +18,10 @@ export function formatXpLabel(value: number) {
   return `${formatXp(value)} XP`;
 }
 
+export function formatXpProgressLabel(current: number, target: number) {
+  return `${formatXpLabel(current)} toward ${formatXpLabel(target)}`;
+}
+
 export function formatPluralCount(value: number, singular: string, plural = `${singular}s`) {
   const count = Number.isFinite(value) ? Math.round(value) : 0;
   return `${formatNumber(count)} ${Math.abs(count) === 1 ? singular : plural}`;

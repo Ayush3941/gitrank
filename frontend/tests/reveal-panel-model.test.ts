@@ -40,7 +40,7 @@ describe("buildRevealPanelModel", () => {
     expect(model.evidenceRowsLabel).toContain("2 persisted contribution evidence rows");
     expect(model.needsSyncRecovery).toBe(false);
     expect(model.unlockPreviewLabel).toBe("2 earned");
-    expect(model.xpProgressLabel).toBe("1,200 XP / 1,500 XP");
+    expect(model.xpProgressLabel).toBe("1,200 XP toward 1,500 XP");
     expect(model.shareHeadline).toBe("Ada Builder is Systems Builder on GitRank.");
     expect(model.nextActionsLabel).toBe("3 steps");
     expect(model.nextActions.map((action) => action.id)).toEqual([
