@@ -2,6 +2,9 @@
 
 ## 2026-06-11
 
+- Leaderboard formula metadata:
+  - routed missing leaderboard `scoring_version` and row `score_version` metadata through the configured frontend score-version fallback.
+  - covered the leaderboard adapter so Formula metrics do not receive raw `unknown` values.
 - Settings sync-run status chips:
   - replaced blank-status fallback copy with `Status unavailable`.
   - covered the sync activity panel so missing backend status values do not render as `Unknown`.

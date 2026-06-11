@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 11, 2026)
 
+- Routed missing leaderboard score-version metadata through the configured frontend score-version fallback so Formula metrics do not render raw `unknown`.
 - Replaced the Settings sync-run status chip's blank-status fallback with `Status unavailable` instead of raw `Unknown` copy.
 - Replaced the PR report deterministic ledger's raw missing score-version fallback with `Score version pending` copy.
 - Routed onboarding sync polling cadence labels through the sync-pipeline model so pending sync copy reads `5 seconds` and `20 seconds` instead of compact suffixes.

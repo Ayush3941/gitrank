@@ -121,7 +121,7 @@ function toLeaderboardEntry(entry: ApiLeaderboardEntry): LeaderboardEntry {
     promotionZone: false,
     demotionRisk: false,
     evidenceSummary: leaderboardEvidenceSummary(entry),
-    scoreFormulaVersion: entry.score_version || "unknown",
+    scoreFormulaVersion: entry.score_version || frontendPolicy.scoreVersionFallback,
     profileSnapshotId: entry.profile_snapshot_id,
     profileSnapshotVersion: entry.profile_snapshot_version,
     seasonKey: entry.season_key,
@@ -198,7 +198,7 @@ function seasonFromResponse(payload: ApiLeaderboardResponse): LeaderboardSeason 
         startsAt: startsAt.toISOString(),
         endsAt: endsAt.toISOString(),
         status: "Active",
-        scoringVersion: payload.scoring_version ?? "unknown",
+        scoringVersion: payload.scoring_version ?? frontendPolicy.scoreVersionFallback,
         promotionRule: payload.promotion_rule ?? leaderboardSeasonPolicy.promotionRule,
         resetRule: payload.reset_rule ?? leaderboardSeasonPolicy.resetRule,
         promotionCutoffRank:
