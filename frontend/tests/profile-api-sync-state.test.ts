@@ -129,6 +129,33 @@ describe("profile API sync-state adaptation", () => {
     expect(adapted.user.syncStatus.state).toBe("synced");
   });
 
+  it("builds plural-aware repository visibility reasons from top repositories", async () => {
+    const payload = buildPrivateProfileResponse({
+      top_repositories: [
+        {
+          full_name: "owner/repo",
+          owner: "owner",
+          name: "repo",
+          total_xp: 1000,
+          contribution_count: 1,
+          merged_pull_requests: 1,
+          primary_skill: "Backend",
+          last_contribution_at: "2026-05-27T12:00:00Z",
+          visibility: "public",
+        },
+      ],
+    });
+    delete (payload as { repository_visibility?: unknown }).repository_visibility;
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify(payload), { status: 200 })),
+    );
+
+    const adapted = await getMyProfile();
+    expect(adapted.user.repositories[0]?.reason).toBe("1 scored contribution, 1,000 XP.");
+  });
+
   it("maps contribution status from PR lifecycle fields", async () => {
     const payload = buildPrivateProfileResponse({
       score_history: [

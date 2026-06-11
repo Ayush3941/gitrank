@@ -8,6 +8,9 @@
 - Quest journey streaks:
   - replaced compact day suffixes such as `0d` with shared plural day labels.
   - extended live fixture coverage for current and best quest streak labels.
+- Repository visibility fallback copy:
+  - routed top-repository generated visibility reasons through shared plural formatting.
+  - added profile API coverage so single-contribution repositories read `1 scored contribution`.
 
 ## 2026-06-10
 

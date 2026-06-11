@@ -8,6 +8,7 @@ This document is intentionally detailed.
 
 - Routed leaderboard row season and total XP metric cards through shared XP formatting so leaderboard values include the same `XP` unit and thousands separators as the rest of the app.
 - Replaced compact quest journey streak labels such as `0d` with shared plural day labels so quest, dashboard, and badge streak metrics read consistently.
+- Routed top-repository fallback visibility reasons through shared plural formatting so one-repository summaries read `1 scored contribution`.
 
 ## Session Notes (June 10, 2026)
 

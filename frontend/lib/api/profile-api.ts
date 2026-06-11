@@ -31,6 +31,7 @@ import {
 import { contributionDisplayConfig } from "@/lib/runtime/contribution-display-config";
 import {
   formatMonthDay,
+  formatPluralCount,
   formatRatioPercent,
   formatXpLabel,
   toRatioPercent,
@@ -827,7 +828,7 @@ function toRepositoryVisibilityFromTopRepos(source: ApiRepository[]): Repository
     name: repository.full_name,
     tracked: true,
     visibility: normalizeVisibility(repository.visibility),
-    reason: `${repository.contribution_count} scored contributions, ${formatXpLabel(repository.total_xp)}.`,
+    reason: `${formatPluralCount(repository.contribution_count, "scored contribution")}, ${formatXpLabel(repository.total_xp)}.`,
   }));
 }
 
