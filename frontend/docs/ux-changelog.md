@@ -2,6 +2,9 @@
 
 ## 2026-06-11
 
+- Onboarding sync cadence:
+  - routed pending sync polling labels through the sync-pipeline model.
+  - replaced compact cadence copy such as `5s` and `20s` with readable duration labels.
 - Sync-run durations:
   - expanded compact labels such as `20s` and `2m 0s` into readable duration labels.
   - covered Settings sync activity rows for seconds, minutes, hours, and unavailable duration states.

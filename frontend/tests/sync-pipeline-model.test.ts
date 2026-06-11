@@ -24,6 +24,9 @@ describe("buildSyncPipelineModel", () => {
       label: "Connecting GitHub",
     });
     expect(model.pollCadenceSeconds).toBe(5);
+    expect(model.pollCadenceLabel).toBe("5 seconds");
+    expect(model.initialPollCadenceLabel).toBe("5 seconds");
+    expect(model.maximumPollCadenceLabel).toBe("20 seconds");
     expect(model.canRetrySync).toBe(false);
     expect(model.actionError).toBe("");
   });
@@ -42,6 +45,7 @@ describe("buildSyncPipelineModel", () => {
     expect(model.pipelineProgress).toBe(38);
     expect(model.currentPhaseLabel).toBe("Analyzing review depth");
     expect(model.pollCadenceSeconds).toBe(15);
+    expect(model.pollCadenceLabel).toBe("15 seconds");
     expect(model.canRetrySync).toBe(true);
   });
 

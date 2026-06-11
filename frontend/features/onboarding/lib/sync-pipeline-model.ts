@@ -1,4 +1,4 @@
-import { toRatioPercent } from "@/lib/formatters";
+import { formatPluralCount, toRatioPercent } from "@/lib/formatters";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import type { SyncState } from "@/types/gitrank";
 
@@ -21,6 +21,7 @@ export const SYNC_PIPELINE_STEPS: readonly SyncPipelineStep[] = [
 const POLL_INTERVAL_STEPS_MS = [5000, 7000, 10000, 15000, 20000] as const;
 
 export const INITIAL_SYNC_POLL_INTERVAL_MS = POLL_INTERVAL_STEPS_MS[0];
+const MAXIMUM_SYNC_POLL_INTERVAL_MS = POLL_INTERVAL_STEPS_MS[POLL_INTERVAL_STEPS_MS.length - 1];
 
 export type SyncPipelineModelInput = {
   syncState: SyncState;
@@ -68,6 +69,7 @@ export function buildSyncPipelineModel({
     syncState !== "syncing" &&
     isRecoverableSyncState(syncState);
   const pollCadenceSeconds = Math.max(5, Math.round(pollIntervalMs / 1000));
+  const pollCadenceLabel = formatSyncPollCadenceLabel(pollIntervalMs);
 
   return {
     steps: SYNC_PIPELINE_STEPS,
@@ -78,7 +80,15 @@ export function buildSyncPipelineModel({
     actionError,
     canRetrySync,
     pollCadenceSeconds,
+    pollCadenceLabel,
+    initialPollCadenceLabel: formatSyncPollCadenceLabel(INITIAL_SYNC_POLL_INTERVAL_MS),
+    maximumPollCadenceLabel: formatSyncPollCadenceLabel(MAXIMUM_SYNC_POLL_INTERVAL_MS),
   };
+}
+
+function formatSyncPollCadenceLabel(intervalMs: number): string {
+  const seconds = Math.max(1, Math.round(intervalMs / 1000));
+  return formatPluralCount(seconds, "second");
 }
 
 function isRecoverableSyncState(syncState: SyncState): boolean {

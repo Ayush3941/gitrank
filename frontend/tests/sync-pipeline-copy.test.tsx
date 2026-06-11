@@ -1,11 +1,12 @@
 import type { ReactNode } from "react";
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SyncPipeline } from "@/features/onboarding/components/SyncPipeline";
-import { buildProfileViewData } from "@/tests/helpers/gitrank-fixtures";
+import { buildProfileViewData, buildUserProfile } from "@/tests/helpers/gitrank-fixtures";
 
 const mutateProfileSyncMock = vi.fn();
 const refetchProfileMock = vi.fn();
+let profileViewData = buildProfileViewData();
 
 vi.mock("next/link", () => ({
   default: ({ href, children }: { href: string; children: ReactNode }) => (
@@ -15,7 +16,7 @@ vi.mock("next/link", () => ({
 
 vi.mock("@/hooks/use-profile", () => ({
   useMyProfile: () => ({
-    data: buildProfileViewData(),
+    data: profileViewData,
     isLoading: false,
     isError: false,
     refetch: refetchProfileMock,
@@ -35,6 +36,12 @@ vi.mock("@/lib/api/analytics-api", () => ({
 }));
 
 describe("SyncPipeline", () => {
+  beforeEach(() => {
+    mutateProfileSyncMock.mockReset();
+    refetchProfileMock.mockReset();
+    profileViewData = buildProfileViewData();
+  });
+
   it("renders concise onboarding analysis progress copy", () => {
     render(<SyncPipeline />);
 
@@ -43,5 +50,36 @@ describe("SyncPipeline", () => {
     ).toBeTruthy();
     expect(screen.queryByText("Reading your GitHub history...")).toBeNull();
     expect(screen.getByRole("progressbar", { name: "GitHub sync pipeline progress" })).toBeTruthy();
+  });
+
+  it("renders readable auto-refresh cadence copy while sync is pending", async () => {
+    profileViewData = buildProfileViewData({
+      user: buildUserProfile({
+        mergedPrCount: 0,
+        contributions: [],
+        syncStatus: {
+          state: "stale",
+          progress: 0,
+          partialProfileAvailable: false,
+        },
+      }),
+      isStale: true,
+      partialProfileAvailable: false,
+    });
+    mutateProfileSyncMock.mockImplementation((_variables, options) => {
+      options?.onSuccess?.({
+        started_at: "2026-06-08T12:00:00.000Z",
+        status: "started",
+      });
+    });
+
+    render(<SyncPipeline />);
+
+    expect(
+      await screen.findByText(
+        "Auto-refresh slows from 5 seconds up to 20 seconds while sync is pending. Current cadence: about 5 seconds.",
+      ),
+    ).toBeTruthy();
+    expect(screen.getByText("Poll cadence ~5 seconds")).toBeTruthy();
   });
 });

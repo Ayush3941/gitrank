@@ -197,8 +197,9 @@ export function SyncPipeline() {
           ) : null}
           {syncStartedAt && !isSynced ? (
             <p className="text-sm text-muted">
-              Auto-refresh slows from 5s up to 20s while sync is pending.
-              Current cadence: about {pipeline.pollCadenceSeconds}s.
+              Auto-refresh slows from {pipeline.initialPollCadenceLabel} up to{" "}
+              {pipeline.maximumPollCadenceLabel} while sync is pending. Current cadence:
+              about {pipeline.pollCadenceLabel}.
             </p>
           ) : null}
           {syncState === "syncing" ? (
@@ -242,7 +243,7 @@ export function SyncPipeline() {
                 Current phase {pipeline.currentPhaseLabel}
               </span>
               <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5">
-                Poll cadence ~{pipeline.pollCadenceSeconds}s
+                Poll cadence ~{pipeline.pollCadenceLabel}
               </span>
             </div>
           </div>
