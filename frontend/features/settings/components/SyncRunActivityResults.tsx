@@ -11,6 +11,7 @@ import {
   syncRunStatusLabel,
   type SyncRunUiStatus,
 } from "@/features/settings/lib/sync-run-status";
+import { formatPluralCount } from "@/lib/formatters";
 
 const RESULTS_REGION_CLASS_NAME = "min-h-[12rem]";
 
@@ -240,17 +241,26 @@ function runDuration(startedAt: string, finishedAt: string): string {
   const start = Date.parse(startedAt);
   const end = Date.parse(finishedAt);
   if (Number.isNaN(start) || Number.isNaN(end) || end <= start) {
-    return "n/a";
+    return "unavailable";
   }
   const totalSeconds = Math.round((end - start) / 1000);
   if (totalSeconds < 60) {
-    return `${totalSeconds}s`;
+    return formatPluralCount(totalSeconds, "second");
   }
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
   if (minutes < 60) {
-    return `${minutes}m ${seconds}s`;
+    const parts = [formatPluralCount(minutes, "minute")];
+    if (seconds > 0) {
+      parts.push(formatPluralCount(seconds, "second"));
+    }
+    return parts.join(" ");
   }
   const hours = Math.floor(minutes / 60);
-  return `${hours}h ${minutes % 60}m`;
+  const remainingMinutes = minutes % 60;
+  const parts = [formatPluralCount(hours, "hour")];
+  if (remainingMinutes > 0) {
+    parts.push(formatPluralCount(remainingMinutes, "minute"));
+  }
+  return parts.join(" ");
 }

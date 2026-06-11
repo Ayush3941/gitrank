@@ -80,6 +80,30 @@ const syncedTargetsRun = {
   },
 };
 
+const longRun = {
+  id: "run_long_1",
+  run_type: "user",
+  status: "completed",
+  subject: "octocat",
+  started_at: "2026-05-25T00:00:00Z",
+  finished_at: "2026-05-25T01:04:00Z",
+  metrics: {
+    authored_pull_requests_selected: 1,
+  },
+};
+
+const unavailableDurationRun = {
+  id: "run_unavailable_duration_1",
+  run_type: "user",
+  status: "completed",
+  subject: "octocat",
+  started_at: "2026-05-25T00:00:00Z",
+  finished_at: "2026-05-25T00:00:00Z",
+  metrics: {
+    authored_pull_requests_selected: 1,
+  },
+};
+
 const appInstallationRequiredRun = {
   id: "run_app_required_1",
   run_type: "user",
@@ -244,7 +268,38 @@ describe("SyncRunActivityPanel", () => {
     );
 
     expect(screen.getByText("PRs 3/5 · Reviews 2/4 · 1 skipped item")).toBeTruthy();
+    expect(screen.getByText("Duration 2 minutes")).toBeTruthy();
     expect(screen.getAllByText("Completed").length).toBeGreaterThan(0);
+  });
+
+  it("renders readable long sync-run durations", () => {
+    render(
+      <SyncRunActivityPanel
+        runs={[longRun]}
+        lastUpdatedAt="2026-05-25T02:00:00Z"
+        isLoading={false}
+        isRefreshing={false}
+        isError={false}
+        onRefresh={() => undefined}
+      />,
+    );
+
+    expect(screen.getByText("Duration 1 hour 4 minutes")).toBeTruthy();
+  });
+
+  it("renders explicit unavailable copy for invalid sync-run durations", () => {
+    render(
+      <SyncRunActivityPanel
+        runs={[unavailableDurationRun]}
+        lastUpdatedAt="2026-05-25T02:00:00Z"
+        isLoading={false}
+        isRefreshing={false}
+        isError={false}
+        onRefresh={() => undefined}
+      />,
+    );
+
+    expect(screen.getByText("Duration unavailable")).toBeTruthy();
   });
 
   it("keeps sync-run timestamps semantic without hover-only title text", () => {
@@ -311,6 +366,7 @@ describe("SyncRunActivityPanel", () => {
     );
 
     expect(screen.getByText("1 failure · 1 timeout")).toBeTruthy();
+    expect(screen.getByText("Duration 20 seconds")).toBeTruthy();
     expect(screen.getByText(/Last error:/)).toBeTruthy();
   });
 
@@ -327,6 +383,7 @@ describe("SyncRunActivityPanel", () => {
     );
 
     expect(screen.getByText("1 failure · 1 in-progress conflict")).toBeTruthy();
+    expect(screen.getByText("Duration 1 second")).toBeTruthy();
   });
 
   it("shows deterministic zero-discovery insight when history exists", () => {

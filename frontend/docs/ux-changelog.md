@@ -2,6 +2,9 @@
 
 ## 2026-06-11
 
+- Sync-run durations:
+  - expanded compact labels such as `20s` and `2m 0s` into readable duration labels.
+  - covered Settings sync activity rows for seconds, minutes, hours, and unavailable duration states.
 - Leaderboard row metrics:
   - routed season XP and total XP cards through shared XP formatting.
   - extended live fixture and component coverage so leaderboard rows render `320 XP` and `2,468 XP` instead of raw numbers.

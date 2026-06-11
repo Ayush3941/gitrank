@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 11, 2026)
 
+- Expanded Settings sync-run duration labels from compact forms such as `20s` and `2m 0s` to readable plural copy.
 - Routed leaderboard row season and total XP metric cards through shared XP formatting so leaderboard values include the same `XP` unit and thousands separators as the rest of the app.
 - Replaced compact quest journey streak labels such as `0d` with shared plural day labels so quest, dashboard, and badge streak metrics read consistently.
 - Routed top-repository fallback visibility reasons through shared plural formatting so one-repository summaries read `1 scored contribution`.
