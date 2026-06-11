@@ -5,6 +5,7 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { Button } from "@/components/ui/button";
 import { formatRatioPercent, formatXp } from "@/lib/formatters";
+import { formatPRCategoryLabel } from "@/lib/presentation/pr-category-label";
 import { buildStableRenderRows } from "@/lib/presentation/render-identity";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import type { PullRequestAnalysis } from "@/types/gitrank";
@@ -63,7 +64,7 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
                   <h3 className="mt-2 break-anywhere text-lg font-medium text-foreground">{report.contribution.title}</h3>
                   <div className="mt-2 flex flex-wrap gap-2">
                     <span className="neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold">
-                      {report.contribution.category}
+                      {formatPRCategoryLabel(report.contribution.category)}
                     </span>
                     <span className={`neon-chip rounded-full px-3 py-1 text-xs font-semibold ${evidencePill.className}`}>
                       {evidencePill.label}

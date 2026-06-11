@@ -9,6 +9,7 @@ import { NewTabHint } from "@/components/shared/NewTabHint";
 import type { ContributionNarrative } from "@/lib/ai/abra-insights-types";
 import { formatMonthDayYear, formatXpLabel } from "@/lib/formatters";
 import { formatContributionStatusLabel } from "@/lib/presentation/contribution-status";
+import { formatPRCategoryLabel } from "@/lib/presentation/pr-category-label";
 import {
   buildDeterministicImpactSummary,
   shouldUseDeterministicImpactSummary,
@@ -71,7 +72,7 @@ export function ContributionList({
                     </span>
                     {compactMeta ? (
                       <span className="neon-chip neon-chip-info rounded-full px-3 py-1 font-semibold">
-                        {item.category}
+                        {formatPRCategoryLabel(item.category)}
                       </span>
                     ) : null}
                     {showStatusChip ? (
@@ -94,7 +95,9 @@ export function ContributionList({
                         <span className={`neon-chip rounded-full px-3 py-1.5 font-semibold ${tier.className}`}>{tier.label}</span>
                       </li>
                       <li className="list-none">
-                        <span className="neon-chip neon-chip-info rounded-full px-3 py-1.5 font-semibold">{item.category}</span>
+                        <span className="neon-chip neon-chip-info rounded-full px-3 py-1.5 font-semibold">
+                          {formatPRCategoryLabel(item.category)}
+                        </span>
                       </li>
                       <li className="list-none">
                         <span className="neon-chip neon-chip-muted inline-flex items-center gap-1 rounded-full px-3 py-1.5 font-semibold">

@@ -19,4 +19,15 @@ describe("buildContributionsCSV", () => {
     expect(csv).toContain("\"Fix \"\"quoted\"\", title\"");
     expect(csv).toContain("\"Summary with \"\"quotes\"\", commas, and newlines.\"");
   });
+
+  it("exports unclassified category labels instead of raw unknown fallback", () => {
+    const csv = buildContributionsCSV([
+      buildContribution({
+        category: "Unknown",
+      }),
+    ]);
+
+    expect(csv).toContain(",\"Unclassified\",");
+    expect(csv).not.toContain(",\"Unknown\",");
+  });
 });

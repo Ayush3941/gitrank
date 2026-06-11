@@ -1,4 +1,5 @@
 import { formatDateTime } from "@/lib/formatters";
+import { formatPRCategoryLabel } from "@/lib/presentation/pr-category-label";
 import { sanitizeReportSummary } from "@/lib/presentation/report-summary";
 import type { Contribution } from "@/types/gitrank";
 
@@ -35,7 +36,7 @@ export function buildContributionsCSV(rows: Contribution[]): string {
         row.number,
         row.title,
         row.status,
-        row.category,
+        formatPRCategoryLabel(row.category),
         row.xpEarned,
         row.difficultyScore,
         row.impactScore,

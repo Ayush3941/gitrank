@@ -32,4 +32,11 @@ describe("ContributionList", () => {
     expect(screen.getByText("PR #42")).toBeTruthy();
     expect(screen.getByText("PR #43")).toBeTruthy();
   });
+
+  it("renders unclassified category fallback without exposing raw unknown copy", () => {
+    render(<ContributionList items={[buildContribution({ category: "Unknown" })]} />);
+
+    expect(screen.getByText("Unclassified")).toBeTruthy();
+    expect(screen.queryByText("Unknown")).toBeNull();
+  });
 });

@@ -4,6 +4,7 @@ import { AlertTriangle, ShieldCheck } from "lucide-react";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { formatNumber, formatRatioPercent, formatXp } from "@/lib/formatters";
+import { formatPRCategoryLabel } from "@/lib/presentation/pr-category-label";
 import { formatEvidenceStatusLabel } from "@/lib/presentation/status-tone";
 import type { PREvidenceState, PullRequestAnalysis } from "@/types/gitrank";
 
@@ -68,7 +69,9 @@ export function PRReportOverviewCard({
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="neon-metric rounded-[var(--radius-universal)] px-4 py-3">
           <p className="text-xs font-medium text-muted">Category</p>
-          <p className="mt-2 text-sm font-semibold text-white">{contribution.category}</p>
+          <p className="mt-2 text-sm font-semibold text-white">
+            {formatPRCategoryLabel(contribution.category)}
+          </p>
         </div>
         <div className="neon-metric rounded-[var(--radius-universal)] px-4 py-3">
           <p className="text-xs font-medium text-muted">Files changed</p>

@@ -2,6 +2,9 @@
 
 ## 2026-06-11
 
+- PR category labels:
+  - added a shared PR category label helper for visible contribution and report surfaces.
+  - rendered unknown or missing category classifications as `Unclassified` instead of raw backend `Unknown` copy.
 - Shared date-time fallbacks:
   - replaced raw `Unknown` date-time fallback copy with `Time unavailable`.
   - removed public-profile stale fallback wording that said `unknown time` when refresh metadata is invalid.

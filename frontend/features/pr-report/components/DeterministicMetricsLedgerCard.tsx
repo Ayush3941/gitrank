@@ -5,6 +5,7 @@ import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { formatNumber, formatPluralCount, formatXp } from "@/lib/formatters";
 import { formatContributionStatusLabel } from "@/lib/presentation/contribution-status";
+import { formatPRCategoryLabel } from "@/lib/presentation/pr-category-label";
 import type { PullRequestAnalysis } from "@/types/gitrank";
 
 export function DeterministicMetricsLedgerCard({
@@ -73,7 +74,7 @@ export function DeterministicMetricsLedgerCard({
             {
               id: "category",
               label: "Category",
-              value: report.contribution.category,
+              value: formatPRCategoryLabel(report.contribution.category),
               description: "Detected contribution type.",
             },
             {

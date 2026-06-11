@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 11, 2026)
 
+- Routed visible PR category labels through a shared helper so unknown backend classifications render as `Unclassified` in cards, PR reports, and CSV exports.
 - Replaced shared date-time fallback copy with `Time unavailable` and removed the public-profile stale message's `unknown time` branch.
 - Trimmed unused frontend exports surfaced by an ephemeral `knip` audit so model internals stay private unless another module imports them.
 - Replaced shared missing contribution-status fallback copy with `Status unavailable` and covered the shared label/tone helper.
