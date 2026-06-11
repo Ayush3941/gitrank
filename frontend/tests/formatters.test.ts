@@ -114,6 +114,10 @@ describe("formatRelativeDays", () => {
     expect(formatRelativeDays("2026-05-16T18:00:00.000Z")).toBe("1 day ago");
     expect(formatRelativeDays("2026-05-14T18:00:00.000Z")).toBe("3 days ago");
   });
+
+  it("uses readable unavailable copy for invalid sync timestamps", () => {
+    expect(formatRelativeDays("not-a-date")).toBe("Sync time unavailable");
+  });
 });
 
 describe("formatTimeUntil", () => {

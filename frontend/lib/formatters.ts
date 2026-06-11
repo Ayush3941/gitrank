@@ -115,7 +115,7 @@ export function formatDate(value?: string) {
 export function formatRelativeDays(value?: string) {
   if (!value) return "Never synced";
   const timestamp = new Date(value).getTime();
-  if (Number.isNaN(timestamp)) return "Unknown sync time";
+  if (Number.isNaN(timestamp)) return "Sync time unavailable";
   const deltaMs = Date.now() - timestamp;
   if (deltaMs <= 0) return "Just now";
   const minutes = Math.floor(deltaMs / (1000 * 60));

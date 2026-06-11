@@ -2,6 +2,9 @@
 
 ## 2026-06-11
 
+- Shared relative-time fallback:
+  - replaced invalid sync timestamp fallback copy with `Sync time unavailable`.
+  - covered the shared formatter and `RelativeTime` component so `Unknown sync time` does not return.
 - Shared status labels:
   - replaced missing sync/evidence status fallback copy with `Unavailable`.
   - title-cased persisted evidence status labels such as `Complete`, `Incomplete`, and `Stale`.

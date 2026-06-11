@@ -5,7 +5,7 @@ type ExactTimeVisibility = "screen-reader" | "responsive" | "hidden";
 
 export function RelativeTime({
   value,
-  fallback = "Unknown sync time",
+  fallback = "Sync time unavailable",
   exactLabel = "Exact timestamp",
   exactVisibility = "screen-reader",
   className,

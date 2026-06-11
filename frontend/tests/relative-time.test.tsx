@@ -34,6 +34,13 @@ describe("RelativeTime", () => {
     expect(visibleExact.getAttribute("aria-hidden")).toBe("true");
     expect(visibleExact.className).toContain("sm:inline");
   });
+
+  it("renders readable fallback copy for invalid timestamps", () => {
+    render(<RelativeTime value="not-a-date" />);
+
+    expect(screen.getByText("Sync time unavailable")).toBeTruthy();
+    expect(screen.queryByText("Unknown sync time")).toBeNull();
+  });
 });
 
 function withFrozenNow(isoTimestamp: string, run: () => void) {
