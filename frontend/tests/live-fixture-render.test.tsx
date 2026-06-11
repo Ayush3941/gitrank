@@ -94,6 +94,8 @@ describe("live fixture frontend smoke coverage", () => {
     expect(
       await screen.findByText("Backed by live quest fixture evidence."),
     ).toBeTruthy();
+    expect(await screen.findByText("0 days")).toBeTruthy();
+    expect(await screen.findByText("1 day")).toBeTruthy();
     expect(screen.queryByText("1 active filter")).toBeNull();
     fireEvent.click(screen.getByRole("radio", { name: /Weekly/i }));
     await waitFor(() =>

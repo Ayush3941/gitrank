@@ -7,6 +7,7 @@ This document is intentionally detailed.
 ## Session Notes (June 11, 2026)
 
 - Routed leaderboard row season and total XP metric cards through shared XP formatting so leaderboard values include the same `XP` unit and thousands separators as the rest of the app.
+- Replaced compact quest journey streak labels such as `0d` with shared plural day labels so quest, dashboard, and badge streak metrics read consistently.
 
 ## Session Notes (June 10, 2026)
 

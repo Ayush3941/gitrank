@@ -31,7 +31,7 @@ import {
   resolveQuestGroupPageSize,
   type QuestCadenceFilter,
 } from "@/features/quests/lib/quests-page-model";
-import { formatNumber } from "@/lib/formatters";
+import { formatPluralCount } from "@/lib/formatters";
 import { shouldShowProfileFreshnessPill } from "@/lib/presentation/sync-evidence";
 import {
   isGitHubAppInstallationBlocked,
@@ -201,8 +201,8 @@ export function QuestsPageClient() {
                     </p>
                   </div>
                   <div className="grid gap-2 rounded-[var(--radius-universal)] border border-fuchsia-300/28 bg-fuchsia-400/10 px-4 py-3 text-sm text-fuchsia-100">
-                    <span className="inline-flex items-center gap-2"><Flame className="h-4 w-4" aria-hidden="true" /> Current streak: <span className="numeric-readout">{formatNumber(questPage.streak.currentStreakDays)}d</span></span>
-                    <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4" aria-hidden="true" /> Best streak: <span className="numeric-readout">{formatNumber(questPage.streak.bestStreakDays)}d</span></span>
+                    <span className="inline-flex items-center gap-2"><Flame className="h-4 w-4" aria-hidden="true" /> Current streak: <span className="numeric-readout">{formatPluralCount(questPage.streak.currentStreakDays, "day")}</span></span>
+                    <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4" aria-hidden="true" /> Best streak: <span className="numeric-readout">{formatPluralCount(questPage.streak.bestStreakDays, "day")}</span></span>
                   </div>
                 </div>
                 <div className="space-y-2">

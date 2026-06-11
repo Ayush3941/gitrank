@@ -5,6 +5,9 @@
 - Leaderboard row metrics:
   - routed season XP and total XP cards through shared XP formatting.
   - extended live fixture and component coverage so leaderboard rows render `320 XP` and `2,468 XP` instead of raw numbers.
+- Quest journey streaks:
+  - replaced compact day suffixes such as `0d` with shared plural day labels.
+  - extended live fixture coverage for current and best quest streak labels.
 
 ## 2026-06-10
 
