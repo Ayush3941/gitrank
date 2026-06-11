@@ -19,7 +19,7 @@ describe("status-tone labels", () => {
   });
 
   it("formats forward-compatible unknown status tokens as readable labels", () => {
-    expect(formatSyncStateLabel("queued_for_backfill" as never)).toBe("Queued For Backfill");
-    expect(formatEvidenceStatusLabel("ai_backfill_pending" as never)).toBe("AI Backfill Pending");
+    expect(formatSyncStateLabel("queued_for_backfill" as never)).toBe("Queued for backfill");
+    expect(formatEvidenceStatusLabel("ai_backfill_pending" as never)).toBe("AI backfill pending");
   });
 });

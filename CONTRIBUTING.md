@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 11, 2026)
 
+- Refined shared machine-token labels to sentence-style fallback copy while preserving product acronyms such as AI, API, CI, PR, and XP.
 - Extracted shared machine-token label formatting so fallback sync/evidence states render as readable labels with common acronyms preserved.
 - Replaced the shared short-date fallback used by season deadline labels with `Date unavailable` instead of `Never`.
 - Routed visible PR category labels through a shared helper so unknown backend classifications render as `Unclassified` in cards, PR reports, and CSV exports.

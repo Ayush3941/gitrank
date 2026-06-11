@@ -8,11 +8,11 @@ export function formatTokenLabel(value: string): string {
   }
   return cleaned
     .split(" ")
-    .map(formatTokenPart)
+    .map((part, index) => formatTokenPart(part, index === 0))
     .join(" ");
 }
 
-function formatTokenPart(part: string): string {
+function formatTokenPart(part: string, isFirst: boolean): string {
   const normalized = part.toLowerCase();
   if (normalized === "ai") {
     return "AI";
@@ -29,5 +29,8 @@ function formatTokenPart(part: string): string {
   if (normalized === "xp") {
     return "XP";
   }
-  return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+  if (isFirst) {
+    return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+  }
+  return normalized;
 }

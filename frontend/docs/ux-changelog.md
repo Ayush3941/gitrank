@@ -2,6 +2,9 @@
 
 ## 2026-06-11
 
+- Token label readability:
+  - changed generated machine-token labels from title case to sentence-style copy.
+  - kept acronym preservation so labels read like `AI backfill pending` instead of `AI Backfill Pending`.
 - Status token labels:
   - extracted shared machine-token label formatting for fallback sync, evidence, and deterministic signal labels.
   - preserved common acronyms such as AI, API, CI, PR, and XP in generated fallback labels.
