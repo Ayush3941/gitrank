@@ -25,7 +25,7 @@ export function RelativeTime({
 
   const relative = formatRelativeDays(value);
   const exact = formatDateTime(value);
-  const shouldExposeExact = exact !== "Unknown" && exactVisibility !== "hidden";
+  const shouldExposeExact = exactVisibility !== "hidden";
 
   return (
     <time className={className} dateTime={normalizedDateTime}>

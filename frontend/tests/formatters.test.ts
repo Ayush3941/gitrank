@@ -153,9 +153,9 @@ describe("formatDateTime", () => {
     expect(result).toMatch(/17/);
   });
 
-  it("returns Unknown for invalid values", () => {
-    expect(formatDateTime("not-a-date")).toBe("Unknown");
-    expect(formatDateTime(undefined)).toBe("Unknown");
+  it("returns explicit unavailable copy for invalid values", () => {
+    expect(formatDateTime("not-a-date")).toBe("Time unavailable");
+    expect(formatDateTime(undefined)).toBe("Time unavailable");
   });
 
   it("uses the requested fallback for invalid values", () => {

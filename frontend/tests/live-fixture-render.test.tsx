@@ -24,6 +24,7 @@ import {
 
 const requestedPaths: string[] = [];
 let mockedSearchParams = "";
+let publicProfileResponse = publicProfileFixture;
 
 vi.mock("next/link", () => ({
   default: ({ href, children }: { href: string; children: ReactNode }) => (
@@ -66,6 +67,7 @@ describe("live fixture frontend smoke coverage", () => {
   beforeEach(() => {
     requestedPaths.length = 0;
     mockedSearchParams = "";
+    publicProfileResponse = publicProfileFixture;
     vi.stubGlobal("fetch", vi.fn(liveFixtureFetch));
   });
 
@@ -231,6 +233,24 @@ describe("live fixture frontend smoke coverage", () => {
     );
   }, 15_000);
 
+  it("renders public profile stale fallback without unknown-time copy", async () => {
+    publicProfileResponse = {
+      ...publicProfileFixture,
+      staleness: {
+        ...publicProfileFixture.staleness,
+        refreshed_at: "not-a-date",
+        is_stale: true,
+      },
+    };
+
+    renderWithClient(<PublicProfilePageClient username="live-maintainer" />);
+
+    expect(
+      await screen.findByText("This profile snapshot refresh time is unavailable."),
+    ).toBeTruthy();
+    expect(screen.queryByText(/unknown time/i)).toBeNull();
+  }, 15_000);
+
   it("renders leaderboard with active lane summary when lane query is preset", async () => {
     mockedSearchParams = "lane=backend";
     renderWithClient(<LeaderboardPageClient />);
@@ -347,7 +367,7 @@ async function liveFixtureFetch(input: RequestInfo | URL): Promise<Response> {
     return jsonResponse(privateProfileFixture);
   }
   if (path === "/api/profile/public/live-maintainer") {
-    return jsonResponse(publicProfileFixture);
+    return jsonResponse(publicProfileResponse);
   }
   if (path === "/api/profile/me/quests") {
     return jsonResponse(questFixture);

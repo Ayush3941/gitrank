@@ -22,6 +22,7 @@ import {
   deriveDeterministicArchetype,
 } from "@/lib/ai/deterministic-identity-summary";
 import { buildAbraInsightsRequest } from "@/lib/ai/abra-insights-request";
+import { normalizeDateTime } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { deduplicateSkillNodes } from "@/lib/presentation/skill-normalization";
@@ -125,21 +126,26 @@ export function PublicProfilePageClient({
     );
   }
 
+  const profileRefreshTimestamp = normalizeDateTime(data.refreshedAt);
+
   return (
     <div className="stable-scroll-scope space-y-6">
       {data.isStale ? (
         <StaleState
-          message={(
-            <>
-              This profile snapshot was refreshed{" "}
-              <RelativeTime
-                value={data.refreshedAt}
-                fallback="at an unknown time"
-                exactLabel="Profile snapshot refreshed"
-              />
-              .
-            </>
-          )}
+          message={
+            profileRefreshTimestamp ? (
+              <>
+                This profile snapshot was refreshed{" "}
+                <RelativeTime
+                  value={data.refreshedAt}
+                  exactLabel="Profile snapshot refreshed"
+                />
+                .
+              </>
+            ) : (
+              "This profile snapshot refresh time is unavailable."
+            )
+          }
           updatedAt={data.refreshedAt}
           onRefresh={() => {
             void refetch();

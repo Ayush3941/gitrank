@@ -127,7 +127,7 @@ export function formatRelativeDays(value?: string) {
   return `${formatPluralCount(days, "day")} ago`;
 }
 
-export function formatDateTime(value?: string, fallback = "Unknown") {
+export function formatDateTime(value?: string, fallback = "Time unavailable") {
   const date = validDate(value);
   if (!date) return fallback;
   return new Intl.DateTimeFormat("en-US", {

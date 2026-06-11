@@ -2,6 +2,9 @@
 
 ## 2026-06-11
 
+- Shared date-time fallbacks:
+  - replaced raw `Unknown` date-time fallback copy with `Time unavailable`.
+  - removed public-profile stale fallback wording that said `unknown time` when refresh metadata is invalid.
 - Frontend module surface cleanup:
   - trimmed unused exports from leaderboard, onboarding, quest, settings, ABRA, and marketing presentation modules.
   - kept the cleanup dependency-free because the audit showed private-surface reduction, not a justified UI package addition.

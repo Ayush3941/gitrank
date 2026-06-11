@@ -106,7 +106,7 @@ export function StaleState({
             {reasonMessage ? <p className="text-sm text-amber-100">{reasonMessage}</p> : null}
             {verifiedDateTime ? (
               <p className="text-xs text-amber-100">
-                Last verified at <ExactTime value={updatedAt} fallback="Unknown" />.
+                Last verified at <ExactTime value={updatedAt} fallback="Time unavailable" />.
               </p>
             ) : null}
           </div>

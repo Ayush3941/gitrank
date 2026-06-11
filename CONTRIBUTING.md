@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 11, 2026)
 
+- Replaced shared date-time fallback copy with `Time unavailable` and removed the public-profile stale message's `unknown time` branch.
 - Trimmed unused frontend exports surfaced by an ephemeral `knip` audit so model internals stay private unless another module imports them.
 - Replaced shared missing contribution-status fallback copy with `Status unavailable` and covered the shared label/tone helper.
 - Replaced shared relative-time invalid timestamp fallback copy with `Sync time unavailable` instead of raw `Unknown sync time`.
