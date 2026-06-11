@@ -5,14 +5,14 @@ export type LandingIconKey =
   | "pull-request"
   | "shield";
 
-export type LandingProblemCard = {
+type LandingProblemCard = {
   id: string;
   icon: LandingIconKey;
   title: string;
   text: string;
 };
 
-export type LandingJourney = {
+type LandingJourney = {
   id: string;
   persona: string;
   mission: string;
@@ -21,17 +21,17 @@ export type LandingJourney = {
   cta: string;
 };
 
-export type LandingTextLine = {
+type LandingTextLine = {
   id: string;
   text: string;
 };
 
-export type LandingLoopStep = {
+type LandingLoopStep = {
   id: string;
   label: string;
 };
 
-export type LandingBadgeTrack = {
+type LandingBadgeTrack = {
   id: string;
   title: string;
 };

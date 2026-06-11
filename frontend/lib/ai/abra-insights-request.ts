@@ -65,7 +65,7 @@ export function buildAbraInsightsRequest({
   };
 }
 
-export function toAbraContributionInput(row: Contribution): AbraContributionInput {
+function toAbraContributionInput(row: Contribution): AbraContributionInput {
   return {
     id: row.id,
     title: row.title,
@@ -81,7 +81,7 @@ export function toAbraContributionInput(row: Contribution): AbraContributionInpu
   };
 }
 
-export function toAbraBadgeInput(badge: Badge): AbraBadgeInput {
+function toAbraBadgeInput(badge: Badge): AbraBadgeInput {
   return {
     id: badge.id,
     name: badge.name,

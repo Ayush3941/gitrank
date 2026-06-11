@@ -2,6 +2,9 @@
 
 ## 2026-06-11
 
+- Frontend module surface cleanup:
+  - trimmed unused exports from leaderboard, onboarding, quest, settings, ABRA, and marketing presentation modules.
+  - kept the cleanup dependency-free because the audit showed private-surface reduction, not a justified UI package addition.
 - Contribution status labels:
   - replaced missing contribution-status fallback copy with `Status unavailable`.
   - covered the shared formatter and tone helper used by contribution cards, PR reports, and public profile summaries.

@@ -2,12 +2,12 @@ import { formatPluralCount, toRatioPercent } from "@/lib/formatters";
 import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import type { SyncState } from "@/types/gitrank";
 
-export type SyncPipelineStep = {
+type SyncPipelineStep = {
   id: string;
   label: string;
 };
 
-export const SYNC_PIPELINE_STEPS: readonly SyncPipelineStep[] = [
+const SYNC_PIPELINE_STEPS: readonly SyncPipelineStep[] = [
   { id: "connect-github", label: "Connecting GitHub" },
   { id: "fetch-repositories", label: "Fetching repositories" },
   { id: "read-merged-prs", label: "Reading merged PRs" },

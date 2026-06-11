@@ -124,7 +124,7 @@ export function buildLeaderboardStaleNotice({
   });
 }
 
-export function markCurrentUserRows(
+function markCurrentUserRows(
   rows: LeaderboardEntry[],
   currentUsername?: string,
 ): LeaderboardEntry[] {

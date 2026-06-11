@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import type { LeaderboardTab } from "@/lib/api/leaderboard-api";
 import { formatPluralCount } from "@/lib/formatters";
 
-export const LEADERBOARD_TABS: LeaderboardTab[] = [
+const LEADERBOARD_TABS: LeaderboardTab[] = [
   "Global",
   "Backend",
   "Testing",

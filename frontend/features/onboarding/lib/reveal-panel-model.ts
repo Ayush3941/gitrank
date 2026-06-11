@@ -10,13 +10,13 @@ import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { deriveEffectiveSyncState } from "@/lib/presentation/sync-evidence";
 import type { Badge, UserProfile } from "@/types/gitrank";
 
-export type RevealMetricModel = {
+type RevealMetricModel = {
   id: string;
   label: string;
   value: string;
 };
 
-export type RevealNextActionModel = {
+type RevealNextActionModel = {
   id: string;
   text: string;
 };

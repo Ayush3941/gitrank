@@ -11,7 +11,7 @@ import type { ProfileViewData, Quest, SyncState } from "@/types/gitrank";
 const QUEST_GROUP_PAGE_SIZE_DEFAULT = 5;
 const QUEST_GROUP_PAGE_SIZE_CONSTRAINED = 3;
 
-export const QUEST_CADENCE_GROUPS: Array<Quest["cadence"]> = [
+const QUEST_CADENCE_GROUPS: Array<Quest["cadence"]> = [
   "Daily",
   "Weekly",
   "Long-term",
@@ -120,7 +120,7 @@ export function buildQuestGroupMap(quests: Quest[]): QuestGroupMap {
   };
 }
 
-export function buildQuestCadenceCounts(questMap: QuestGroupMap): QuestCadenceCounts {
+function buildQuestCadenceCounts(questMap: QuestGroupMap): QuestCadenceCounts {
   return {
     Daily: questMap.Daily.length,
     Weekly: questMap.Weekly.length,

@@ -81,7 +81,7 @@ export function buildSyncRunActivityModel({
   };
 }
 
-export function toSyncRunActivityRow(run: ApiSyncRunRecord): SyncRunActivityRow {
+function toSyncRunActivityRow(run: ApiSyncRunRecord): SyncRunActivityRow {
   const uiStatus = syncRunStatusLabelWithMetrics(run.status, run.metrics);
   const label = syncRunLabel(run);
   const safeLastError = sanitizeSyncRunErrorMessage(run.last_error);
@@ -114,7 +114,7 @@ export function toSyncRunActivityRow(run: ApiSyncRunRecord): SyncRunActivityRow 
   };
 }
 
-export function buildSyncRunStatusCounts(
+function buildSyncRunStatusCounts(
   rows: SyncRunActivityRow[],
 ): SyncRunStatusCounts {
   const next = {
@@ -141,7 +141,7 @@ export function buildSyncRunStatusCounts(
   return next;
 }
 
-export function filterSyncRunActivityRows({
+function filterSyncRunActivityRows({
   rows,
   deferredSearch,
   statusFilter,
@@ -160,7 +160,7 @@ export function filterSyncRunActivityRows({
   });
 }
 
-export function syncRunHealthSummaryLabel(
+function syncRunHealthSummaryLabel(
   statusCounts: Pick<
     SyncRunStatusCounts,
     "failed" | "partial" | "queued" | "running"
