@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 11, 2026)
 
+- Replaced shared missing contribution-status fallback copy with `Status unavailable` and covered the shared label/tone helper.
 - Replaced shared relative-time invalid timestamp fallback copy with `Sync time unavailable` instead of raw `Unknown sync time`.
 - Normalized shared sync/evidence status labels so missing states read `Unavailable` and persisted evidence statuses render as title-cased user-facing labels.
 - Routed missing leaderboard score-version metadata through the configured frontend score-version fallback so Formula metrics do not render raw `unknown`.

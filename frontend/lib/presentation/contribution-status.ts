@@ -7,7 +7,7 @@ export function formatContributionStatusLabel(
 ): string {
   const value = String(status ?? "").trim().toLowerCase();
   if (!value) {
-    return "Status unknown";
+    return "Status unavailable";
   }
   if (value === "merged") {
     return "Merged";

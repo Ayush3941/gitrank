@@ -2,6 +2,9 @@
 
 ## 2026-06-11
 
+- Contribution status labels:
+  - replaced missing contribution-status fallback copy with `Status unavailable`.
+  - covered the shared formatter and tone helper used by contribution cards, PR reports, and public profile summaries.
 - Shared relative-time fallback:
   - replaced invalid sync timestamp fallback copy with `Sync time unavailable`.
   - covered the shared formatter and `RelativeTime` component so `Unknown sync time` does not return.
