@@ -109,7 +109,7 @@ export function formatMonthDayYear(value: DateValue, fallback = "Date pending") 
 }
 
 export function formatDate(value?: string) {
-  return formatMonthDay(value, "Never");
+  return formatMonthDay(value, "Date unavailable");
 }
 
 export function formatRelativeDays(value?: string) {

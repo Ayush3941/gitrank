@@ -2,6 +2,9 @@
 
 ## 2026-06-11
 
+- Season date fallback:
+  - replaced the shared short-date fallback from `Never` to `Date unavailable`.
+  - covered dashboard league and leaderboard season deadline labels so invalid season metadata does not render `Ends Never`.
 - PR category labels:
   - added a shared PR category label helper for visible contribution and report surfaces.
   - rendered unknown or missing category classifications as `Unclassified` instead of raw backend `Unknown` copy.

@@ -86,9 +86,9 @@ describe("date label formatters", () => {
     expect(formatUtcMonthDay("not-a-date")).toBe("Date pending");
   });
 
-  it("keeps the legacy short date fallback contract", () => {
-    expect(formatDate(undefined)).toBe("Never");
-    expect(formatDate("not-a-date")).toBe("Never");
+  it("uses explicit unavailable copy for invalid short dates", () => {
+    expect(formatDate(undefined)).toBe("Date unavailable");
+    expect(formatDate("not-a-date")).toBe("Date unavailable");
   });
 });
 

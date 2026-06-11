@@ -10,9 +10,29 @@ describe("LeaderboardArena", () => {
     expect(screen.getByText("320 XP")).toBeTruthy();
     expect(screen.getByText("2,468 XP")).toBeTruthy();
   });
+
+  it("uses explicit unavailable copy when the season end date is invalid", () => {
+    render(
+      <LeaderboardArena
+        snapshot={buildSnapshot({
+          season: {
+            endsAt: "not-a-date",
+          },
+        })}
+        showDetails
+      />,
+    );
+
+    expect(screen.getByText("Season ends Date unavailable")).toBeTruthy();
+    expect(screen.queryByText(/Season ends Never/i)).toBeNull();
+  });
 });
 
-function buildSnapshot(): LeaderboardSnapshot {
+function buildSnapshot(
+  overrides: {
+    season?: Partial<LeaderboardSnapshot["season"]>;
+  } = {},
+): LeaderboardSnapshot {
   return {
     season: {
       id: "weekly-2026-W20",
@@ -27,6 +47,7 @@ function buildSnapshot(): LeaderboardSnapshot {
       promotionCutoffRank: 25,
       safetyCutoffRank: 75,
       explanation: "Leaderboard rows are backed by persisted season snapshots.",
+      ...overrides.season,
     },
     rows: [
       {

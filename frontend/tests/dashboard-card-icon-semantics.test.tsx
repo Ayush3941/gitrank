@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { CurrentLeagueCard } from "@/features/dashboard/components/CurrentLeagueCard";
 import { QuestPanel } from "@/features/dashboard/components/QuestPanel";
@@ -29,9 +29,28 @@ describe("dashboard card icon semantics", () => {
       expect(icon.getAttribute("aria-hidden")).toBe("true");
     }
   });
+
+  it("uses explicit unavailable copy when the league season end date is invalid", () => {
+    render(
+      <CurrentLeagueCard
+        user={buildLeagueUser({
+          season: {
+            endsAt: "not-a-date",
+          },
+        })}
+      />,
+    );
+
+    expect(screen.getByText(/Ends Date unavailable/i)).toBeTruthy();
+    expect(screen.queryByText(/Ends Never/i)).toBeNull();
+  });
 });
 
-function buildLeagueUser(): UserProfile {
+function buildLeagueUser(
+  overrides: {
+    season?: Partial<UserProfile["rankProgress"]["season"]>;
+  } = {},
+): UserProfile {
   return {
     movement: 2,
     leaguePosition: 4,
@@ -48,6 +67,7 @@ function buildLeagueUser(): UserProfile {
         windowLabel: "May 25 - May 31",
         status: "Active",
         endsAt: "2026-05-31T23:59:59Z",
+        ...overrides.season,
       },
     },
   } as unknown as UserProfile;
