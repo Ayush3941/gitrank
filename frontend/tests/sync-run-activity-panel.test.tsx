@@ -128,6 +128,16 @@ const supersededActiveRowRun = {
   last_error: "sync execution was superseded by a newer terminal run for the same correlation",
 };
 
+const missingStatusRun = {
+  id: "run_missing_status_1",
+  run_type: "user",
+  status: "",
+  subject: "octocat",
+  started_at: "2026-05-25T00:10:00Z",
+  finished_at: "2026-05-25T00:10:02Z",
+  metrics: {},
+};
+
 describe("SyncRunActivityPanel", () => {
   it("uses the shared loading state for sync activity fetches", () => {
     render(
@@ -300,6 +310,22 @@ describe("SyncRunActivityPanel", () => {
     );
 
     expect(screen.getByText("Duration unavailable")).toBeTruthy();
+  });
+
+  it("renders readable fallback copy when a sync-run status is missing", () => {
+    render(
+      <SyncRunActivityPanel
+        runs={[missingStatusRun]}
+        lastUpdatedAt="2026-05-25T02:00:00Z"
+        isLoading={false}
+        isRefreshing={false}
+        isError={false}
+        onRefresh={() => undefined}
+      />,
+    );
+
+    expect(screen.getByText("Status unavailable")).toBeTruthy();
+    expect(screen.queryByText("Unknown")).toBeNull();
   });
 
   it("keeps sync-run timestamps semantic without hover-only title text", () => {

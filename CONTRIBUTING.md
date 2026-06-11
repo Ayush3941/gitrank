@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 11, 2026)
 
+- Replaced the Settings sync-run status chip's blank-status fallback with `Status unavailable` instead of raw `Unknown` copy.
 - Replaced the PR report deterministic ledger's raw missing score-version fallback with `Score version pending` copy.
 - Routed onboarding sync polling cadence labels through the sync-pipeline model so pending sync copy reads `5 seconds` and `20 seconds` instead of compact suffixes.
 - Expanded Settings sync-run duration labels from compact forms such as `20s` and `2m 0s` to readable plural copy.

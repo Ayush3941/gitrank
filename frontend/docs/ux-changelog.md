@@ -2,6 +2,9 @@
 
 ## 2026-06-11
 
+- Settings sync-run status chips:
+  - replaced blank-status fallback copy with `Status unavailable`.
+  - covered the sync activity panel so missing backend status values do not render as `Unknown`.
 - PR report deterministic ledger:
   - replaced raw missing score-version fallback copy with `Score version pending`.
   - covered missing score-version metadata so the ledger does not render `unknown` to users.
