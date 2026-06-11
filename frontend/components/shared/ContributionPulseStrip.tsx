@@ -1,5 +1,5 @@
 import type { Contribution } from "@/types/gitrank";
-import { formatMonthDay, formatPluralCount } from "@/lib/formatters";
+import { formatCountOfTotal, formatMonthDay, formatPluralCount } from "@/lib/formatters";
 
 export function ContributionPulseStrip({
   contributions,
@@ -20,13 +20,14 @@ export function ContributionPulseStrip({
   const peakSummary = peakCell && peakCell.count > 0
     ? `${peakCell.label}, ${formatContributionCount(peakCell.count)}`
     : "No active days";
+  const activeDaysSummary = formatCountOfTotal(activeDays, cells.length, "active day");
 
   return (
     <div className="rounded-[var(--radius-universal)] border border-primary/16 bg-primary/6 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs font-medium text-primary">{label}</p>
         <p className="text-xs text-muted">
-          {activeDays}/{days} active days
+          {activeDaysSummary}
         </p>
       </div>
       <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted" role="group" aria-label="Activity pulse summary">

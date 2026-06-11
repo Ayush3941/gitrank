@@ -15,6 +15,7 @@ This document is intentionally detailed.
 - Normalized settings sync-run metric summaries so failure, timeout, skipped, conflict, and fetch-error counts read as natural count phrases.
 - Routed contribution and badge route header count chips through shared plural formatting so route metadata reads as natural phrases instead of raw counters.
 - Moved badge unlock notice copy into the badge page model and routed achievement counts through shared plural formatting.
+- Routed the shared contribution activity-pulse window summary through count-of-total formatting so active-day copy reads naturally in singular and plural cases.
 
 ## Session Notes (June 9, 2026)
 

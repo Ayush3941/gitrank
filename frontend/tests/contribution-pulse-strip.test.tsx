@@ -15,7 +15,7 @@ describe("ContributionPulseStrip", () => {
     });
 
     expect(screen.queryByText("Pulse")).not.toBeNull();
-    expect(screen.queryByText("2/7 active days")).not.toBeNull();
+    expect(screen.queryByText("2 of 7 active days")).not.toBeNull();
     expect(screen.queryByText("Today")).not.toBeNull();
     expect(screen.queryByText("Peak")).not.toBeNull();
     expect(screen.queryByText("May 25, 1 contribution")).not.toBeNull();
@@ -35,10 +35,23 @@ describe("ContributionPulseStrip", () => {
       render(<ContributionPulseStrip contributions={contributions} days={7} />);
     });
 
-    expect(screen.queryByText("2/7 active days")).not.toBeNull();
+    expect(screen.queryByText("2 of 7 active days")).not.toBeNull();
     expect(screen.queryByText("May 25, 2 contributions")).not.toBeNull();
     expect(screen.queryByText(/May 25: 2 contributions/i)).not.toBeNull();
     expect(screen.queryByTitle(/May 25: 2 contributions/i)).toBeNull();
+  });
+
+  it("uses singular active-day copy for one active day in the window", () => {
+    const contributions = [
+      buildContribution({ mergedAt: "2026-05-25T10:00:00.000Z" }),
+      buildContribution({ id: "same-day", number: 2, mergedAt: "2026-05-25T20:00:00.000Z" }),
+    ];
+
+    withFrozenNow("2026-05-25T23:59:59.000Z", () => {
+      render(<ContributionPulseStrip contributions={contributions} days={1} />);
+    });
+
+    expect(screen.queryByText("1 of 1 active day")).not.toBeNull();
   });
 });
 

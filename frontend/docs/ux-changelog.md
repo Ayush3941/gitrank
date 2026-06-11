@@ -29,6 +29,9 @@
 - Badge unlock notices:
   - moved unlock feedback copy into the badge page model.
   - routed new-achievement counts through shared plural formatting with singular, plural, and zero-delta coverage.
+- Activity pulse summary:
+  - replaced compact `active/total` day copy with shared count-of-total phrasing.
+  - added singular active-day coverage for the shared contribution pulse strip.
 
 ## 2026-06-09
 
