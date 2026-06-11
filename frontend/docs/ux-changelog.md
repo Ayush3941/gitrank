@@ -2,6 +2,9 @@
 
 ## 2026-06-11
 
+- Shared status labels:
+  - replaced missing sync/evidence status fallback copy with `Unavailable`.
+  - title-cased persisted evidence status labels such as `Complete`, `Incomplete`, and `Stale`.
 - Leaderboard formula metadata:
   - routed missing leaderboard `scoring_version` and row `score_version` metadata through the configured frontend score-version fallback.
   - covered the leaderboard adapter so Formula metrics do not receive raw `unknown` values.

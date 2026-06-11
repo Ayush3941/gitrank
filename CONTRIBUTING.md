@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 11, 2026)
 
+- Normalized shared sync/evidence status labels so missing states read `Unavailable` and persisted evidence statuses render as title-cased user-facing labels.
 - Routed missing leaderboard score-version metadata through the configured frontend score-version fallback so Formula metrics do not render raw `unknown`.
 - Replaced the Settings sync-run status chip's blank-status fallback with `Status unavailable` instead of raw `Unknown` copy.
 - Replaced the PR report deterministic ledger's raw missing score-version fallback with `Score version pending` copy.

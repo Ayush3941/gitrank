@@ -23,7 +23,7 @@ export function toneForSyncState(state: SyncState | undefined): StatusTone {
 
 export function formatSyncStateLabel(state: SyncState | undefined): string {
   if (!state) {
-    return "Unknown";
+    return "Unavailable";
   }
   if (state === "never_synced") return "Never synced";
   if (state === "partially_synced") return "Partially synced";
@@ -54,7 +54,16 @@ export function formatEvidenceStatusLabel(
   status: PREvidenceState["status"] | undefined,
 ): string {
   if (!status) {
-    return "Unknown";
+    return "Unavailable";
+  }
+  if (status === "complete") {
+    return "Complete";
+  }
+  if (status === "incomplete") {
+    return "Incomplete";
+  }
+  if (status === "stale") {
+    return "Stale";
   }
   if (status === "deterministic_only") {
     return "Deterministic only";
