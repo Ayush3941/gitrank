@@ -32,6 +32,9 @@
 - Activity pulse summary:
   - replaced compact `active/total` day copy with shared count-of-total phrasing.
   - added singular active-day coverage for the shared contribution pulse strip.
+- Dashboard and badge streak metrics:
+  - replaced compact day suffixes such as `0d` with readable plural day labels.
+  - routed badge overview totals through shared number formatting and added component coverage.
 
 ## 2026-06-09
 

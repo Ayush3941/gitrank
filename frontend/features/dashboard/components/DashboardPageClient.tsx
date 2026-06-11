@@ -26,7 +26,7 @@ import { RouteLoadingState } from "@/components/shared/RouteLoadingState";
 import { StaleState } from "@/components/shared/StaleState";
 import { StatCard } from "@/components/shared/StatCard";
 import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
-import { formatNumber, formatPluralCount } from "@/lib/formatters";
+import { formatPluralCount } from "@/lib/formatters";
 import { shouldShowProfileFreshnessPill } from "@/lib/presentation/sync-evidence";
 import {
   isGitHubAppInstallationBlocked,
@@ -246,10 +246,10 @@ export function DashboardPageClient() {
             </span>
           </div>
           <div className="numeric-readout text-3xl font-semibold tracking-tight">
-            {formatNumber(dashboardPage.streak.currentStreakDays)}d
+            {formatPluralCount(dashboardPage.streak.currentStreakDays, "day")}
           </div>
           <p className="text-sm leading-6 text-muted">
-            Best {formatNumber(dashboardPage.streak.bestStreakDays)}d •{" "}
+            Best {formatPluralCount(dashboardPage.streak.bestStreakDays, "day")} •{" "}
             {formatPluralCount(dashboardPage.streak.activeDaysThisYear, "active day")} this year
           </p>
         </GlowCard>

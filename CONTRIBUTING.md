@@ -16,6 +16,7 @@ This document is intentionally detailed.
 - Routed contribution and badge route header count chips through shared plural formatting so route metadata reads as natural phrases instead of raw counters.
 - Moved badge unlock notice copy into the badge page model and routed achievement counts through shared plural formatting.
 - Routed the shared contribution activity-pulse window summary through count-of-total formatting so active-day copy reads naturally in singular and plural cases.
+- Replaced compact dashboard and badge streak labels such as `0d` with shared plural day labels, and formatted badge overview totals through shared numeric helpers.
 
 ## Session Notes (June 9, 2026)
 

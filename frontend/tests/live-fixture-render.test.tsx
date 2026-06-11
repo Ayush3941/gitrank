@@ -82,6 +82,7 @@ describe("live fixture frontend smoke coverage", () => {
         timeout: 5000,
       }),
     ).toBeTruthy();
+    expect(await screen.findByText("0 days")).toBeTruthy();
     expect(await screen.findByText("Live Skill Sprint")).toBeTruthy();
     expect(await screen.findByText("Live PR fixture report")).toBeTruthy();
   }, 15_000);

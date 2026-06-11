@@ -8,7 +8,7 @@ import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { InlineNotice } from "@/components/shared/InlineNotice";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { formatPercent } from "@/lib/formatters";
+import { formatNumber, formatPercent, formatPluralCount } from "@/lib/formatters";
 import {
   badgeUnlockRecoveryHref,
   badgeUnlockRecoveryLabel,
@@ -55,7 +55,7 @@ export function BadgesOverviewCard({
         <div className="grid gap-3 md:grid-cols-4">
           <BadgeMetric
             label="Unlocked"
-            value={unlockedCount}
+            value={formatNumber(unlockedCount)}
             icon={<ShieldCheck className="h-4 w-4 text-cyan-200" aria-hidden="true" />}
           />
           <BadgeMetric
@@ -65,12 +65,12 @@ export function BadgesOverviewCard({
           />
           <BadgeMetric
             label="Level"
-            value={level}
+            value={formatNumber(level)}
             icon={<Trophy className="h-4 w-4 text-violet-200" aria-hidden="true" />}
           />
           <BadgeMetric
             label="Current streak"
-            value={`${streakDays}d`}
+            value={formatPluralCount(streakDays, "day")}
             icon={<Sparkles className="h-4 w-4 text-emerald-200" aria-hidden="true" />}
           />
         </div>
