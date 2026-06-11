@@ -2,6 +2,9 @@
 
 ## 2026-06-11
 
+- PR report deterministic ledger:
+  - replaced raw missing score-version fallback copy with `Score version pending`.
+  - covered missing score-version metadata so the ledger does not render `unknown` to users.
 - Onboarding sync cadence:
   - routed pending sync polling labels through the sync-pipeline model.
   - replaced compact cadence copy such as `5s` and `20s` with readable duration labels.

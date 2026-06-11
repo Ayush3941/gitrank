@@ -128,6 +128,24 @@ describe("pr report metric ledger", () => {
     expect(description?.className).not.toContain("sr-only");
     expect(screen.getByText("Final deterministic XP after multipliers and penalties.")).toBeTruthy();
   });
+
+  it("uses readable pending copy when score-version metadata is unavailable", () => {
+    const report = {
+      ...buildReportFixture("complete"),
+      scoreVersion: undefined,
+    };
+    mockUsePrReport.mockReturnValue({
+      data: report,
+      isLoading: false,
+      isError: false,
+      refetch: mockRefetch,
+    });
+
+    render(<PRBattleReportPageClient owner="octo" repo="gitrank" number={42} />);
+
+    expect(screen.getByText("Score version pending")).toBeTruthy();
+    expect(screen.queryByText("unknown")).toBeNull();
+  });
 });
 
 function buildReportFixture(

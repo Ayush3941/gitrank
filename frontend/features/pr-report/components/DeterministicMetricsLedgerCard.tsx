@@ -54,7 +54,7 @@ export function DeterministicMetricsLedgerCard({
             {
               id: "score_version",
               label: "Score version",
-              value: report.scoreVersion || "unknown",
+              value: report.scoreVersion || "Score version pending",
               description: "Scoring formula revision used for this result.",
             },
           ]}
