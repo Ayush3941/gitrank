@@ -20,6 +20,9 @@
 - Onboarding reveal XP progress:
   - replaced raw slash progress with shared XP progress wording.
   - covered the shared formatter and reveal model so the label reads `1,200 XP toward 1,500 XP`.
+- Season deadline labels:
+  - expanded compact labels such as `5d left` into readable plural labels such as `5 days left`.
+  - covered the shared time-until formatter used by dashboard and leaderboard season cards.
 
 ## 2026-06-10
 

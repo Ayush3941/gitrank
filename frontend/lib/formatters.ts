@@ -152,13 +152,13 @@ export function formatTimeUntil(value?: string) {
   const deltaMs = timestamp - Date.now();
   if (deltaMs <= 0) return "Window ended";
   const minutes = Math.ceil(deltaMs / (1000 * 60));
-  if (minutes < 60) return `${minutes}m left`;
+  if (minutes < 60) return `${formatPluralCount(minutes, "minute")} left`;
   const hours = Math.ceil(minutes / 60);
-  if (hours < 24) return `${hours}h left`;
+  if (hours < 24) return `${formatPluralCount(hours, "hour")} left`;
   const days = Math.ceil(hours / 24);
-  if (days < 30) return `${days}d left`;
+  if (days < 30) return `${formatPluralCount(days, "day")} left`;
   const weeks = Math.ceil(days / 7);
-  if (weeks < 10) return `${weeks}w left`;
+  if (weeks < 10) return `${formatPluralCount(weeks, "week")} left`;
   const months = Math.ceil(days / 30);
-  return `${months}mo left`;
+  return `${formatPluralCount(months, "month")} left`;
 }

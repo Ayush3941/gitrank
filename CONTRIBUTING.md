@@ -12,6 +12,7 @@ This document is intentionally detailed.
 - Replaced slash-style quest progress labels such as `1 / 3` with shared count-of-total step labels across quest cards, dashboard quest previews, and quest spotlight cards.
 - Replaced the Settings display-tuning slash summary with labeled chips for theme, text scale, and preference source so the state reads clearly at a glance.
 - Routed onboarding reveal XP progress through shared XP progress wording so it reads `1,200 XP toward 1,500 XP` instead of a raw slash ratio.
+- Expanded season deadline labels from compact forms such as `5d left` to shared plural copy such as `5 days left` across dashboard and leaderboard cards.
 
 ## Session Notes (June 10, 2026)
 

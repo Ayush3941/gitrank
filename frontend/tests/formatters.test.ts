@@ -12,6 +12,7 @@ import {
   formatRelativeDays,
   formatSignedNumber,
   formatSignedXp,
+  formatTimeUntil,
   formatUtcMonthDay,
   formatXp,
   formatXpLabel,
@@ -110,6 +111,32 @@ describe("formatRelativeDays", () => {
 
     expect(formatRelativeDays("2026-05-16T18:00:00.000Z")).toBe("1 day ago");
     expect(formatRelativeDays("2026-05-14T18:00:00.000Z")).toBe("3 days ago");
+  });
+});
+
+describe("formatTimeUntil", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("uses full unit words for upcoming season deadlines", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-05-17T18:00:00.000Z"));
+
+    expect(formatTimeUntil("2026-05-17T18:01:00.000Z")).toBe("1 minute left");
+    expect(formatTimeUntil("2026-05-17T20:00:00.000Z")).toBe("2 hours left");
+    expect(formatTimeUntil("2026-05-22T18:00:00.000Z")).toBe("5 days left");
+    expect(formatTimeUntil("2026-06-28T18:00:00.000Z")).toBe("6 weeks left");
+    expect(formatTimeUntil("2026-08-25T18:00:00.000Z")).toBe("4 months left");
+  });
+
+  it("keeps unavailable and ended schedule fallbacks explicit", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-05-17T18:00:00.000Z"));
+
+    expect(formatTimeUntil(undefined)).toBe("Schedule unavailable");
+    expect(formatTimeUntil("not-a-date")).toBe("Schedule unavailable");
+    expect(formatTimeUntil("2026-05-17T17:59:00.000Z")).toBe("Window ended");
   });
 });
 
