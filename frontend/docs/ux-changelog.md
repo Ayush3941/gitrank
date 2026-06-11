@@ -14,6 +14,9 @@
 - Quest progress labels:
   - replaced slash-style progress labels such as `1 / 3` with shared count-of-total step labels.
   - covered quest cards, dashboard quest previews, spotlight cards, and the shared quest progress helper.
+- Settings display summary:
+  - replaced the slash-separated theme summary with labeled chips for theme, text scale, and preference source.
+  - covered the Settings page fixture so the old slash summary does not return.
 
 ## 2026-06-10
 

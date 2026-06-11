@@ -107,6 +107,11 @@ export function SettingsDisplayPreferencesCard({
   const activeTheme = THEME_OPTIONS.find((option) => option.value === theme) ?? THEME_OPTIONS[0];
   const activeTextScale =
     TEXT_SCALE_OPTIONS.find((option) => option.value === textScale) ?? TEXT_SCALE_OPTIONS[0];
+  const displayTuningSummary = [
+    { id: "theme", label: "Theme", value: activeTheme.label },
+    { id: "text-scale", label: "Text", value: activeTextScale.label },
+    { id: "source", label: "Source", value: themeSource === "system" ? "System preference" : "Manual preference" },
+  ];
 
   useEffect(() => {
     if (!displayNotice) {
@@ -174,9 +179,20 @@ export function SettingsDisplayPreferencesCard({
           </div>
           <div className="neon-surface rounded-[var(--radius-universal)] px-4 py-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm text-muted">
-                {activeTheme.label} / {activeTextScale.label} / {themeSource === "system" ? "System" : "Manual"}
-              </p>
+              <ul
+                aria-label="Current display tuning"
+                className="flex min-w-0 flex-wrap items-center gap-2"
+              >
+                {displayTuningSummary.map((item) => (
+                  <li
+                    key={item.id}
+                    className="neon-chip inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs"
+                  >
+                    <span className="font-semibold text-muted">{item.label}</span>
+                    <span className="text-foreground">{item.value}</span>
+                  </li>
+                ))}
+              </ul>
               <DisclosureToggle
                 id={displayTuningToggleId}
                 controlsId={displayTuningPanelId}

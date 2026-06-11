@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { computeAccessibleName } from "dom-accessibility-api";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SettingsPageClient } from "@/features/settings/components/SettingsPageClient";
@@ -63,6 +63,17 @@ describe("settings form accessibility behavior", () => {
         `${element.outerHTML} should expose a non-empty label signal`,
       ).toBeGreaterThan(0);
     }
+
+    const displaySummary = await screen.findByRole("list", {
+      name: /Current display tuning/i,
+    });
+    expect(within(displaySummary).getByText("Theme")).toBeTruthy();
+    expect(within(displaySummary).getByText("Midnight contrast")).toBeTruthy();
+    expect(within(displaySummary).getByText("Text")).toBeTruthy();
+    expect(within(displaySummary).getByText("Default text")).toBeTruthy();
+    expect(within(displaySummary).getByText("Source")).toBeTruthy();
+    expect(within(displaySummary).getByText("System preference")).toBeTruthy();
+    expect(screen.queryByText(/Midnight contrast\s*\/\s*Default text\s*\/\s*System/)).toBeNull();
   }, 10_000);
 });
 

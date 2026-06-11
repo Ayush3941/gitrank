@@ -10,6 +10,7 @@ This document is intentionally detailed.
 - Replaced compact quest journey streak labels such as `0d` with shared plural day labels so quest, dashboard, and badge streak metrics read consistently.
 - Routed top-repository fallback visibility reasons through shared plural formatting so one-repository summaries read `1 scored contribution`.
 - Replaced slash-style quest progress labels such as `1 / 3` with shared count-of-total step labels across quest cards, dashboard quest previews, and quest spotlight cards.
+- Replaced the Settings display-tuning slash summary with labeled chips for theme, text scale, and preference source so the state reads clearly at a glance.
 
 ## Session Notes (June 10, 2026)
 
