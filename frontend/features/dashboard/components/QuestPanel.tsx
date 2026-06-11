@@ -3,8 +3,8 @@ import { CompactEmptyState } from "@/components/shared/CompactEmptyState";
 import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { Progress } from "@/components/ui/progress";
+import { formatQuestProgressLabel } from "@/features/quests/lib/quest-spotlight";
 import {
-  formatNumber,
   formatPluralCount,
   formatSignedXp,
   toRatioPercent,
@@ -73,7 +73,7 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
                   </div>
                   <Progress className="mt-4" value={progress} aria-label={`${quest.title} quest progress`} />
                   <div className="mt-2 flex items-center justify-between text-xs text-muted">
-                    <span className="numeric-readout">{formatNumber(quest.progress)} / {formatNumber(quest.goal)}</span>
+                    <span className="numeric-readout">{formatQuestProgressLabel(quest)}</span>
                     <span>{quest.weakAreaTarget ? `Targets ${quest.weakAreaTarget}` : quest.cadence}</span>
                   </div>
                   <ul role="list" className="mt-3 flex flex-wrap gap-2">

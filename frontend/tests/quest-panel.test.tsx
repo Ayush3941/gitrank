@@ -24,6 +24,8 @@ describe("QuestPanel", () => {
           buildQuest({
             evidenceSignals: ["review_depth=0", "linked_issues=2"],
             linkedContributionIds: ["pr-1", "pr-2"],
+            progress: 1,
+            goal: 3,
           }),
         ]}
       />,
@@ -32,5 +34,6 @@ describe("QuestPanel", () => {
     expect(screen.getByText("review_depth=0")).toBeTruthy();
     expect(screen.getByText("2 linked issues")).toBeTruthy();
     expect(screen.getByText("2 linked PRs")).toBeTruthy();
+    expect(screen.getByText("1 of 3 steps")).toBeTruthy();
   });
 });

@@ -3,11 +3,11 @@ import { ExpandableText } from "@/components/shared/ExpandableText";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { Progress } from "@/components/ui/progress";
 import {
-  formatNumber,
   formatPluralCount,
   formatSignedXp,
   toRatioPercent,
 } from "@/lib/formatters";
+import { formatQuestProgressLabel } from "@/features/quests/lib/quest-spotlight";
 import { buildEvidenceSignalChips } from "@/lib/presentation/evidence-signal";
 import { buildStableRenderRows } from "@/lib/presentation/render-identity";
 import type { Quest } from "@/types/gitrank";
@@ -59,7 +59,7 @@ export function QuestCard({ quest }: { quest: Quest }) {
       </div>
       <Progress value={progress} aria-label={`${quest.title} quest progress`} />
       <div className="flex items-center justify-between text-sm text-muted">
-        <span className="numeric-readout">{formatNumber(quest.progress)} / {formatNumber(quest.goal)}</span>
+        <span className="numeric-readout">{formatQuestProgressLabel(quest)}</span>
         <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusTone}`}>{quest.status}</span>
       </div>
       <ul role="list" className="flex flex-wrap gap-2">

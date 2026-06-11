@@ -9,8 +9,11 @@ import {
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { questProgressPercent } from "@/features/quests/lib/quest-spotlight";
-import { formatNumber, formatSignedXp } from "@/lib/formatters";
+import {
+  formatQuestProgressLabel,
+  questProgressPercent,
+} from "@/features/quests/lib/quest-spotlight";
+import { formatSignedXp } from "@/lib/formatters";
 import type { Quest } from "@/types/gitrank";
 
 export function QuestsSpotlightSection({
@@ -152,7 +155,7 @@ function MissionSpotlightCard({
         <div className="space-y-1">
           <Progress value={progress} aria-label={`${quest.title} quest progress`} />
           <div className="flex items-center justify-between text-xs text-muted">
-            <span className="numeric-readout">{formatNumber(quest.progress)} / {formatNumber(quest.goal)}</span>
+            <span className="numeric-readout">{formatQuestProgressLabel(quest)}</span>
             <span className="numeric-readout">{progress}%</span>
           </div>
         </div>

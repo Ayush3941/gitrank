@@ -11,6 +11,9 @@
 - Repository visibility fallback copy:
   - routed top-repository generated visibility reasons through shared plural formatting.
   - added profile API coverage so single-contribution repositories read `1 scored contribution`.
+- Quest progress labels:
+  - replaced slash-style progress labels such as `1 / 3` with shared count-of-total step labels.
+  - covered quest cards, dashboard quest previews, spotlight cards, and the shared quest progress helper.
 
 ## 2026-06-10
 

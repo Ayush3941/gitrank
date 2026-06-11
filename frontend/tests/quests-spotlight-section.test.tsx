@@ -40,7 +40,7 @@ describe("QuestsSpotlightSection", () => {
 
     expect(screen.getByText("Daily review loop")).toBeTruthy();
     expect(screen.getByText("+80 XP")).toBeTruthy();
-    expect(screen.getByText("1 / 2")).toBeTruthy();
+    expect(screen.getByText("1 of 2 steps")).toBeTruthy();
     expect(screen.getByText("50%")).toBeTruthy();
     expect(screen.getByText("Next move: Open contributions")).toBeTruthy();
     expect(screen.getByRole("link", { name: /Open contributions/i })).toBeTruthy();

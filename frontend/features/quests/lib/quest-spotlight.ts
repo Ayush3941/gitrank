@@ -1,4 +1,4 @@
-import { toRatioPercent } from "@/lib/formatters";
+import { formatCountOfTotal, toRatioPercent } from "@/lib/formatters";
 import type { Quest } from "@/types/gitrank";
 
 export function selectQuestSpotlight(source: Quest[]): Quest | null {
@@ -27,6 +27,12 @@ export function selectQuestSpotlight(source: Quest[]): Quest | null {
 export function questProgressPercent(quest: Quest): number {
   const goal = quest.goal > 0 ? quest.goal : 1;
   return toRatioPercent(quest.progress / goal);
+}
+
+export function formatQuestProgressLabel(quest: Quest): string {
+  const goal = Number.isFinite(quest.goal) && quest.goal > 0 ? Math.round(quest.goal) : 1;
+  const progress = Number.isFinite(quest.progress) ? Math.round(quest.progress) : 0;
+  return formatCountOfTotal(progress, goal, "step");
 }
 
 function questStatusRank(status: Quest["status"]): number {

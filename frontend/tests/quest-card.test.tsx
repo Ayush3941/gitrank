@@ -18,5 +18,6 @@ describe("QuestCard", () => {
     expect(screen.getByText("Trigger Quest Reward")).toBeTruthy();
     expect(screen.getByText("1 linked issue")).toBeTruthy();
     expect(screen.getByText("1 evidence PR")).toBeTruthy();
+    expect(screen.getByText("0 of 1 step")).toBeTruthy();
   });
 });
