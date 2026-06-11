@@ -9,8 +9,8 @@ import { RarityBadge } from "@/components/shared/RarityBadge";
 import { SignalIcon } from "@/components/shared/SignalIcon";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { formatBadgeEarnedLabel } from "@/features/badges/lib/badge-date-labels";
 import type { BadgeStory } from "@/lib/ai/abra-insights-types";
-import { formatDate } from "@/lib/formatters";
 import { buildStableRenderRows } from "@/lib/presentation/render-identity";
 import type { Badge } from "@/types/gitrank";
 
@@ -62,7 +62,7 @@ export function BadgeDetailDialog({
               </span>
               {badge.unlocked ? (
                 <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-                  Earned {formatDate(badge.earnedAt)}
+                  {formatBadgeEarnedLabel(badge.earnedAt)}
                 </span>
               ) : null}
             </div>

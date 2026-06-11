@@ -26,6 +26,9 @@
 - Freshness labels:
   - expanded compact labels such as `2h ago` into readable plural labels such as `2 hours ago`.
   - covered the shared relative-time formatter, stale notices, and semantic relative-time rendering.
+- Badge earned dates:
+  - routed badge earned-date copy through a badge-specific presentation helper.
+  - covered badge cards and badge detail dialogs so missing earned timestamps read `Earned date pending`.
 
 ## 2026-06-10
 

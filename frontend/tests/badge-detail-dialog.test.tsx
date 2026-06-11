@@ -20,6 +20,8 @@ describe("BadgeDetailDialog", () => {
     fireEvent.click(screen.getByRole("button", { name: "View details" }));
 
     expect(await screen.findByRole("dialog")).toBeTruthy();
+    expect(screen.getByText("Earned date pending")).toBeTruthy();
+    expect(screen.queryByText("Earned Never")).toBeNull();
     expect(screen.getAllByText("octo/api#42")).toHaveLength(2);
   });
 });

@@ -6,8 +6,9 @@ import { SignalIcon } from "@/components/shared/SignalIcon";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { BadgeDetailDialog } from "@/features/badges/components/BadgeDetailDialog";
+import { formatBadgeEarnedLabel } from "@/features/badges/lib/badge-date-labels";
 import type { BadgeStory } from "@/lib/ai/abra-insights-types";
-import { formatDate, formatPercent } from "@/lib/formatters";
+import { formatPercent } from "@/lib/formatters";
 import type { Badge } from "@/types/gitrank";
 
 export function BadgeGrid({
@@ -58,7 +59,7 @@ export function BadgeGrid({
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className={badge.unlocked ? "text-emerald-200" : "text-muted"}>
-                {badge.unlocked ? `Earned ${formatDate(badge.earnedAt)}` : "Locked"}
+                {badge.unlocked ? formatBadgeEarnedLabel(badge.earnedAt) : "Locked"}
               </span>
               {!badge.unlocked ? (
                 <span className="inline-flex items-center gap-1 text-muted">
