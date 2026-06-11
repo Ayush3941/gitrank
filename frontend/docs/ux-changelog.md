@@ -1,5 +1,11 @@
 # Frontend UX Changelog
 
+## 2026-06-11
+
+- Leaderboard row metrics:
+  - routed season XP and total XP cards through shared XP formatting.
+  - extended live fixture and component coverage so leaderboard rows render `320 XP` and `2,468 XP` instead of raw numbers.
+
 ## 2026-06-10
 
 - Contribution signal meters:

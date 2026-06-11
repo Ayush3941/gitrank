@@ -1,8 +1,12 @@
 # Contributing to GitRank
 
-Last reviewed: June 10, 2026
+Last reviewed: June 11, 2026
 
 This document is intentionally detailed.
+
+## Session Notes (June 11, 2026)
+
+- Routed leaderboard row season and total XP metric cards through shared XP formatting so leaderboard values include the same `XP` unit and thousands separators as the rest of the app.
 
 ## Session Notes (June 10, 2026)
 

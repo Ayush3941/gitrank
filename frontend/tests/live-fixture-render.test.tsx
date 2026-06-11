@@ -211,6 +211,7 @@ describe("live fixture frontend smoke coverage", () => {
         { timeout: 15_000 },
       ),
     ).toBeTruthy();
+    expect((await screen.findAllByText("320 XP")).length).toBeGreaterThan(1);
     expect(await screen.findByText("Lane: Global")).toBeTruthy();
     expect(screen.queryByText(/View: (Nearby|Full board)/)).toBeNull();
     expect(screen.queryByText("Details: On")).toBeNull();

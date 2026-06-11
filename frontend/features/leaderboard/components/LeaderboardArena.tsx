@@ -207,9 +207,9 @@ export function LeaderboardArena({
                     </div>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                    <Metric label="Season XP" value={row.seasonXp} />
+                    <Metric label="Season XP" value={formatXpLabel(row.seasonXp)} />
                     <Metric label="To next rank" value={row.xpToNextRank ? formatXpLabel(row.xpToNextRank) : "Lead"} />
-                    {showDetails ? <Metric label="Total XP" value={row.totalXp} /> : null}
+                    {showDetails ? <Metric label="Total XP" value={formatXpLabel(row.totalXp)} /> : null}
                     <Metric
                       label="Movement"
                       value={`${positive ? "+" : ""}${row.movement}`}
