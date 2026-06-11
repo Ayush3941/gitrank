@@ -1,4 +1,5 @@
 import { formatPluralCount, formatXpLabel } from "@/lib/formatters";
+import { formatTokenLabel } from "@/lib/presentation/token-label";
 
 const SUMMARY_PREFIX = "summary=[";
 
@@ -40,7 +41,7 @@ function formatEvidenceSignal(signal: string): string | null {
     if (!reason) {
       return "AI fallback";
     }
-    return `AI fallback: ${humanizeToken(reason)}`;
+    return `AI fallback: ${formatTokenLabel(reason)}`;
   }
 
   if (lower.startsWith("score_version=")) {
@@ -125,7 +126,7 @@ function formatEvidenceSignal(signal: string): string | null {
 
   if (lower.startsWith("rule=")) {
     const rule = value.slice("rule=".length).trim();
-    return rule ? `Trigger ${humanizeToken(rule)}` : "Trigger";
+    return rule ? `Trigger ${formatTokenLabel(rule)}` : "Trigger";
   }
 
   if (lower.startsWith("active_weeks=")) {
@@ -192,7 +193,7 @@ function formatCategoryChip(raw: string): string {
   if (!category) {
     return "Category";
   }
-  return `Category ${humanizeToken(category)}`;
+  return `Category ${formatTokenLabel(category)}`;
 }
 
 function criticalityLabel(raw: string): string {
@@ -207,22 +208,8 @@ function criticalityLabel(raw: string): string {
     case "security_sensitive":
       return "Security-sensitive path";
     default:
-      return `Criticality ${humanizeToken(raw)}`;
+      return `Criticality ${formatTokenLabel(raw)}`;
   }
-}
-
-function humanizeToken(value: string): string {
-  const cleaned = value
-    .replace(/[_-]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  if (!cleaned) {
-    return "";
-  }
-  return cleaned
-    .split(" ")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
 }
 
 function truncateChip(value: string): string {

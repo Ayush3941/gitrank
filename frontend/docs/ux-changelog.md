@@ -2,6 +2,9 @@
 
 ## 2026-06-11
 
+- Status token labels:
+  - extracted shared machine-token label formatting for fallback sync, evidence, and deterministic signal labels.
+  - preserved common acronyms such as AI, API, CI, PR, and XP in generated fallback labels.
 - Season date fallback:
   - replaced the shared short-date fallback from `Never` to `Date unavailable`.
   - covered dashboard league and leaderboard season deadline labels so invalid season metadata does not render `Ends Never`.

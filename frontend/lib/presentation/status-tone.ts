@@ -1,4 +1,5 @@
 import type { PREvidenceState, SyncState } from "@/types/gitrank";
+import { formatTokenLabel } from "@/lib/presentation/token-label";
 
 export type StatusTone = "muted" | "info" | "success" | "warning" | "danger";
 
@@ -78,5 +79,5 @@ export function formatEvidenceStatusLabel(
 }
 
 function formatUnknownStatusLabel(status: string): string {
-  return status.replaceAll("_", " ");
+  return formatTokenLabel(status);
 }
