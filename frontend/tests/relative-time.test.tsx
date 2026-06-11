@@ -13,7 +13,7 @@ describe("RelativeTime", () => {
       );
     });
 
-    const timeNode = screen.getByText("1h ago").closest("time");
+    const timeNode = screen.getByText("1 hour ago").closest("time");
     expect(timeNode?.getAttribute("datetime")).toBe("2026-05-25T10:30:00.000Z");
     expect(timeNode?.hasAttribute("title")).toBe(false);
     expect(screen.getByText(/Last refreshed:/).className).toContain("sr-only");

@@ -23,6 +23,9 @@
 - Season deadline labels:
   - expanded compact labels such as `5d left` into readable plural labels such as `5 days left`.
   - covered the shared time-until formatter used by dashboard and leaderboard season cards.
+- Freshness labels:
+  - expanded compact labels such as `2h ago` into readable plural labels such as `2 hours ago`.
+  - covered the shared relative-time formatter, stale notices, and semantic relative-time rendering.
 
 ## 2026-06-10
 

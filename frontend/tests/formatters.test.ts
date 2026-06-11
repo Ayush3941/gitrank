@@ -101,8 +101,10 @@ describe("formatRelativeDays", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-05-17T18:00:00.000Z"));
 
-    expect(formatRelativeDays("2026-05-17T17:58:00.000Z")).toBe("2m ago");
-    expect(formatRelativeDays("2026-05-17T16:00:00.000Z")).toBe("2h ago");
+    expect(formatRelativeDays("2026-05-17T17:59:00.000Z")).toBe("1 minute ago");
+    expect(formatRelativeDays("2026-05-17T17:58:00.000Z")).toBe("2 minutes ago");
+    expect(formatRelativeDays("2026-05-17T17:00:00.000Z")).toBe("1 hour ago");
+    expect(formatRelativeDays("2026-05-17T16:00:00.000Z")).toBe("2 hours ago");
   });
 
   it("returns day precision for older sync timestamps", () => {

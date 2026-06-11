@@ -120,12 +120,11 @@ export function formatRelativeDays(value?: string) {
   if (deltaMs <= 0) return "Just now";
   const minutes = Math.floor(deltaMs / (1000 * 60));
   if (minutes < 1) return "Just now";
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 60) return `${formatPluralCount(minutes, "minute")} ago`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return `${formatPluralCount(hours, "hour")} ago`;
   const days = Math.floor(hours / 24);
-  if (days === 1) return "1 day ago";
-  return `${days} days ago`;
+  return `${formatPluralCount(days, "day")} ago`;
 }
 
 export function formatDateTime(value?: string, fallback = "Unknown") {

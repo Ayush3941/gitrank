@@ -13,6 +13,7 @@ This document is intentionally detailed.
 - Replaced the Settings display-tuning slash summary with labeled chips for theme, text scale, and preference source so the state reads clearly at a glance.
 - Routed onboarding reveal XP progress through shared XP progress wording so it reads `1,200 XP toward 1,500 XP` instead of a raw slash ratio.
 - Expanded season deadline labels from compact forms such as `5d left` to shared plural copy such as `5 days left` across dashboard and leaderboard cards.
+- Expanded shared freshness labels from compact forms such as `2h ago` to plural copy such as `2 hours ago` across relative-time and stale-state surfaces.
 
 ## Session Notes (June 10, 2026)
 

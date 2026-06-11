@@ -45,7 +45,7 @@ describe("buildDashboardStaleNotice", () => {
       { code: "none", message: "" },
     );
 
-    expect(notice.message).toContain("1h ago");
+    expect(notice.message).toContain("1 hour ago");
     expect(notice.reasonMessage).toBeUndefined();
     vi.useRealTimers();
   });
