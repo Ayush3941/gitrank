@@ -27,14 +27,6 @@ export function CopyTextButton({
 }) {
   const [state, setState] = useState<"idle" | "copied" | "manual" | "error">("idle");
   const timerRef = useRef<number | undefined>(undefined);
-  const liveAnnouncement =
-    state === "idle"
-      ? ""
-      : state === "copied"
-        ? copiedLabel
-        : state === "manual"
-          ? manualLabel
-          : errorLabel;
 
   useEffect(() => {
     return () => {
@@ -101,6 +93,12 @@ export function CopyTextButton({
         : state === "error"
           ? errorLabel
           : label;
+  const accessibleLabel = contextualCopyStateLabel({
+    baseLabel: label,
+    stateLabel: currentLabel,
+    state,
+  });
+  const liveAnnouncement = state === "idle" ? "" : accessibleLabel;
   const stableWidth = size !== "icon";
 
   return (
@@ -111,6 +109,7 @@ export function CopyTextButton({
         variant={variant}
         onClick={handleCopy}
         className={cn(stableWidth ? "min-w-[8.5rem] justify-center" : undefined)}
+        aria-label={accessibleLabel}
       >
         {state === "copied" ? <Check className="h-4 w-4" aria-hidden="true" /> : <Copy className="h-4 w-4" aria-hidden="true" />}
         {currentLabel}
@@ -120,4 +119,52 @@ export function CopyTextButton({
       </span>
     </div>
   );
+}
+
+function contextualCopyStateLabel({
+  baseLabel,
+  stateLabel,
+  state,
+}: {
+  baseLabel: string;
+  stateLabel: string;
+  state: "idle" | "copied" | "manual" | "error";
+}): string {
+  const trimmedBaseLabel = baseLabel.trim() || "Copy";
+  const trimmedStateLabel = stateLabel.trim() || trimmedBaseLabel;
+  if (state === "idle") {
+    return trimmedBaseLabel;
+  }
+
+  const context = copyContextFromLabel(trimmedBaseLabel);
+  if (!context) {
+    return trimmedStateLabel;
+  }
+
+  const stateLabelLower = trimmedStateLabel.toLowerCase();
+  const contextLower = context.toLowerCase();
+  if (stateLabelLower.includes(contextLower)) {
+    return trimmedStateLabel;
+  }
+  if (state === "copied" && stateLabelLower === "copied") {
+    return `${capitalizeFirst(context)} copied`;
+  }
+  if (state === "manual" && stateLabelLower === "copy manually") {
+    return `Copy ${context} manually`;
+  }
+  if (state === "error" && stateLabelLower === "copy failed") {
+    return `Copy ${context} failed`;
+  }
+  return `${trimmedStateLabel}: ${trimmedBaseLabel}`;
+}
+
+function copyContextFromLabel(label: string): string {
+  return label.replace(/^copy\s+/i, "").trim();
+}
+
+function capitalizeFirst(value: string): string {
+  if (!value) {
+    return value;
+  }
+  return `${value[0]?.toUpperCase() ?? ""}${value.slice(1)}`;
 }

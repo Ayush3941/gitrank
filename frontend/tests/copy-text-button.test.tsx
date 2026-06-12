@@ -66,4 +66,51 @@ describe("CopyTextButton", () => {
     });
     expect(emitAnalyticsEventMock).toHaveBeenCalledTimes(1);
   });
+
+  it("keeps manual fallback names contextual when the copy target is specific", async () => {
+    promptMock.mockReturnValueOnce("profile summary");
+
+    render(<CopyTextButton text="profile summary" label="Copy summary" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Copy summary" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Copy summary manually" })).toBeTruthy();
+    });
+    expect(screen.getByRole("status").textContent).toBe("Copy summary manually");
+  });
+
+  it("keeps copied state names contextual when the visible copied label is generic", async () => {
+    Object.defineProperty(window, "isSecureContext", {
+      configurable: true,
+      value: true,
+    });
+    writeTextMock.mockResolvedValueOnce(undefined);
+
+    render(<CopyTextButton text="profile summary" label="Copy summary" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Copy summary" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Summary copied" })).toBeTruthy();
+    });
+    expect(screen.getByRole("status").textContent).toBe("Summary copied");
+  });
+
+  it("keeps failure state names contextual when clipboard copy fails", async () => {
+    Object.defineProperty(window, "isSecureContext", {
+      configurable: true,
+      value: true,
+    });
+    writeTextMock.mockRejectedValueOnce(new Error("clipboard unavailable"));
+
+    render(<CopyTextButton text="profile summary" label="Copy summary" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Copy summary" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Copy summary failed" })).toBeTruthy();
+    });
+    expect(screen.getByRole("status").textContent).toBe("Copy summary failed");
+  });
 });

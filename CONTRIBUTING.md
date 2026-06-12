@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 12, 2026)
 
+- Kept shared copy-button success, manual, and failure states context-aware for assistive technology while preserving the visible compact labels.
 - Replaced generic repository visibility switch names with action-specific labels that say whether the switch will hide or show a repository on the public profile.
 - Added default human-readable `aria-valuetext` to the shared progress primitive while preserving feature-specific progress descriptions.
 - Normalized quest spotlight and mission-board empty states to evidence-specific recovery copy and added accessible note labels for empty spotlight cards.

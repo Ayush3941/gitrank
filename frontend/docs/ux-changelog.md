@@ -2,6 +2,9 @@
 
 ## 2026-06-12
 
+- Copy button state labels:
+  - kept copied, manual-copy, and failure states tied to the original copy target in accessible names and live announcements.
+  - preserved existing visible button labels so card layouts do not shift.
 - Repository visibility controls:
   - replaced generic toggle labels with action-specific switch names for public and hidden repositories.
   - covered both hide and show actions so assistive technology announces the result of changing the switch.
