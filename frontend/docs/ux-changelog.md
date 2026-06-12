@@ -2,6 +2,9 @@
 
 ## 2026-06-12
 
+- Quest mission error state:
+  - replaced generic recommendation-unavailable copy with scored PR evidence input guidance.
+  - kept retry and sync settings as the recovery actions, with focused mission-section coverage.
 - Badge shelf empty states:
   - replaced waiting/generic filter copy with scored-evidence and badge-rule attachment guidance.
   - kept reset filters and quests as the relevant recovery actions, with focused shelf coverage.

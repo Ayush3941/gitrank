@@ -47,8 +47,8 @@ export function QuestsMissionsSection({
       {isLoading ? <LoadingState message="Quest lanes" /> : null}
       {isError ? (
         <ErrorState
-          title="Quest engine unavailable"
-          description="Quest recommendations are unavailable right now. Retry or open sync settings."
+          title="Quest evidence unavailable"
+          description="Mission lanes need fresh scored PR evidence. Retry the quest fetch, or refresh sync settings if evidence inputs are stale."
           onRetry={onRetry}
           fallbackLabel="Open sync settings"
           fallbackHref="/dashboard/settings"

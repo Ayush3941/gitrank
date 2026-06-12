@@ -60,6 +60,16 @@ describe("QuestsMissionsSection", () => {
       />,
     );
 
+    expect(screen.getByRole("heading", { name: "Quest evidence unavailable" })).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Mission lanes need fresh scored PR evidence. Retry the quest fetch, or refresh sync settings if evidence inputs are stale.",
+      ),
+    ).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Open sync settings" }).getAttribute("href")).toBe(
+      "/dashboard/settings",
+    );
+
     fireEvent.click(screen.getByRole("button", { name: "Retry" }));
     expect(onRetry).toHaveBeenCalledTimes(1);
   });
