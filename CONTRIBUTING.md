@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 11, 2026)
 
+- Added labeled shared empty-state regions/notes and tightened dashboard, contribution, and public-profile empty copy around missing PR evidence.
 - Replaced generic Settings sync-run `Other` status labels with readable token-derived fallback labels and explicit unavailable copy for blank statuses.
 - Refined shared machine-token labels to sentence-style fallback copy while preserving product acronyms such as AI, API, CI, PR, and XP.
 - Extracted shared machine-token label formatting so fallback sync/evidence states render as readable labels with common acronyms preserved.

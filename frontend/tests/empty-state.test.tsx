@@ -6,11 +6,13 @@ describe("EmptyState", () => {
   it("uses a purposeful decorative absence icon without exposing extra screen-reader copy", () => {
     const { container } = render(
       <EmptyState
-        title="No reports yet"
+        title="Reports need PR evidence"
         description="Merged PR reports appear here after sync settles."
       />,
     );
 
+    expect(screen.getByRole("region", { name: "Reports need PR evidence" })).toBeTruthy();
+    expect(screen.getByText("Evidence pending")).toBeTruthy();
     const icon = container.querySelector(".lucide-inbox");
     expect(icon).not.toBeNull();
     expect(icon?.getAttribute("aria-hidden")).toBe("true");

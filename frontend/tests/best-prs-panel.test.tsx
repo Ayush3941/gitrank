@@ -11,6 +11,13 @@ vi.mock("next/link", () => ({
 }));
 
 describe("BestPRsPanel", () => {
+  it("renders evidence-first public empty copy", () => {
+    render(<BestPRsPanel reports={[]} />);
+
+    expect(screen.getByRole("note", { name: "No visible PR evidence" })).toBeTruthy();
+    expect(screen.getByText("This profile snapshot has no public PR reports to display.")).toBeTruthy();
+  });
+
   it("renders repeated best-PR titles when PR identities differ", () => {
     render(
       <BestPRsPanel

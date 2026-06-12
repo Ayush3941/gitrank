@@ -17,8 +17,8 @@ describe("CompactEmptyState", () => {
   it("renders an embedded absence note with decorative icon and recovery actions", () => {
     const { container } = render(
       <CompactEmptyState
-        title="No battle reports yet"
-        description="New merged PR reports appear here after auto-sync settles."
+        title="Battle reports need PR evidence"
+        description="Merged PR reports appear here after sync materializes scored contributions."
         primaryAction={{
           label: "Inspect contributions",
           href: "/dashboard/contributions",
@@ -30,8 +30,13 @@ describe("CompactEmptyState", () => {
       />,
     );
 
-    expect(screen.getByRole("note")).toBeTruthy();
-    expect(screen.getByRole("heading", { name: "No battle reports yet" })).toBeTruthy();
+    expect(screen.getByRole("note", { name: "Battle reports need PR evidence" })).toBeTruthy();
+    expect(
+      screen.getByRole("heading", { name: "Battle reports need PR evidence" }),
+    ).toBeTruthy();
+    expect(
+      screen.getByText("Merged PR reports appear here after sync materializes scored contributions."),
+    ).toBeTruthy();
     expect(container.querySelector(".lucide-inbox")?.getAttribute("aria-hidden")).toBe("true");
     expect(screen.getByRole("link", { name: "Inspect contributions" }).getAttribute("href")).toBe(
       "/dashboard/contributions",

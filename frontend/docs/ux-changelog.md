@@ -2,6 +2,9 @@
 
 ## 2026-06-11
 
+- Empty-state semantics:
+  - added accessible names and descriptions to shared empty-state regions and compact notes.
+  - replaced vague dashboard/contribution/public-profile empty copy with PR-evidence-specific recovery language.
 - Settings sync-run status labels:
   - replaced generic `Other` status copy with readable fallback labels for unexpected backend status tokens.
   - kept blank or literal unknown statuses on the explicit `Status unavailable` path.

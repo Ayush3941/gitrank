@@ -1,6 +1,7 @@
 "use client";
 
 import { Inbox } from "lucide-react";
+import { useId } from "react";
 import { Button } from "@/components/ui/button";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { cn } from "@/lib/cn";
@@ -33,6 +34,8 @@ export function CompactEmptyState({
   secondaryAction?: CompactEmptyStateAction;
   className?: string;
 }) {
+  const titleId = useId();
+  const descriptionId = useId();
   const actions: CompactEmptyStateActionRow[] = [
     primaryAction
       ? { id: "primary", action: primaryAction, defaultVariant: "secondary" }
@@ -45,6 +48,8 @@ export function CompactEmptyState({
   return (
     <div
       role="note"
+      aria-labelledby={titleId}
+      aria-describedby={descriptionId}
       className={cn(
         "neon-surface cyber-sheen space-y-3 rounded-[var(--radius-universal)] border border-dashed border-primary/24 px-4 py-3 text-sm",
         className,
@@ -55,8 +60,8 @@ export function CompactEmptyState({
         {eyebrow}
       </div>
       <div className="space-y-1">
-        <h3 className="text-base font-semibold text-white">{title}</h3>
-        <p className="max-w-xl text-sm leading-6 text-muted">{description}</p>
+        <h3 id={titleId} className="text-base font-semibold text-white">{title}</h3>
+        <p id={descriptionId} className="max-w-xl text-sm leading-6 text-muted">{description}</p>
       </div>
       {actions.length > 0 ? (
         <div className="flex flex-wrap gap-2">

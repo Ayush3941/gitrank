@@ -33,8 +33,8 @@ export function QuestPanel({ quests }: { quests: Quest[] }) {
       <div className="space-y-3">
         {quests.length === 0 ? (
           <CompactEmptyState
-            title="No quests yet"
-            description="Sync scored PR evidence to generate missions from real contribution signals."
+            title="Quests need scored evidence"
+            description="Sync PR evidence so missions can target real contribution signals."
             primaryAction={{
               label: "Open contributions",
               href: "/dashboard/contributions",

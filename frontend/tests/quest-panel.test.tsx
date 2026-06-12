@@ -4,6 +4,16 @@ import { QuestPanel } from "@/features/dashboard/components/QuestPanel";
 import { buildQuest } from "@/tests/helpers/quest-fixture";
 
 describe("QuestPanel", () => {
+  it("renders evidence-first empty copy with sync recovery actions", () => {
+    render(<QuestPanel quests={[]} />);
+
+    expect(screen.getByRole("note", { name: "Quests need scored evidence" })).toBeTruthy();
+    expect(screen.getByText("Sync PR evidence so missions can target real contribution signals.")).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Open sync settings" }).getAttribute("href")).toBe(
+      "/dashboard/settings",
+    );
+  });
+
   it("renders repeated quest titles when quest identities differ", () => {
     render(
       <QuestPanel

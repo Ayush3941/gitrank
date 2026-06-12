@@ -36,8 +36,8 @@ export function BestPRsPanel({
       <div className="space-y-3">
         {reports.length === 0 ? (
           <CompactEmptyState
-            title="No public PR reports yet"
-            description="This profile snapshot has no visible PR reports yet."
+            title="No visible PR evidence"
+            description="This profile snapshot has no public PR reports to display."
             primaryAction={{
               label: "Open contributions",
               href: "/dashboard/contributions",

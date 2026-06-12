@@ -1,7 +1,7 @@
 "use client";
 
 import { Inbox } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { GlowCard } from "@/components/shared/GlowCard";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
@@ -10,7 +10,7 @@ import { emitAnalyticsEvent } from "@/lib/api/analytics-api";
 export function EmptyState({
   title,
   description,
-  eyebrow = "No data yet",
+  eyebrow = "Evidence pending",
   actionLabel,
   actionHref,
   onAction,
@@ -25,6 +25,8 @@ export function EmptyState({
   analyticsTarget?: string;
 }) {
   const sentEventRef = useRef(false);
+  const titleId = useId();
+  const descriptionId = useId();
 
   useEffect(() => {
     if (sentEventRef.current || !analyticsTarget) {
@@ -40,14 +42,19 @@ export function EmptyState({
   }, [analyticsTarget]);
 
   return (
-    <GlowCard className="cyber-sheen flex flex-col items-start gap-4 border-dashed border-primary/24">
+    <GlowCard
+      role="region"
+      aria-labelledby={titleId}
+      aria-describedby={descriptionId}
+      className="cyber-sheen flex flex-col items-start gap-4 border-dashed border-primary/24"
+    >
       <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/12 px-3 py-1.5 text-sm font-semibold text-primary">
         <Inbox className="h-4 w-4" aria-hidden="true" />
         {eyebrow}
       </div>
       <div className="space-y-2">
-        <h2 className="text-xl font-semibold text-white">{title}</h2>
-        <p className="max-w-xl text-sm text-muted">{description}</p>
+        <h2 id={titleId} className="text-xl font-semibold text-white">{title}</h2>
+        <p id={descriptionId} className="max-w-xl text-sm text-muted">{description}</p>
       </div>
       {actionLabel ? (
         <div className="flex w-full flex-col items-start gap-2 sm:w-auto sm:flex-row sm:items-center">

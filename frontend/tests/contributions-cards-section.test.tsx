@@ -24,9 +24,38 @@ describe("ContributionsCardsSection", () => {
       />,
     );
 
-    expect(screen.getByText("No contributions match current filters.")).toBeTruthy();
+    expect(screen.getByText("No contributions match these filters")).toBeTruthy();
+    expect(
+      screen.getByRole("region", { name: "No contributions match these filters" }),
+    ).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Reset filters" }));
     expect(onResetFilters).toHaveBeenCalledTimes(1);
+  });
+
+  it("renders evidence-first empty copy before PR rows are available", () => {
+    render(
+      <ContributionsCardsSection
+        regionId="contribution-cards"
+        filteredRows={[]}
+        visibleRows={[]}
+        isFiltering={false}
+        isFilteredNoResults={false}
+        hasMoreRows={false}
+        remainingRows={0}
+        cardPageSize={10}
+        useLiteCards={false}
+        showDetails={false}
+        onResetFilters={vi.fn()}
+        onShowMoreRows={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("No merged PR evidence")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Keep this page open while auto-sync loads recent PR evidence, or refresh from Settings.",
+      ),
+    ).toBeTruthy();
   });
 
   it("renders visible rows and delegates show-more pagination", async () => {

@@ -37,8 +37,8 @@ export function RecentBattleReports({ reports }: { reports: PullRequestAnalysis[
         {sortedReports.length === 0 ? (
           <li className="list-none">
             <CompactEmptyState
-              title="No battle reports yet"
-              description="New merged PR reports appear here after auto-sync settles."
+              title="Battle reports need PR evidence"
+              description="Merged PR reports appear here after sync materializes scored contributions."
               primaryAction={{
                 label: "Inspect contributions",
                 href: "/dashboard/contributions",

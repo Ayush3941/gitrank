@@ -27,7 +27,7 @@ describe("frontend accessibility guardrails", () => {
           description="Guard test for shared a11y patterns."
         />
         <EmptyState
-          title="No data yet"
+          title="Evidence pending"
           description="Retry after sync completes."
           actionLabel="Open dashboard"
           actionHref="/dashboard"

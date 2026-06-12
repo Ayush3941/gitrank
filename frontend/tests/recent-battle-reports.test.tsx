@@ -11,6 +11,18 @@ vi.mock("next/link", () => ({
 }));
 
 describe("RecentBattleReports", () => {
+  it("renders evidence-first empty copy with recovery actions", () => {
+    render(<RecentBattleReports reports={[]} />);
+
+    expect(screen.getByRole("note", { name: "Battle reports need PR evidence" })).toBeTruthy();
+    expect(
+      screen.getByText("Merged PR reports appear here after sync materializes scored contributions."),
+    ).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Inspect contributions" }).getAttribute("href")).toBe(
+      "/dashboard/contributions",
+    );
+  });
+
   it("renders repeated report titles when PR identities differ", () => {
     render(
       <RecentBattleReports

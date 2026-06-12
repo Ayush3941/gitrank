@@ -62,13 +62,13 @@ export function ContributionsCardsSection({
           eyebrow={isFilteredNoResults ? "Filter results" : "Contribution evidence"}
           title={
             isFilteredNoResults
-              ? "No contributions match current filters."
-              : "No merged PRs found yet."
+              ? "No contributions match these filters"
+              : "No merged PR evidence"
           }
           description={
             isFilteredNoResults
               ? "Reset filters or widen search."
-              : "Keep this page open while auto-sync loads recent PR evidence."
+              : "Keep this page open while auto-sync loads recent PR evidence, or refresh from Settings."
           }
           actionLabel={isFilteredNoResults ? "Reset filters" : "Open sync settings"}
           actionHref={isFilteredNoResults ? undefined : "/dashboard/settings"}
