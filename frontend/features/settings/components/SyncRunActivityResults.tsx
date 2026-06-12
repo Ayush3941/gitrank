@@ -51,10 +51,11 @@ export function SyncRunActivityResults({
         <div className={RESULTS_REGION_CLASS_NAME}>
           <EmptyState
             eyebrow="Sync activity"
-            title="No sync runs yet."
-            description="Open dashboard to start auto-sync and populate recent activity."
-            actionLabel="Open dashboard"
-            actionHref="/dashboard"
+            title="No GitHub sync attempts recorded"
+            description="Start a profile refresh from the GitHub account card, then this log will show queued, running, completed, and failed sync attempts."
+            actionLabel="Go to account sync"
+            actionHref="#settings-account"
+            analyticsTarget="settings:sync-runs-empty"
           />
         </div>
       ) : rows.length === 0 ? (

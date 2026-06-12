@@ -2,6 +2,9 @@
 
 ## 2026-06-12
 
+- Settings sync-log empty state:
+  - replaced the dashboard detour with copy that points to the in-page GitHub account refresh control.
+  - added regression coverage for the zero-run recovery link and removed the old generic no-runs wording.
 - Leaderboard empty state:
   - replaced generic no-row copy with visible scored-profile evidence guidance.
   - kept the arena preview and contributions recovery action intact.

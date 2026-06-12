@@ -188,6 +188,28 @@ describe("SyncRunActivityPanel", () => {
     expect(screen.getByRole("status").textContent).toBe("1 of 1 run");
   });
 
+  it("points an empty sync log to the account refresh control", () => {
+    render(
+      <SyncRunActivityPanel
+        runs={[]}
+        isLoading={false}
+        isRefreshing={false}
+        isError={false}
+        onRefresh={() => undefined}
+      />,
+    );
+
+    const emptyState = screen.getByRole("region", {
+      name: "No GitHub sync attempts recorded",
+    });
+    expect(emptyState.textContent).toContain(
+      "Start a profile refresh from the GitHub account card",
+    );
+    const action = screen.getByRole("link", { name: "Go to account sync" });
+    expect(action.getAttribute("href")).toBe("#settings-account");
+    expect(screen.queryByText("No sync runs yet.")).toBeNull();
+  });
+
   it("keeps sync-log recovery controls outside the assertive error message", () => {
     const onRefresh = vi.fn();
     render(

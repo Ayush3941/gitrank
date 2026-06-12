@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 12, 2026)
 
+- Pointed the settings sync-log empty state at the in-page GitHub account refresh control instead of sending users to the dashboard.
 - Replaced the leaderboard's empty live-row state with visible scored-profile evidence copy while keeping the arena preview recovery path.
 - Kept shared copy-button success, manual, and failure states context-aware for assistive technology while preserving the visible compact labels.
 - Replaced generic repository visibility switch names with action-specific labels that say whether the switch will hide or show a repository on the public profile.
