@@ -1,5 +1,11 @@
 # Frontend UX Changelog
 
+## 2026-06-12
+
+- Quest empty states:
+  - replaced generic mission empty labels with PR-evidence-specific recovery copy across spotlight cards and the mission board.
+  - added accessible note labels to empty spotlight cards so each missing mission lane has a clear name.
+
 ## 2026-06-11
 
 - Public profile empty states:

@@ -1,8 +1,12 @@
 # Contributing to GitRank
 
-Last reviewed: June 11, 2026
+Last reviewed: June 12, 2026
 
 This document is intentionally detailed.
+
+## Session Notes (June 12, 2026)
+
+- Normalized quest spotlight and mission-board empty states to evidence-specific recovery copy and added accessible note labels for empty spotlight cards.
 
 ## Session Notes (June 11, 2026)
 

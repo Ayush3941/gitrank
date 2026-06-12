@@ -58,8 +58,8 @@ export function QuestsMissionsSection({
       {!isLoading && !isError && quests.length === 0 ? (
         <EmptyState
           eyebrow="Quest generation"
-          title="No quests ready yet."
-          description="Sync and complete scored contributions to unlock quests."
+          title="Quests need scored PR evidence"
+          description="Sync PR evidence so GitRank can generate missions from real contribution signals."
           actionLabel="Open sync settings"
           actionHref="/dashboard/settings"
           analyticsTarget="quests:empty"

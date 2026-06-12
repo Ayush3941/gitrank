@@ -39,7 +39,7 @@ export function QuestsSpotlightSection({
               kind="daily"
               title="Today's Quest"
               quest={dailyQuest}
-              emptyCopy="No daily mission yet."
+              emptyCopy="Daily mission needs fresh PR evidence."
               href="/dashboard/contributions"
               cta="Open contributions"
             />
@@ -47,7 +47,7 @@ export function QuestsSpotlightSection({
               kind="weekly"
               title="Weekly Challenge"
               quest={weeklyQuest}
-              emptyCopy="No weekly challenge yet."
+              emptyCopy="Weekly challenge appears after sync scores recent contribution evidence."
               href="/dashboard/settings"
               cta="Open sync settings"
             />
@@ -55,7 +55,7 @@ export function QuestsSpotlightSection({
               kind="long-term"
               title="Long-Term Journey"
               quest={longTermQuest}
-              emptyCopy="No long-term objective yet."
+              emptyCopy="Long-term objective needs enough scored history to identify a durable target."
               href="/dashboard/contributions"
               cta="Keep building"
             />
@@ -113,7 +113,11 @@ function MissionSpotlightCard({
   if (!quest) {
     return (
       <li className="list-none">
-        <div className="neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4">
+        <div
+          role="note"
+          aria-label={`${title} evidence pending`}
+          className="neon-surface space-y-3 border-dashed border-primary/24 px-4 py-4"
+        >
           <p className={`inline-flex items-center gap-2 text-xs font-medium ${iconTone}`}>
             <Icon className="h-3.5 w-3.5" aria-hidden="true" />
             {title}

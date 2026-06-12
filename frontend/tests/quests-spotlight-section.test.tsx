@@ -16,9 +16,18 @@ describe("QuestsSpotlightSection", () => {
     );
 
     expect(screen.getByText("Mission spotlight")).toBeTruthy();
-    expect(screen.getByText("No daily mission yet.")).toBeTruthy();
-    expect(screen.getByText("No weekly challenge yet.")).toBeTruthy();
-    expect(screen.getByText("No long-term objective yet.")).toBeTruthy();
+    expect(screen.getByRole("note", { name: "Today's Quest evidence pending" })).toBeTruthy();
+    expect(screen.getByText("Daily mission needs fresh PR evidence.")).toBeTruthy();
+    expect(screen.getByRole("note", { name: "Weekly Challenge evidence pending" })).toBeTruthy();
+    expect(
+      screen.getByText("Weekly challenge appears after sync scores recent contribution evidence."),
+    ).toBeTruthy();
+    expect(screen.getByRole("note", { name: "Long-Term Journey evidence pending" })).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Long-term objective needs enough scored history to identify a durable target.",
+      ),
+    ).toBeTruthy();
   });
 
   it("renders active quest details and recovery action", () => {

@@ -35,7 +35,12 @@ describe("QuestsMissionsSection", () => {
       />,
     );
 
-    expect(screen.getByText("No quests ready yet.")).toBeTruthy();
+    expect(screen.getByRole("region", { name: "Quests need scored PR evidence" })).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Sync PR evidence so GitRank can generate missions from real contribution signals.",
+      ),
+    ).toBeTruthy();
   });
 
   it("delegates retry from the error state", () => {
