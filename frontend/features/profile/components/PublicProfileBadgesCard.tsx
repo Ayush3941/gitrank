@@ -36,8 +36,8 @@ export function PublicProfileBadgesCard({ badges }: { badges: Badge[] }) {
         </ul>
       ) : (
         <CompactEmptyState
-          title="No badge unlocks yet"
-          description="Badge unlocks appear here as scored contributions land."
+          title="Badge unlocks need scored evidence"
+          description="Public badge unlocks appear as scored contributions land."
           primaryAction={{
             label: "Open quests",
             href: "/dashboard/quests",

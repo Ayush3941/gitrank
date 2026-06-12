@@ -18,6 +18,10 @@ const SkillRadarChart = dynamic(
   },
 );
 
+const EMPTY_SKILL_TITLE = "Skill map needs scored evidence";
+const EMPTY_SKILL_DESCRIPTION =
+  "Skill signals appear after a scored profile snapshot includes visible PR evidence.";
+
 export function PublicProfileSkillCard({
   skills,
   constrainedNetwork,
@@ -36,8 +40,8 @@ export function PublicProfileSkillCard({
       </div>
       {skills.length === 0 ? (
         <CompactEmptyState
-          title="No skill evidence yet"
-          description="Skill evidence appears here after the next scored snapshot."
+          title={EMPTY_SKILL_TITLE}
+          description={EMPTY_SKILL_DESCRIPTION}
           primaryAction={{
             label: "Open contributions",
             href: "/dashboard/contributions",
@@ -59,8 +63,8 @@ function PublicProfileLiteSkillSummary({ skills }: { skills: SkillNode[] }) {
   if (skills.length === 0) {
     return (
       <CompactEmptyState
-        title="No skill evidence yet"
-        description="Skill evidence appears here after the next scored snapshot."
+        title={EMPTY_SKILL_TITLE}
+        description={EMPTY_SKILL_DESCRIPTION}
       />
     );
   }

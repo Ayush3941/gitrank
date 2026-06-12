@@ -46,8 +46,8 @@ function PublicProfileLiteBestPRSummary({
     return (
       <GlowCard className="space-y-3">
         <CompactEmptyState
-          title="No public battle reports yet"
-          description="This profile snapshot has no visible battle reports yet."
+          title="No visible PR evidence"
+          description="This profile snapshot has no public battle reports to display."
           primaryAction={{
             label: "Open contributions",
             href: "/dashboard/contributions",

@@ -7,7 +7,8 @@ describe("PublicProfileBadgesCard", () => {
   it("renders the empty badge unlock state", () => {
     render(<PublicProfileBadgesCard badges={[]} />);
 
-    expect(screen.getByText("No badge unlocks yet")).toBeTruthy();
+    expect(screen.getByRole("note", { name: "Badge unlocks need scored evidence" })).toBeTruthy();
+    expect(screen.getByText("Public badge unlocks appear as scored contributions land.")).toBeTruthy();
     expect(screen.getByRole("link", { name: "Open quests" }).getAttribute("href")).toBe(
       "/dashboard/quests",
     );

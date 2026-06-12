@@ -12,7 +12,10 @@ describe("PublicProfileTimelineCard", () => {
       />,
     );
 
-    expect(screen.getByText("No timeline signal yet")).toBeTruthy();
+    expect(screen.getByRole("note", { name: "Timeline needs scored history" })).toBeTruthy();
+    expect(
+      screen.getByText("XP trend appears after synced scored history spans the selected window."),
+    ).toBeTruthy();
     expect(screen.getByText("Last 6 weeks")).toBeTruthy();
     expect(screen.getByRole("link", { name: "Open contributions" }).getAttribute("href")).toBe(
       "/dashboard/contributions",

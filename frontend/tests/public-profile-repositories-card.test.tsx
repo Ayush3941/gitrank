@@ -7,7 +7,8 @@ describe("PublicProfileRepositoriesCard", () => {
   it("renders the empty repository signal state", () => {
     render(<PublicProfileRepositoriesCard repositories={[]} />);
 
-    expect(screen.getByText("No repository signal yet")).toBeTruthy();
+    expect(screen.getByRole("note", { name: "Repository signal needs PR evidence" })).toBeTruthy();
+    expect(screen.getByText("Top repositories appear after public scored PR evidence is synced.")).toBeTruthy();
     expect(screen.getByRole("link", { name: "Open contributions" }).getAttribute("href")).toBe(
       "/dashboard/contributions",
     );

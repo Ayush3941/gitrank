@@ -2,6 +2,9 @@
 
 ## 2026-06-11
 
+- Public profile empty states:
+  - replaced older `No ... yet` labels with evidence-specific copy across repository, skill, badge, timeline, and battle-report sections.
+  - kept empty-state recovery actions pointed at contributions or quests depending on the missing evidence type.
 - Empty-state semantics:
   - added accessible names and descriptions to shared empty-state regions and compact notes.
   - replaced vague dashboard/contribution/public-profile empty copy with PR-evidence-specific recovery language.

@@ -29,6 +29,10 @@ const TimelineChart = dynamic(
   },
 );
 
+const EMPTY_TIMELINE_TITLE = "Timeline needs scored history";
+const EMPTY_TIMELINE_DESCRIPTION =
+  "XP trend appears after synced scored history spans the selected window.";
+
 export function PublicProfileTimelineCard({
   timeline,
   trendWindowLabel,
@@ -47,8 +51,8 @@ export function PublicProfileTimelineCard({
       </div>
       {timeline.length === 0 ? (
         <CompactEmptyState
-          title="No timeline signal yet"
-          description="Timeline signal appears here after more scored history is synced."
+          title={EMPTY_TIMELINE_TITLE}
+          description={EMPTY_TIMELINE_DESCRIPTION}
           primaryAction={{
             label: "Open contributions",
             href: "/dashboard/contributions",
@@ -74,8 +78,8 @@ function PublicProfileLiteTimelineSummary({
   if (timeline.length === 0) {
     return (
       <CompactEmptyState
-        title="No timeline signal yet"
-        description="Timeline signal appears here after more scored history is synced."
+        title={EMPTY_TIMELINE_TITLE}
+        description={EMPTY_TIMELINE_DESCRIPTION}
       />
     );
   }

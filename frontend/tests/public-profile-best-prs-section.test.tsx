@@ -13,7 +13,8 @@ describe("PublicProfileBestPRsSection", () => {
       />,
     );
 
-    expect(screen.getByText("No public battle reports yet")).toBeTruthy();
+    expect(screen.getByRole("note", { name: "No visible PR evidence" })).toBeTruthy();
+    expect(screen.getByText("This profile snapshot has no public battle reports to display.")).toBeTruthy();
     expect(screen.getByRole("link", { name: "Open contributions" }).getAttribute("href")).toBe(
       "/dashboard/contributions",
     );

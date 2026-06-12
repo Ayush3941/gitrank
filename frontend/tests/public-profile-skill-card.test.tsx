@@ -7,7 +7,12 @@ describe("PublicProfileSkillCard", () => {
   it("renders the empty skill evidence state", () => {
     render(<PublicProfileSkillCard skills={[]} constrainedNetwork={false} />);
 
-    expect(screen.getByText("No skill evidence yet")).toBeTruthy();
+    expect(screen.getByRole("note", { name: "Skill map needs scored evidence" })).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Skill signals appear after a scored profile snapshot includes visible PR evidence.",
+      ),
+    ).toBeTruthy();
     expect(screen.getByRole("link", { name: "Open contributions" }).getAttribute("href")).toBe(
       "/dashboard/contributions",
     );

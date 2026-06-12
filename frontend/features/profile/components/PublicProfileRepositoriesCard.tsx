@@ -27,8 +27,8 @@ export function PublicProfileRepositoriesCard({
       <div className="space-y-3">
         {repositories.length === 0 ? (
           <CompactEmptyState
-            title="No repository signal yet"
-            description="Repository signal appears here after more scored PR evidence is synced."
+            title="Repository signal needs PR evidence"
+            description="Top repositories appear after public scored PR evidence is synced."
             primaryAction={{
               label: "Open contributions",
               href: "/dashboard/contributions",
