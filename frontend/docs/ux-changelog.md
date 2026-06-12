@@ -2,6 +2,9 @@
 
 ## 2026-06-12
 
+- Badge detail evidence fallback:
+  - replaced the generic missing-PR chip with an evidence status note that differentiates locked badges from unlocked badges whose PR links are pending.
+  - kept contributions and quests as the recovery actions, with focused dialog coverage for both empty-evidence branches.
 - Settings sync-log empty state:
   - replaced the dashboard detour with copy that points to the in-page GitHub account refresh control.
   - added regression coverage for the zero-run recovery link and removed the old generic no-runs wording.

@@ -27,6 +27,12 @@ export function BadgeDetailDialog({
     badge.evidencePrIds,
     (prId) => `${badge.id}:${prId}`,
   );
+  const emptyEvidenceTitle = badge.unlocked
+    ? "Badge unlocked, PR links pending"
+    : "No qualifying PR evidence attached";
+  const emptyEvidenceDescription = badge.unlocked
+    ? "This badge is already in your shelf, but the current snapshot has not attached the qualifying PR IDs yet."
+    : "Open contributions to inspect scored PRs, or use quests to target the next badge requirement.";
 
   return (
     <Dialog>
@@ -136,11 +142,14 @@ export function BadgeDetailDialog({
                   </span>
                 ))
               ) : (
-                <div className="space-y-2">
-                  <span className="neon-chip neon-chip-muted rounded-full px-3 py-1.5 text-sm">
-                    No qualifying PRs yet
-                  </span>
-                  <div className="flex flex-wrap gap-2">
+                <div
+                  role="note"
+                  aria-label={`${badge.name} evidence status`}
+                  className="neon-surface w-full rounded-[var(--radius-universal)] border border-primary/18 p-3"
+                >
+                  <p className="text-sm font-semibold text-white">{emptyEvidenceTitle}</p>
+                  <p className="mt-1 text-sm text-muted">{emptyEvidenceDescription}</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
                     <Button asChild variant="secondary" size="sm">
                       <Link href="/dashboard/contributions" prefetch={false}>Open contributions</Link>
                     </Button>

@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 12, 2026)
 
+- Replaced the badge detail dialog's generic missing-PR chip with a status note that explains whether evidence links are absent for a locked badge or pending for an unlocked badge.
 - Pointed the settings sync-log empty state at the in-page GitHub account refresh control instead of sending users to the dashboard.
 - Replaced the leaderboard's empty live-row state with visible scored-profile evidence copy while keeping the arena preview recovery path.
 - Kept shared copy-button success, manual, and failure states context-aware for assistive technology while preserving the visible compact labels.
