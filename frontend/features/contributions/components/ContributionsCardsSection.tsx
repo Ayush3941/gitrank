@@ -62,13 +62,13 @@ export function ContributionsCardsSection({
           eyebrow={isFilteredNoResults ? "Filter results" : "Contribution evidence"}
           title={
             isFilteredNoResults
-              ? "No contributions match these filters"
-              : "No merged PR evidence"
+              ? "No PR cards match these filters"
+              : "No scored PR evidence yet"
           }
           description={
             isFilteredNoResults
-              ? "Reset filters or widen search."
-              : "Keep this page open while auto-sync loads recent PR evidence, or refresh from Settings."
+              ? "Reset filters or widen the search to inspect all scored PR cards."
+              : "Run a GitHub sync from Settings; cards appear after GitRank records scored PR evidence."
           }
           actionLabel={isFilteredNoResults ? "Reset filters" : "Open sync settings"}
           actionHref={isFilteredNoResults ? undefined : "/dashboard/settings"}

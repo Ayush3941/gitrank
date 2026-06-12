@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 12, 2026)
 
+- Reworded contributions card empty states around scored PR-card evidence, with clearer filter recovery and sync recovery copy.
 - Pointed the repository privacy empty state at the in-page GitHub account refresh control and clarified that repository visibility depends on synced repo evidence.
 - Replaced the badge detail dialog's generic missing-PR chip with a status note that explains whether evidence links are absent for a locked badge or pending for an unlocked badge.
 - Pointed the settings sync-log empty state at the in-page GitHub account refresh control instead of sending users to the dashboard.

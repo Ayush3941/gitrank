@@ -2,6 +2,9 @@
 
 ## 2026-06-12
 
+- Contributions cards empty states:
+  - replaced generic contribution/no-merged-PR wording with scored PR-card evidence copy.
+  - kept filter reset and sync settings as the relevant recovery actions, with focused section coverage.
 - Repository privacy empty state:
   - replaced the dashboard detour with an in-page account sync link for missing repository visibility records.
   - clarified that public/hidden controls appear after synced repository evidence is available.

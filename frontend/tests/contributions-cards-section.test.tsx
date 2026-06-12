@@ -24,9 +24,12 @@ describe("ContributionsCardsSection", () => {
       />,
     );
 
-    expect(screen.getByText("No contributions match these filters")).toBeTruthy();
+    expect(screen.getByText("No PR cards match these filters")).toBeTruthy();
     expect(
-      screen.getByRole("region", { name: "No contributions match these filters" }),
+      screen.getByText("Reset filters or widen the search to inspect all scored PR cards."),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("region", { name: "No PR cards match these filters" }),
     ).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Reset filters" }));
     expect(onResetFilters).toHaveBeenCalledTimes(1);
@@ -50,12 +53,15 @@ describe("ContributionsCardsSection", () => {
       />,
     );
 
-    expect(screen.getByText("No merged PR evidence")).toBeTruthy();
+    expect(screen.getByText("No scored PR evidence yet")).toBeTruthy();
     expect(
       screen.getByText(
-        "Keep this page open while auto-sync loads recent PR evidence, or refresh from Settings.",
+        "Run a GitHub sync from Settings; cards appear after GitRank records scored PR evidence.",
       ),
     ).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Open sync settings" }).getAttribute("href")).toBe(
+      "/dashboard/settings",
+    );
   });
 
   it("renders visible rows and delegates show-more pagination", async () => {
