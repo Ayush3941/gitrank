@@ -71,11 +71,11 @@ export function BadgesShelfResults({
     return (
       <EmptyState
         eyebrow={emptyFilteredState ? "Filter results" : "Badge progression"}
-        title={emptyFilteredState ? "No badges match current filters." : "Your badge shelf is waiting."}
+        title={emptyFilteredState ? "No badge cards match these filters" : "Badge shelf needs scored evidence"}
         description={
           emptyFilteredState
-            ? "Reset filters to view earned and locked badges."
-            : "Complete a meaningful merged PR to unlock badges."
+            ? "Reset filters to show earned badges and locked badge paths."
+            : "Badges appear after GitRank scores PR evidence and badge rules attach achievements."
         }
         actionLabel={emptyFilteredState ? "Reset filters" : "Open quests"}
         actionHref={emptyFilteredState ? undefined : "/dashboard/quests"}

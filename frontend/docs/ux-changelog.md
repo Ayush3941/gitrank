@@ -2,6 +2,9 @@
 
 ## 2026-06-12
 
+- Badge shelf empty states:
+  - replaced waiting/generic filter copy with scored-evidence and badge-rule attachment guidance.
+  - kept reset filters and quests as the relevant recovery actions, with focused shelf coverage.
 - Contributions cards empty states:
   - replaced generic contribution/no-merged-PR wording with scored PR-card evidence copy.
   - kept filter reset and sync settings as the relevant recovery actions, with focused section coverage.

@@ -24,9 +24,42 @@ describe("BadgesShelfResults", () => {
       />,
     );
 
-    expect(screen.getByText("No badges match current filters.")).toBeTruthy();
+    expect(screen.getByText("No badge cards match these filters")).toBeTruthy();
+    expect(
+      screen.getByText("Reset filters to show earned badges and locked badge paths."),
+    ).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Reset filters" }));
     expect(onResetFilters).toHaveBeenCalledTimes(1);
+  });
+
+  it("renders scored-evidence empty copy before badge rules attach achievements", () => {
+    render(
+      <BadgesShelfResults
+        visibleBadges={[]}
+        isLoading={false}
+        isError={false}
+        filteredCount={0}
+        totalCount={0}
+        canResetFilters={false}
+        hasMoreBadges={false}
+        remainingBadges={0}
+        regionId="badge-shelf"
+        onRetry={vi.fn()}
+        onResetFilters={vi.fn()}
+        onShowMoreBadges={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("Badge shelf needs scored evidence")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Badges appear after GitRank scores PR evidence and badge rules attach achievements.",
+      ),
+    ).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Open quests" }).getAttribute("href")).toBe(
+      "/dashboard/quests",
+    );
+    expect(screen.queryByText("Your badge shelf is waiting.")).toBeNull();
   });
 
   it("renders badge grid results and the show-more action", async () => {
