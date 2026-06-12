@@ -2,6 +2,9 @@
 
 ## 2026-06-12
 
+- Progress semantics:
+  - added default value text such as `42% complete` to the shared progress primitive.
+  - preserved explicit feature-level value text for richer meters such as contribution signal strength.
 - Quest empty states:
   - replaced generic mission empty labels with PR-evidence-specific recovery copy across spotlight cards and the mission board.
   - added accessible note labels to empty spotlight cards so each missing mission lane has a clear name.

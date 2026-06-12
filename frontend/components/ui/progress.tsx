@@ -3,12 +3,13 @@
 import * as React from "react";
 import * as ProgressPrimitive from "@radix-ui/react-progress";
 import { cn } from "@/lib/cn";
-import { toBoundedPercent } from "@/lib/formatters";
+import { formatPercent, toBoundedPercent } from "@/lib/formatters";
 
 export function Progress({
   className,
   value,
   indicatorClassName,
+  "aria-valuetext": ariaValueText,
   ...props
 }: React.ComponentProps<typeof ProgressPrimitive.Root> & {
   indicatorClassName?: string;
@@ -19,6 +20,7 @@ export function Progress({
     <ProgressPrimitive.Root
       {...props}
       className={cn("neon-track relative h-3 overflow-hidden rounded-full", className)}
+      aria-valuetext={ariaValueText ?? `${formatPercent(safeValue)} complete`}
       value={safeValue}
     >
       <ProgressPrimitive.Indicator

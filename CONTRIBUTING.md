@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 12, 2026)
 
+- Added default human-readable `aria-valuetext` to the shared progress primitive while preserving feature-specific progress descriptions.
 - Normalized quest spotlight and mission-board empty states to evidence-specific recovery copy and added accessible note labels for empty spotlight cards.
 
 ## Session Notes (June 11, 2026)
