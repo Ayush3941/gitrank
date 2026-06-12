@@ -209,10 +209,11 @@ export function PrivacyRepositoryToggleList({
             {counts.total === 0 ? (
               <EmptyState
                 eyebrow="Repository privacy"
-                title="Repository visibility will appear after sync."
-                description="Open dashboard to let auto-sync refresh repository privacy controls."
-                actionLabel="Open dashboard"
-                actionHref="/dashboard"
+                title="Repository visibility needs synced repo evidence"
+                description="Start a profile refresh from the GitHub account card; synced repositories will appear here with public and hidden controls."
+                actionLabel="Go to account sync"
+                actionHref="#settings-account"
+                analyticsTarget="settings:repository-visibility-empty"
               />
             ) : (
               <EmptyState

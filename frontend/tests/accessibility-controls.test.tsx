@@ -89,13 +89,19 @@ describe("accessibility control naming", () => {
       <PrivacyRepositoryToggleList repositories={[]} />
     );
 
-    const syncAction = rendered.getByRole("link", { name: /Open dashboard/i });
+    const syncAction = rendered.getByRole("link", { name: "Go to account sync" });
     const search = rendered.getByRole("searchbox", { name: "Search repositories" });
 
     expect(rendered.queryByRole("button", { name: "Reset filters" })).toBeNull();
-    expect(rendered.getByText("Repository visibility will appear after sync.")).toBeTruthy();
+    expect(rendered.getByText("Repository visibility needs synced repo evidence")).toBeTruthy();
+    expect(
+      rendered.getByText(
+        "Start a profile refresh from the GitHub account card; synced repositories will appear here with public and hidden controls.",
+      ),
+    ).toBeTruthy();
     expect(syncAction).toBeTruthy();
-    expect(syncAction.getAttribute("href")).toBe("/dashboard");
+    expect(syncAction.getAttribute("href")).toBe("#settings-account");
+    expect(rendered.queryByText("Open dashboard to let auto-sync refresh repository privacy controls.")).toBeNull();
     const describedById = search.getAttribute("aria-describedby");
     expect(describedById).toBeTruthy();
     const escapedId = describedById

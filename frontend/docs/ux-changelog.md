@@ -2,6 +2,9 @@
 
 ## 2026-06-12
 
+- Repository privacy empty state:
+  - replaced the dashboard detour with an in-page account sync link for missing repository visibility records.
+  - clarified that public/hidden controls appear after synced repository evidence is available.
 - Badge detail evidence fallback:
   - replaced the generic missing-PR chip with an evidence status note that differentiates locked badges from unlocked badges whose PR links are pending.
   - kept contributions and quests as the recovery actions, with focused dialog coverage for both empty-evidence branches.
