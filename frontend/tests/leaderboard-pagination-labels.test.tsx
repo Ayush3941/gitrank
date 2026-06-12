@@ -123,6 +123,29 @@ describe("LeaderboardPageClient pagination labels", () => {
       expect(screen.getByText("player-13")).toBeTruthy();
     });
   });
+
+  it("renders evidence-specific empty copy when no ranked rows are available", async () => {
+    mocks.useLeaderboard.mockReturnValue({
+      data: buildSnapshot(0),
+      isLoading: false,
+      isError: false,
+      isFetching: false,
+      refetch: mocks.refetchLeaderboard,
+    });
+
+    render(<LeaderboardPageClient />);
+
+    expect(
+      await screen.findByRole("region", {
+        name: "Leaderboard needs visible scored profiles",
+      }),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Rows appear after contributors sync scored PR evidence and keep leaderboard participation visible.",
+      ),
+    ).toBeTruthy();
+  });
 });
 
 function buildSnapshot(count: number): LeaderboardSnapshot {

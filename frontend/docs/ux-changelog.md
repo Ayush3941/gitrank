@@ -2,6 +2,9 @@
 
 ## 2026-06-12
 
+- Leaderboard empty state:
+  - replaced generic no-row copy with visible scored-profile evidence guidance.
+  - kept the arena preview and contributions recovery action intact.
 - Copy button state labels:
   - kept copied, manual-copy, and failure states tied to the original copy target in accessible names and live announcements.
   - preserved existing visible button labels so card layouts do not shift.

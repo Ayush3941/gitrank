@@ -271,7 +271,12 @@ describe("live fixture frontend smoke coverage", () => {
     vi.stubGlobal("fetch", vi.fn(leaderboardEmptyFixtureFetch));
     renderWithClient(<LeaderboardPageClient />);
 
-    expect(await screen.findByText("No leaderboard rows yet.")).toBeTruthy();
+    expect(await screen.findByText("Leaderboard needs visible scored profiles")).toBeTruthy();
+    expect(
+      await screen.findByText(
+        "Rows appear after contributors sync scored PR evidence and keep leaderboard participation visible.",
+      ),
+    ).toBeTruthy();
     expect(await screen.findByText("Arena preview")).toBeTruthy();
     expect(
       await screen.findByText(
