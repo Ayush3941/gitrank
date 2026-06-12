@@ -37,6 +37,12 @@ describe("accessibility control naming", () => {
               visibility: "Public",
               reason: "Public by default",
             },
+            {
+              name: "octo/private-lab",
+              tracked: true,
+              visibility: "Hidden",
+              reason: "Hidden by owner preference",
+            },
           ]}
         />
       </div>,
@@ -65,7 +71,17 @@ describe("accessibility control naming", () => {
     }
 
     expect(rendered.getAllByText("Dashboard").length).toBeGreaterThan(0);
-    expect(rendered.getAllByText("1 of 1 repository").length).toBeGreaterThan(0);
+    expect(rendered.getAllByText("2 of 2 repositories").length).toBeGreaterThan(0);
+    expect(
+      rendered.getByRole("switch", {
+        name: "Hide octo/gitrank from public profile",
+      }),
+    ).toBeTruthy();
+    expect(
+      rendered.getByRole("switch", {
+        name: "Show octo/private-lab on public profile",
+      }),
+    ).toBeTruthy();
   }, 15_000);
 
   it("exposes actionable controls when repository privacy list is empty", () => {

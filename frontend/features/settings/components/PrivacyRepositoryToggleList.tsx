@@ -197,7 +197,7 @@ export function PrivacyRepositoryToggleList({
                           ),
                         );
                       }}
-                      aria-label={`Toggle ${repo.name} visibility`}
+                      aria-label={repositoryVisibilitySwitchLabel(repo)}
                     />
                   </div>
                 </div>
@@ -228,4 +228,11 @@ export function PrivacyRepositoryToggleList({
       </ScrollableRegion>
     </div>
   );
+}
+
+function repositoryVisibilitySwitchLabel(repository: RepositoryVisibility): string {
+  if (repository.visibility === "Public") {
+    return `Hide ${repository.name} from public profile`;
+  }
+  return `Show ${repository.name} on public profile`;
 }

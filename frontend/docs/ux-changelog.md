@@ -2,6 +2,9 @@
 
 ## 2026-06-12
 
+- Repository visibility controls:
+  - replaced generic toggle labels with action-specific switch names for public and hidden repositories.
+  - covered both hide and show actions so assistive technology announces the result of changing the switch.
 - Progress semantics:
   - added default value text such as `42% complete` to the shared progress primitive.
   - preserved explicit feature-level value text for richer meters such as contribution signal strength.
