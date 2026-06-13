@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useId, useState } from "react";
+import { CompactEmptyState } from "@/components/shared/CompactEmptyState";
 import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { ScrollableRegion } from "@/components/shared/ScrollableRegion";
 import { useLazyInView } from "@/hooks/use-lazy-in-view";
@@ -52,7 +53,18 @@ export function TimelineChart({ data }: { data: TimelineChartPoint[] }) {
   const reducedGamification = useReducedGamification();
   const useLiteRenderer = constrainedNetwork || reducedGamification;
   const [showDataTable, setShowDataTable] = useState(false);
-  const safeData = buildTimelineRows(data.length > 0 ? data : [{ id: "empty", label: "No data", xp: 0 }]);
+  if (data.length === 0) {
+    return (
+      <CompactEmptyState
+        eyebrow="Chart evidence pending"
+        title="Timeline needs scored history"
+        description="Timeline windows appear after synced scored history is available."
+        className="min-h-48"
+      />
+    );
+  }
+
+  const safeData = buildTimelineRows(data);
   const firstPoint = safeData[0];
   const lastPoint = safeData[safeData.length - 1];
   const growth = lastPoint.xp - firstPoint.xp;

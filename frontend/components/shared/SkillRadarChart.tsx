@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useId, useState } from "react";
+import { CompactEmptyState } from "@/components/shared/CompactEmptyState";
 import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { useLazyInView } from "@/hooks/use-lazy-in-view";
 import { ScrollableRegion } from "@/components/shared/ScrollableRegion";
@@ -38,10 +39,18 @@ export function SkillRadarChart({ skills }: { skills: SkillNode[] }) {
   const reducedGamification = useReducedGamification();
   const useLiteRenderer = constrainedNetwork || reducedGamification;
   const [showDataTable, setShowDataTable] = useState(false);
-  const safeSkills: SkillNode[] = skills.length > 0
-    ? skills
-    : [{ category: "Documentation", score: 0, delta: 0, note: "No skill evidence available yet." }];
-  const deduplicatedSkills = deduplicateSkillNodes(safeSkills);
+  const deduplicatedSkills = deduplicateSkillNodes(skills);
+  if (deduplicatedSkills.length === 0) {
+    return (
+      <CompactEmptyState
+        eyebrow="Chart evidence pending"
+        title="Skill radar needs scored evidence"
+        description="Skill lanes appear after a profile snapshot includes scored PR evidence."
+        className="min-h-48"
+      />
+    );
+  }
+
   const sortedSkills = [...deduplicatedSkills].sort((left, right) => right.score - left.score);
   const strongest = sortedSkills[0];
   const weakest = sortedSkills[sortedSkills.length - 1];

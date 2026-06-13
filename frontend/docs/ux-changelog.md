@@ -2,6 +2,9 @@
 
 ## 2026-06-13
 
+- Shared chart empty evidence:
+  - replaced synthetic `Documentation` and `No data` chart rows with explicit evidence-pending notes in shared skill radar and timeline charts.
+  - kept chart data-table controls hidden until real chart rows exist, with focused chart coverage.
 - Public special-route recovery:
   - moved public profile and public PR report `not-found` and `error` actions away from settings/contributions/dashboard owner-only recovery paths.
   - kept route fallbacks on public evidence destinations with focused coverage for profile and PR report special files.

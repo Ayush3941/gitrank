@@ -16,6 +16,22 @@ vi.mock("@/hooks/use-lazy-in-view", () => ({
 }));
 
 describe("chart data-table toggles", () => {
+  it("does not synthesize skill or timeline rows when chart evidence is empty", () => {
+    render(
+      <>
+        <SkillRadarChart skills={[]} />
+        <TimelineChart data={[]} />
+      </>,
+    );
+
+    expect(screen.getByRole("note", { name: "Skill radar needs scored evidence" })).toBeTruthy();
+    expect(screen.getByRole("note", { name: "Timeline needs scored history" })).toBeTruthy();
+    expect(screen.queryByRole("img", { name: /chart across/i })).toBeNull();
+    expect(screen.queryByText("Documentation")).toBeNull();
+    expect(screen.queryByText("No data")).toBeNull();
+    expect(screen.queryByRole("button", { name: "View data table" })).toBeNull();
+  });
+
   it("uses singular chart accessible labels for one data lane", () => {
     render(
       <>
