@@ -1,8 +1,12 @@
 # Contributing to GitRank
 
-Last reviewed: June 12, 2026
+Last reviewed: June 13, 2026
 
 This document is intentionally detailed.
+
+## Session Notes (June 13, 2026)
+
+- Reworked public profile and public PR report special-route recovery so route-level not-found/error states keep visitors on public evidence destinations instead of dashboard settings or contribution drill-downs.
 
 ## Session Notes (June 12, 2026)
 

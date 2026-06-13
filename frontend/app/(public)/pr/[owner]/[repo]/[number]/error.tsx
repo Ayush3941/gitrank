@@ -18,11 +18,11 @@ export default function PublicPRReportRouteError({
       centered
       eyebrow="PR report route error"
       title="Battle report view failed to render"
-      description="Retry this report route now. If the issue continues, return to contribution drill-down and refresh sync settings before opening the report again."
+      description="Retry this report route now. If the issue continues, open the leaderboard or return to landing while report evidence refreshes."
       retryLabel="Retry report route"
       actions={[
-        { label: "Open contributions", href: "/dashboard/contributions", variant: "secondary" },
-        { label: "Open settings", href: "/dashboard/settings", variant: "default" },
+        { label: "Open leaderboard", href: "/dashboard/leaderboard", variant: "default" },
+        { label: "Open landing", href: "/", variant: "secondary" },
       ]}
       analyticsTarget="public-pr-report:route-error"
       errorDigest={error.digest}
