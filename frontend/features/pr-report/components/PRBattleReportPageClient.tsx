@@ -70,12 +70,12 @@ export function PRBattleReportPageClient({
     return (
       <ErrorState
         title="Battle report failed"
-        description="The score breakdown is unavailable right now. Retry or return to contributions."
+        description="Retry this report fetch, or open the leaderboard while report evidence refreshes."
         onRetry={() => {
           void refetch();
         }}
-        fallbackLabel="Open contributions"
-        fallbackHref="/dashboard/contributions"
+        fallbackLabel="Open leaderboard"
+        fallbackHref="/dashboard/leaderboard"
         analyticsTarget="pr-report:error"
       />
     );
@@ -86,9 +86,9 @@ export function PRBattleReportPageClient({
       <EmptyState
         eyebrow="PR evidence"
         title="Battle report unavailable"
-        description="This PR may still be syncing, may be private, or may be waiting for score report generation."
-        actionLabel="Open contributions"
-        actionHref="/dashboard/contributions"
+        description="This PR may still be syncing, may be private, or may not have published score evidence yet."
+        actionLabel="Open leaderboard"
+        actionHref="/dashboard/leaderboard"
         analyticsTarget="pr-report:empty"
       />
     );
@@ -115,7 +115,7 @@ export function PRBattleReportPageClient({
       );
       setRetryNotice({
         tone: "error",
-        message: message || "Retry failed. Try again from Settings after a short delay.",
+        message: message || "Retry failed. Try again after a short delay while report evidence refreshes.",
       });
     }
   }
@@ -149,7 +149,7 @@ export function PRBattleReportPageClient({
               label="Generated"
             />
             <Button asChild variant="secondary">
-              <Link href="/dashboard/contributions" prefetch={false}>Back to contributions</Link>
+              <Link href="/dashboard/leaderboard" prefetch={false}>Open leaderboard</Link>
             </Button>
             <Button asChild variant="ghost">
               <Link

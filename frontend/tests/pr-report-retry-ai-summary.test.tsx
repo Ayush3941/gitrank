@@ -26,6 +26,66 @@ vi.mock("@/hooks/use-account-actions", () => ({
   }),
 }));
 
+vi.mock("@/lib/api/analytics-api", () => ({
+  emitAnalyticsEvent: vi.fn(),
+}));
+
+describe("pr report public recovery states", () => {
+  beforeEach(() => {
+    mockUsePrReport.mockReset();
+    mockMutateAsync.mockReset();
+    mockRefetch.mockReset();
+    mockRefetch.mockResolvedValue(undefined);
+  });
+
+  it("keeps fetch-error recovery on public evidence destinations", async () => {
+    mockUsePrReport.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+      refetch: mockRefetch,
+    });
+
+    render(<PRBattleReportPageClient owner="octo" repo="gitrank" number={42} />);
+
+    expect(screen.getByRole("heading", { name: "Battle report failed" })).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Retry this report fetch, or open the leaderboard while report evidence refreshes.",
+      ),
+    ).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Open leaderboard" }).getAttribute("href")).toBe(
+      "/dashboard/leaderboard",
+    );
+    expect(screen.queryByRole("link", { name: "Open contributions" })).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    await waitFor(() => expect(mockRefetch).toHaveBeenCalledTimes(1));
+  });
+
+  it("keeps missing-report recovery visitor-safe", () => {
+    mockUsePrReport.mockReturnValue({
+      data: null,
+      isLoading: false,
+      isError: false,
+      refetch: mockRefetch,
+    });
+
+    render(<PRBattleReportPageClient owner="octo" repo="gitrank" number={42} />);
+
+    expect(screen.getByRole("heading", { name: "Battle report unavailable" })).toBeTruthy();
+    expect(
+      screen.getByText(
+        "This PR may still be syncing, may be private, or may not have published score evidence yet.",
+      ),
+    ).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Open leaderboard" }).getAttribute("href")).toBe(
+      "/dashboard/leaderboard",
+    );
+    expect(screen.queryByRole("link", { name: "Open contributions" })).toBeNull();
+  });
+});
+
 describe("pr report ai retry action", () => {
   beforeEach(() => {
     mockUsePrReport.mockReset();
@@ -67,6 +127,28 @@ describe("pr report ai retry action", () => {
     expect(mockRefetch).toHaveBeenCalled();
   }, 10_000);
 
+  it("keeps retry failure copy independent from private settings routes", async () => {
+    const report = buildReportFixture("rate_limited");
+    mockUsePrReport.mockReturnValue({
+      data: report,
+      isLoading: false,
+      isError: false,
+      refetch: mockRefetch,
+    });
+    mockMutateAsync.mockRejectedValue(new Error(""));
+
+    render(<PRBattleReportPageClient owner="octo" repo="gitrank" number={42} />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Retry AI summary" }));
+
+    expect(
+      await screen.findByText(
+        "Retry failed. Try again after a short delay while report evidence refreshes.",
+      ),
+    ).toBeTruthy();
+    expect(screen.queryByText(/Settings/i)).toBeNull();
+  });
+
   it("hides retry action for complete reports", async () => {
     const report = buildReportFixture("complete");
     mockUsePrReport.mockReturnValue({
@@ -78,6 +160,10 @@ describe("pr report ai retry action", () => {
 
     render(<PRBattleReportPageClient owner="octo" repo="gitrank" number={42} />);
 
+    expect(screen.getByRole("link", { name: "Open leaderboard" }).getAttribute("href")).toBe(
+      "/dashboard/leaderboard",
+    );
+    expect(screen.queryByRole("link", { name: "Back to contributions" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Retry AI summary" })).toBeNull();
   });
 });

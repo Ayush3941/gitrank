@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 13, 2026)
 
+- Reworked PR battle-report page-level error, missing-report, processing-state, AI-retry failure, and header recovery actions so public report routes point to public evidence destinations instead of contribution drill-downs or settings.
 - Replaced the contribution pulse strip's invalid-window `No data` fallback with explicit unavailable copy for today, peak, and active-day summaries.
 - Replaced shared skill-radar and timeline fake empty-data rows with explicit chart evidence-pending notes so empty charts do not imply measured documentation or timeline signals.
 - Reworked public profile and public PR report special-route recovery so route-level not-found/error states keep visitors on public evidence destinations instead of dashboard settings or contribution drill-downs.

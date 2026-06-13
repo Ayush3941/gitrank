@@ -251,8 +251,8 @@ function buildReportStateGuidance({
       label: "Rate limited",
       message:
         "ChatGPT hit provider limits. Deterministic scoring is still valid; retry later for enriched text.",
-      cta: "Open settings",
-      href: "/dashboard/settings",
+      cta: "Open leaderboard",
+      href: "/dashboard/leaderboard",
     };
   }
 
@@ -263,8 +263,8 @@ function buildReportStateGuidance({
       message: fallbackDetail
         ? `ChatGPT response failed (${fallbackDetail}). Deterministic evidence is serving this report.`
         : "ChatGPT response failed. Deterministic evidence is serving this report.",
-      cta: "Open settings",
-      href: "/dashboard/settings",
+      cta: "Open leaderboard",
+      href: "/dashboard/leaderboard",
     };
   }
 
@@ -274,8 +274,8 @@ function buildReportStateGuidance({
       label: "Refresh pending",
       message:
         "This report is behind the latest sync. Reopen it after sync settles.",
-      cta: "Open settings",
-      href: "/dashboard/settings",
+      cta: "Open leaderboard",
+      href: "/dashboard/leaderboard",
     };
   }
 
@@ -285,8 +285,8 @@ function buildReportStateGuidance({
       label: "Deterministic mode",
       message:
         "Only deterministic analysis is available right now. ChatGPT enrichment may appear after retries.",
-      cta: "View contributions",
-      href: "/dashboard/contributions",
+      cta: "Open leaderboard",
+      href: "/dashboard/leaderboard",
     };
   }
 
@@ -295,8 +295,8 @@ function buildReportStateGuidance({
     label: "Processing",
     message:
       "Report data is still processing. Reopen after sync and scoring complete.",
-    cta: "Open settings",
-    href: "/dashboard/settings",
+    cta: "Open leaderboard",
+    href: "/dashboard/leaderboard",
   };
 }
 

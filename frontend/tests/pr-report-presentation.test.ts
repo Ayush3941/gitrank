@@ -32,6 +32,8 @@ describe("pr report presentation model", () => {
     expect(presentation.fallbackDetail).toBe("rate limited");
     expect(presentation.summarySectionLabel).toBe("Impact summary (deterministic fallback)");
     expect(presentation.reportStateGuidance?.label).toBe("Rate limited");
+    expect(presentation.reportStateGuidance?.cta).toBe("Open leaderboard");
+    expect(presentation.reportStateGuidance?.href).toBe("/dashboard/leaderboard");
     expect(presentation.canRetryAiSummary).toBe(true);
     expect(presentation.evidenceAnchored).toBe(false);
     expect(presentation.hasPersistedScoreEvidence).toBe(true);

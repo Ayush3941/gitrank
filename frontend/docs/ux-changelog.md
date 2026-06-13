@@ -2,6 +2,9 @@
 
 ## 2026-06-13
 
+- PR report page recovery:
+  - moved battle-report fetch-error, missing-report, processing-state, retry-failure, and primary header recovery from contribution drill-downs or settings to public-safe evidence copy.
+  - added page-client coverage so public report routes stay usable for direct visitors.
 - Contribution pulse invalid window:
   - replaced the raw `No data` fallback with explicit today, peak, and active-window unavailable labels when the pulse window has no cells.
   - covered the invalid-window edge case while preserving normal contribution-count summaries.
