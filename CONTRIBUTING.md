@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 12, 2026)
 
+- Reworded public profile route-level empty and error states around published scored evidence and moved fallback recovery to the public leaderboard instead of the authenticated dashboard.
 - Clarified the quest mission error state around scored PR evidence inputs and kept retry plus sync-settings recovery explicit.
 - Reworded badge shelf empty states around scored evidence and badge-rule attachment, with clearer filter reset copy.
 - Reworded contributions card empty states around scored PR-card evidence, with clearer filter recovery and sync recovery copy.

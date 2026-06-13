@@ -101,13 +101,13 @@ export function PublicProfilePageClient({
   if (isError) {
     return (
       <ErrorState
-        title="Profile unavailable"
-        description="The public profile is unavailable right now. Retry or open dashboard."
+        title="Public profile evidence unavailable"
+        description="Retry the public profile fetch, or open the leaderboard while this evidence refreshes."
         onRetry={() => {
           void refetch();
         }}
-        fallbackLabel="Open dashboard"
-        fallbackHref="/dashboard"
+        fallbackLabel="Open leaderboard"
+        fallbackHref="/dashboard/leaderboard"
         analyticsTarget="public-profile:error"
       />
     );
@@ -117,10 +117,10 @@ export function PublicProfilePageClient({
     return (
       <EmptyState
         eyebrow="Public profile visibility"
-        title="Profile unavailable"
-        description="This profile is hidden, missing, or waiting for its first public GitRank score."
-        actionLabel="Open dashboard"
-        actionHref="/dashboard"
+        title="No public scored profile yet"
+        description="This profile is hidden, missing, or has not published scored PR evidence yet."
+        actionLabel="Open leaderboard"
+        actionHref="/dashboard/leaderboard"
         analyticsTarget="public-profile:empty"
       />
     );

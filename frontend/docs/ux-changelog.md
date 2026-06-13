@@ -2,6 +2,9 @@
 
 ## 2026-06-12
 
+- Public profile route recovery:
+  - replaced generic route-level unavailable copy with published scored-evidence guidance for missing public profiles.
+  - moved fallback recovery from the authenticated dashboard to the public leaderboard and covered both `404` and failed-fetch states.
 - Quest mission error state:
   - replaced generic recommendation-unavailable copy with scored PR evidence input guidance.
   - kept retry and sync settings as the recovery actions, with focused mission-section coverage.
