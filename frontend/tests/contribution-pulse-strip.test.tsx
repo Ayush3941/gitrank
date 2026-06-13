@@ -53,6 +53,17 @@ describe("ContributionPulseStrip", () => {
 
     expect(screen.queryByText("1 of 1 active day")).not.toBeNull();
   });
+
+  it("uses explicit unavailable copy when the pulse window is invalid", () => {
+    withFrozenNow("2026-05-25T23:59:59.000Z", () => {
+      render(<ContributionPulseStrip contributions={[]} days={0} />);
+    });
+
+    expect(screen.queryByText("Pulse window unavailable")).not.toBeNull();
+    expect(screen.queryByText("Today unavailable")).not.toBeNull();
+    expect(screen.queryByText("Window unavailable")).not.toBeNull();
+    expect(screen.queryByText("No data")).toBeNull();
+  });
 });
 
 function withFrozenNow(isoTimestamp: string, run: () => void) {

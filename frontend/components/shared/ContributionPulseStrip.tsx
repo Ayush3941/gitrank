@@ -13,14 +13,20 @@ export function ContributionPulseStrip({
   const cells = buildContributionPulse(contributions, days);
   const activeDays = cells.filter((cell) => cell.count > 0).length;
   const todayCell = cells[cells.length - 1] ?? null;
+  const hasPulseWindow = cells.length > 0;
   const peakCell = cells.reduce<(typeof cells)[number] | null>(
     (best, cell) => (!best || cell.count >= best.count ? cell : best),
     null,
   );
   const peakSummary = peakCell && peakCell.count > 0
     ? `${peakCell.label}, ${formatContributionCount(peakCell.count)}`
-    : "No active days";
-  const activeDaysSummary = formatCountOfTotal(activeDays, cells.length, "active day");
+    : hasPulseWindow ? "No active days" : "Window unavailable";
+  const activeDaysSummary = hasPulseWindow
+    ? formatCountOfTotal(activeDays, cells.length, "active day")
+    : "Pulse window unavailable";
+  const todaySummary = todayCell
+    ? formatContributionCount(todayCell.count)
+    : "Today unavailable";
 
   return (
     <div className="rounded-[var(--radius-universal)] border border-primary/16 bg-primary/6 p-4">
@@ -33,7 +39,7 @@ export function ContributionPulseStrip({
       <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted" role="group" aria-label="Activity pulse summary">
         <span className="neon-chip neon-chip-muted inline-flex items-center gap-1 rounded-full px-2.5 py-1">
           <span className="font-semibold text-primary">Today</span>
-          {todayCell ? formatContributionCount(todayCell.count) : "No data"}
+          {todaySummary}
         </span>
         <span className="neon-chip neon-chip-muted inline-flex items-center gap-1 rounded-full px-2.5 py-1">
           <span className="font-semibold text-primary">Peak</span>

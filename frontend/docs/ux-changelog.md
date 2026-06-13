@@ -2,6 +2,9 @@
 
 ## 2026-06-13
 
+- Contribution pulse invalid window:
+  - replaced the raw `No data` fallback with explicit today, peak, and active-window unavailable labels when the pulse window has no cells.
+  - covered the invalid-window edge case while preserving normal contribution-count summaries.
 - Shared chart empty evidence:
   - replaced synthetic `Documentation` and `No data` chart rows with explicit evidence-pending notes in shared skill radar and timeline charts.
   - kept chart data-table controls hidden until real chart rows exist, with focused chart coverage.
