@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 14, 2026)
 
+- Tightened backend AI provider resolution so explicit `AI_PROVIDER=openai` cannot borrow Gemini credentials, while unset provider mode still falls back to Gemini only when Gemini is the only configured key.
 - Kept contribution-card XP canonical by changing profile score-history collapse to prefer `score.computed` PR events instead of summing linked quest/history rows for the same pull request.
 
 ## Session Notes (June 13, 2026)

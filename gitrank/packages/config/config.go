@@ -308,12 +308,14 @@ type Scheduler struct {
 }
 
 func Load(serviceName, addrEnvKey string) (App, error) {
-	aiProvider := normalizeAIProvider(getEnv("AI_PROVIDER", "openai"))
-	aiAPIKey := resolveAIEnv(aiProvider, "API_KEY", "")
-	aiModel := resolveAIEnv(aiProvider, "MODEL", defaultAIModel(aiProvider))
-	aiBaseURL := resolveAIEnv(aiProvider, "BASE_URL", defaultAIBaseURL(aiProvider))
-	aiModerationModel := resolveAIEnv(aiProvider, "MODERATION_MODEL", defaultAIModerationModel(aiProvider))
-	aiEmbeddingModel := resolveAIEnv(aiProvider, "EMBEDDING_MODEL", defaultAIEmbeddingModel(aiProvider))
+	rawAIProvider, aiProviderExplicit := lookupTrimmedEnv("AI_PROVIDER")
+	aiProvider := resolveAIProvider(rawAIProvider, aiProviderExplicit)
+	allowSecondaryAIEnv := !aiProviderExplicit
+	aiAPIKey := resolveAIEnv(aiProvider, "API_KEY", "", allowSecondaryAIEnv)
+	aiModel := resolveAIEnv(aiProvider, "MODEL", defaultAIModel(aiProvider), allowSecondaryAIEnv)
+	aiBaseURL := resolveAIEnv(aiProvider, "BASE_URL", defaultAIBaseURL(aiProvider), allowSecondaryAIEnv)
+	aiModerationModel := resolveAIEnv(aiProvider, "MODERATION_MODEL", defaultAIModerationModel(aiProvider), allowSecondaryAIEnv)
+	aiEmbeddingModel := resolveAIEnv(aiProvider, "EMBEDDING_MODEL", defaultAIEmbeddingModel(aiProvider), allowSecondaryAIEnv)
 
 	cfg := App{
 		Env:             Environment(getEnv("GITRANK_ENV", string(Development))),
@@ -1428,6 +1430,19 @@ func normalizeAIProvider(value string) string {
 	}
 }
 
+func resolveAIProvider(rawProvider string, explicit bool) string {
+	normalized := normalizeAIProvider(rawProvider)
+	if explicit {
+		return normalized
+	}
+	openAIKey := strings.TrimSpace(os.Getenv("OPENAI_API_KEY"))
+	geminiKey := strings.TrimSpace(os.Getenv("GEMINI_API_KEY"))
+	if openAIKey == "" && geminiKey != "" {
+		return "gemini"
+	}
+	return "openai"
+}
+
 func defaultAIModel(provider string) string {
 	switch normalizeAIProvider(provider) {
 	case "gemini":
@@ -1464,7 +1479,7 @@ func defaultAIEmbeddingModel(provider string) string {
 	}
 }
 
-func resolveAIEnv(provider, suffix, fallback string) string {
+func resolveAIEnv(provider, suffix, fallback string, allowSecondary bool) string {
 	if value := strings.TrimSpace(os.Getenv("AI_" + suffix)); value != "" {
 		return value
 	}
@@ -1479,10 +1494,24 @@ func resolveAIEnv(provider, suffix, fallback string) string {
 	if value := strings.TrimSpace(os.Getenv(primaryPrefix + "_" + suffix)); value != "" {
 		return value
 	}
-	if value := strings.TrimSpace(os.Getenv(secondaryPrefix + "_" + suffix)); value != "" {
-		return value
+	if allowSecondary {
+		if value := strings.TrimSpace(os.Getenv(secondaryPrefix + "_" + suffix)); value != "" {
+			return value
+		}
 	}
 	return fallback
+}
+
+func lookupTrimmedEnv(key string) (string, bool) {
+	value, ok := os.LookupEnv(key)
+	if !ok {
+		return "", false
+	}
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return "", false
+	}
+	return value, true
 }
 
 func getBool(key string, fallback bool) bool {

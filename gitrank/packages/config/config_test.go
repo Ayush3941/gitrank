@@ -86,6 +86,31 @@ func requireEnvBool(t *testing.T, env map[string]string, key string, got bool) {
 	}
 }
 
+func clearAIProviderEnv(t *testing.T) {
+	t.Helper()
+
+	for _, key := range []string{
+		"AI_PROVIDER",
+		"AI_API_KEY",
+		"AI_MODEL",
+		"AI_BASE_URL",
+		"AI_MODERATION_MODEL",
+		"AI_EMBEDDING_MODEL",
+		"OPENAI_API_KEY",
+		"OPENAI_MODEL",
+		"OPENAI_BASE_URL",
+		"OPENAI_MODERATION_MODEL",
+		"OPENAI_EMBEDDING_MODEL",
+		"GEMINI_API_KEY",
+		"GEMINI_MODEL",
+		"GEMINI_BASE_URL",
+		"GEMINI_MODERATION_MODEL",
+		"GEMINI_EMBEDDING_MODEL",
+	} {
+		t.Setenv(key, "")
+	}
+}
+
 func TestLoadDefaults(t *testing.T) {
 	cfg, err := Load("api-gateway", "API_GATEWAY_ADDR")
 	if err != nil {
@@ -241,6 +266,74 @@ func TestLoadDefaults(t *testing.T) {
 	}
 	if len(cfg.GitHub.OAuthScopes) != 2 || cfg.GitHub.OAuthScopes[0] != "read:user" || cfg.GitHub.OAuthScopes[1] != "user:email" {
 		t.Fatalf("GitHub.OAuthScopes = %v, want read:user,user:email", cfg.GitHub.OAuthScopes)
+	}
+}
+
+func TestLoadAIProviderExplicitOpenAIDoesNotUseGeminiKey(t *testing.T) {
+	clearAIProviderEnv(t)
+	t.Setenv("AI_PROVIDER", "openai")
+	t.Setenv("GEMINI_API_KEY", "gemini-key")
+
+	cfg, err := Load("pr-analyzer", "PR_ANALYZER_ADDR")
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+
+	if cfg.AI.Provider != "openai" {
+		t.Fatalf("AI.Provider = %q, want openai", cfg.AI.Provider)
+	}
+	if cfg.AI.APIKey != "" {
+		t.Fatalf("AI.APIKey = %q, want empty when explicit OpenAI lacks OPENAI_API_KEY", cfg.AI.APIKey)
+	}
+	if err := cfg.ValidateAI(); err == nil || !strings.Contains(err.Error(), "OPENAI_API_KEY") {
+		t.Fatalf("ValidateAI() error = %v, want OPENAI_API_KEY requirement", err)
+	}
+}
+
+func TestLoadAIProviderDefaultsToGeminiOnlyWhenOpenAIUnavailable(t *testing.T) {
+	clearAIProviderEnv(t)
+	t.Setenv("GEMINI_API_KEY", "gemini-key")
+
+	cfg, err := Load("pr-analyzer", "PR_ANALYZER_ADDR")
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+
+	if cfg.AI.Provider != "gemini" {
+		t.Fatalf("AI.Provider = %q, want gemini", cfg.AI.Provider)
+	}
+	if cfg.AI.APIKey != "gemini-key" {
+		t.Fatalf("AI.APIKey = %q, want gemini-key", cfg.AI.APIKey)
+	}
+	if cfg.AI.Model != "gemini-2.5-flash" {
+		t.Fatalf("AI.Model = %q, want gemini-2.5-flash", cfg.AI.Model)
+	}
+	if cfg.AI.BaseURL != "https://generativelanguage.googleapis.com/v1beta/openai" {
+		t.Fatalf("AI.BaseURL = %q, want Gemini OpenAI-compatible endpoint", cfg.AI.BaseURL)
+	}
+}
+
+func TestLoadAIProviderDefaultsToOpenAIWhenBothKeysExist(t *testing.T) {
+	clearAIProviderEnv(t)
+	t.Setenv("OPENAI_API_KEY", "openai-key")
+	t.Setenv("GEMINI_API_KEY", "gemini-key")
+
+	cfg, err := Load("pr-analyzer", "PR_ANALYZER_ADDR")
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+
+	if cfg.AI.Provider != "openai" {
+		t.Fatalf("AI.Provider = %q, want openai", cfg.AI.Provider)
+	}
+	if cfg.AI.APIKey != "openai-key" {
+		t.Fatalf("AI.APIKey = %q, want openai-key", cfg.AI.APIKey)
+	}
+	if cfg.AI.Model != "gpt-4o-mini" {
+		t.Fatalf("AI.Model = %q, want gpt-4o-mini", cfg.AI.Model)
+	}
+	if cfg.AI.BaseURL != "https://api.openai.com/v1" {
+		t.Fatalf("AI.BaseURL = %q, want OpenAI endpoint", cfg.AI.BaseURL)
 	}
 }
 
