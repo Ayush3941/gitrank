@@ -136,6 +136,9 @@ type SchedulerProfileRefreshResponse struct {
 	SourceWatermark        time.Time `json:"source_watermark"`
 	RefreshedAt            time.Time `json:"refreshed_at"`
 	StaleAfter             time.Time `json:"stale_after"`
+	ScoreEventCount        int       `json:"score_event_count"`
+	SnapshotPersisted      bool      `json:"snapshot_persisted"`
+	Message                string    `json:"message,omitempty"`
 	CorrelationID          string    `json:"correlation_id,omitempty"`
 	StartedAt              time.Time `json:"started_at"`
 	FinishedAt             time.Time `json:"finished_at"`

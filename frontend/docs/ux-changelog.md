@@ -2,6 +2,9 @@
 
 ## 2026-06-13
 
+- Sync evidence diagnostics:
+  - surfaced backend `post_sync_profile_refresh_pending_score_evidence` runs as profile-evidence-pending instead of refresh-settled.
+  - kept completed transport runs with empty score evidence classified as partial in settings summaries and sync diagnostics.
 - PR report page recovery:
   - moved battle-report fetch-error, missing-report, processing-state, retry-failure, and primary header recovery from contribution drill-downs or settings to public-safe evidence copy.
   - added page-client coverage so public report routes stay usable for direct visitors.

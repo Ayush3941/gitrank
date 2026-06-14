@@ -13,6 +13,7 @@ const PARTIAL_SYNC_RUN_METRIC_KEYS = [
   "post_sync_refresh_failed",
   "post_sync_score_replay_failed",
   "post_sync_profile_refresh_failed",
+  "post_sync_profile_refresh_pending_score_evidence",
   "post_sync_pr_reports_backfill_failed",
   "post_sync_quests_backfill_failed",
 ] as const;

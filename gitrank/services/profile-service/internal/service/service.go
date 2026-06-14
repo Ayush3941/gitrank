@@ -264,12 +264,19 @@ func (s *Service) RefreshProfileByUserID(ctx context.Context, userID string, now
 		return contracts.ProfileRefreshResponse{}, err
 	}
 
-	snapshot, err := s.rebuildSnapshot(ctx, user, now.UTC())
+	inputs, err := s.loadSnapshotInputs(ctx, user.ID)
+	if err != nil {
+		return contracts.ProfileRefreshResponse{}, err
+	}
+	if len(inputs.scoreRows) == 0 {
+		return s.pendingProfileRefreshResponse(ctx, user.ID, inputs.selection.ScoreVersion), nil
+	}
+	snapshot, err := s.persistSnapshotFromInputs(ctx, user, inputs, now.UTC())
 	if err != nil {
 		return contracts.ProfileRefreshResponse{}, err
 	}
 	return contracts.ProfileRefreshResponse{
-		Status:                 "completed",
+		Status:                 contracts.ProfileRefreshStatusCompleted,
 		UserID:                 userID,
 		ProfileSnapshotID:      snapshot.ID,
 		ProfileSnapshotVersion: snapshot.SnapshotVersion,
@@ -279,6 +286,8 @@ func (s *Service) RefreshProfileByUserID(ctx context.Context, userID string, now
 		SourceWatermark:        snapshot.SourceWatermark.UTC(),
 		RefreshedAt:            snapshot.RefreshedAt.UTC(),
 		StaleAfter:             snapshot.StaleAfter.UTC(),
+		ScoreEventCount:        len(inputs.scoreRows),
+		SnapshotPersisted:      true,
 	}, nil
 }
 
@@ -474,23 +483,40 @@ func (s *Service) ensureSnapshot(ctx context.Context, user userRecord, now time.
 }
 
 func (s *Service) rebuildSnapshot(ctx context.Context, user userRecord, now time.Time) (snapshotRecord, error) {
-	scoreSelection, err := s.store.LoadLatestScoreSelection(ctx, user.ID)
+	inputs, err := s.loadSnapshotInputs(ctx, user.ID)
 	if err != nil {
 		return snapshotRecord{}, err
 	}
-	scoreRows, err := s.store.LoadScoreRows(ctx, user.ID, scoreSelection)
-	if err != nil {
-		return snapshotRecord{}, err
-	}
-	badges, err := s.store.LoadBadges(ctx, user.ID, badgeFallbackPRIDs(scoreRows, 5))
-	if err != nil {
-		return snapshotRecord{}, err
-	}
+	return s.persistSnapshotFromInputs(ctx, user, inputs, now.UTC())
+}
 
+type snapshotInputs struct {
+	selection scoreSelection
+	scoreRows []scoreRow
+	badges    []badgeRecord
+}
+
+func (s *Service) loadSnapshotInputs(ctx context.Context, userID string) (snapshotInputs, error) {
+	scoreSelection, err := s.store.LoadLatestScoreSelection(ctx, userID)
+	if err != nil {
+		return snapshotInputs{}, err
+	}
+	scoreRows, err := s.store.LoadScoreRows(ctx, userID, scoreSelection)
+	if err != nil {
+		return snapshotInputs{}, err
+	}
+	badges, err := s.store.LoadBadges(ctx, userID, badgeFallbackPRIDs(scoreRows, 5))
+	if err != nil {
+		return snapshotInputs{}, err
+	}
+	return snapshotInputs{selection: scoreSelection, scoreRows: scoreRows, badges: badges}, nil
+}
+
+func (s *Service) persistSnapshotFromInputs(ctx context.Context, user userRecord, inputs snapshotInputs, now time.Time) (snapshotRecord, error) {
 	built := buildSnapshot(
 		user,
-		scoreRows,
-		badges,
+		inputs.scoreRows,
+		inputs.badges,
 		now.UTC(),
 		s.cfg.Scoring.ProfileScoreHistoryLimit,
 	)
@@ -502,6 +528,27 @@ func (s *Service) rebuildSnapshot(ctx context.Context, user userRecord, now time
 		return snapshotRecord{}, err
 	}
 	return snapshot, nil
+}
+
+func (s *Service) pendingProfileRefreshResponse(ctx context.Context, userID string, scoreVersion string) contracts.ProfileRefreshResponse {
+	response := contracts.ProfileRefreshResponse{
+		Status:            contracts.ProfileRefreshStatusPendingScoreEvidence,
+		UserID:            userID,
+		ScoreVersion:      strings.TrimSpace(scoreVersion),
+		ScoreEventCount:   0,
+		SnapshotPersisted: false,
+		Message:           "profile refresh skipped because no scored PR evidence is available yet",
+	}
+	if existing, err := s.store.LoadLatestSnapshot(ctx, userID); err == nil {
+		response.ProfileSnapshotID = existing.ID
+		response.ProfileSnapshotVersion = existing.SnapshotVersion
+		response.TotalXP = existing.TotalXP
+		response.LevelLabel = existing.LevelLabel
+		response.SourceWatermark = existing.SourceWatermark.UTC()
+		response.RefreshedAt = existing.RefreshedAt.UTC()
+		response.StaleAfter = existing.StaleAfter.UTC()
+	}
+	return response
 }
 
 func publicResponseFromSnapshot(

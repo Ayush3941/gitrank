@@ -253,6 +253,10 @@ export function summarizeRunMetrics(metrics?: Record<string, number>): string {
   if (profileRefreshFailed > 0) {
     segments.push("Profile refresh failed");
   }
+  const profileRefreshPending = metricCount(metrics, "post_sync_profile_refresh_pending_score_evidence");
+  if (profileRefreshPending > 0) {
+    segments.push("Profile evidence pending");
+  }
   const reportBackfillFailed = metricCount(metrics, "post_sync_pr_reports_backfill_failed");
   if (reportBackfillFailed > 0) {
     segments.push("Report backfill failed");
@@ -268,6 +272,7 @@ export function summarizeRunMetrics(metrics?: Record<string, number>): string {
     metricCount(metrics, "post_sync_refresh_ok") > 0 &&
     scoreReplayFailed === 0 &&
     profileRefreshFailed === 0 &&
+    profileRefreshPending === 0 &&
     reportBackfillFailed === 0 &&
     questBackfillFailed === 0
   ) {

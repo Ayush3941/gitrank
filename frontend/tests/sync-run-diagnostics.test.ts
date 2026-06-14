@@ -350,6 +350,17 @@ describe("describeSyncRunOutcome", () => {
     expect(outcome.message).toContain("profile refresh failed");
   });
 
+  it("returns profile-refresh-pending-score-evidence when refresh skips empty score evidence", () => {
+    const outcome = describeSyncRunOutcome(
+      run({
+        post_sync_profile_refresh_pending_score_evidence: 1,
+        post_sync_profile_refresh_score_events: 0,
+      }),
+    );
+    expect(outcome.code).toBe("profile_refresh_pending_score_evidence");
+    expect(outcome.message).toContain("scored PR evidence is still empty");
+  });
+
   it("returns pr-reports-backfill-failed when report backfill fails", () => {
     const outcome = describeSyncRunOutcome(
       run({

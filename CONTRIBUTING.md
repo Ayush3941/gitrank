@@ -6,6 +6,7 @@ This document is intentionally detailed.
 
 ## Session Notes (June 13, 2026)
 
+- Added a score-evidence gate to profile refresh: empty score rows now return `pending_score_evidence` without persisting a fresh profile snapshot, gateway sync telemetry exposes the pending state, and settings diagnostics summarize it as profile evidence pending.
 - Reworked PR battle-report page-level error, missing-report, processing-state, AI-retry failure, and header recovery actions so public report routes point to public evidence destinations instead of contribution drill-downs or settings.
 - Replaced the contribution pulse strip's invalid-window `No data` fallback with explicit unavailable copy for today, peak, and active-day summaries.
 - Replaced shared skill-radar and timeline fake empty-data rows with explicit chart evidence-pending notes so empty charts do not imply measured documentation or timeline signals.

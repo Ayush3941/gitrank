@@ -21,6 +21,7 @@ export type SyncRunDiagnostic = {
     | "score_replay_mismatch"
     | "score_replay_failed"
     | "profile_refresh_failed"
+    | "profile_refresh_pending_score_evidence"
     | "pr_reports_backfill_failed"
     | "quests_backfill_failed"
     | "search_limited"
@@ -58,6 +59,7 @@ const ACTIONABLE_SYNC_CODES = new Set<SyncRunDiagnostic["code"]>([
   "score_replay_mismatch",
   "score_replay_failed",
   "profile_refresh_failed",
+  "profile_refresh_pending_score_evidence",
   "pr_reports_backfill_failed",
   "quests_backfill_failed",
   "search_limited",
@@ -160,6 +162,8 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
   const scoreReplayMismatch = metricCount(metrics, "post_sync_score_replay_mismatch") > 0;
   const scoreReplayFailed = metricCount(metrics, "post_sync_score_replay_failed") > 0;
   const profileRefreshFailed = metricCount(metrics, "post_sync_profile_refresh_failed") > 0;
+  const profileRefreshPendingScoreEvidence =
+    metricCount(metrics, "post_sync_profile_refresh_pending_score_evidence") > 0;
   const reportBackfillFailed = metricCount(metrics, "post_sync_pr_reports_backfill_failed") > 0;
   const questBackfillFailed = metricCount(metrics, "post_sync_quests_backfill_failed") > 0;
   const unsupportedAPIVersion =
@@ -320,6 +324,13 @@ export function describeSyncRunOutcome(run: ApiSyncRunRecord): SyncRunDiagnostic
       code: "profile_refresh_failed",
       message:
         "GitHub sync completed, but profile refresh failed in this run. Retry sync to regenerate the latest dashboard snapshot.",
+    };
+  }
+  if (profileRefreshPendingScoreEvidence) {
+    return {
+      code: "profile_refresh_pending_score_evidence",
+      message:
+        "GitHub sync completed, but profile refresh skipped snapshot publication because scored PR evidence is still empty.",
     };
   }
   if (reportBackfillFailed) {

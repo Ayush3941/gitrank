@@ -15,6 +15,7 @@ describe("sync-run-metrics-policy", () => {
     expect(hasPartialSyncRunMetrics({ authored_pull_requests_retryable: 2 })).toBe(true);
     expect(hasPartialSyncRunMetrics({ authored_pull_requests_selected_unmerged_only: 1 })).toBe(true);
     expect(hasPartialSyncRunMetrics({ post_sync_score_replay_failed: 1 })).toBe(true);
+    expect(hasPartialSyncRunMetrics({ post_sync_profile_refresh_pending_score_evidence: 1 })).toBe(true);
   });
 
   it("returns false when no partial marker is present", () => {

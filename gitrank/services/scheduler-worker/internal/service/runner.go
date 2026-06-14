@@ -987,12 +987,15 @@ func (e *httpProfileRefreshExecutor) RefreshProfile(ctx context.Context, userID 
 	if err := json.Unmarshal(payload, &refresh); err != nil {
 		return contracts.SchedulerProfileRefreshResponse{}, err
 	}
-	if strings.TrimSpace(refresh.UserID) == "" ||
-		strings.TrimSpace(refresh.ProfileSnapshotID) == "" ||
-		strings.TrimSpace(refresh.ProfileSnapshotVersion) == "" ||
-		strings.TrimSpace(refresh.Status) == "" ||
-		refresh.RefreshedAt.IsZero() ||
-		refresh.StaleAfter.IsZero() {
+	status := strings.TrimSpace(refresh.Status)
+	if strings.TrimSpace(refresh.UserID) == "" || status == "" {
+		return contracts.SchedulerProfileRefreshResponse{}, fmt.Errorf("profile-service returned an invalid refresh contract")
+	}
+	if status != contracts.ProfileRefreshStatusPendingScoreEvidence &&
+		(strings.TrimSpace(refresh.ProfileSnapshotID) == "" ||
+			strings.TrimSpace(refresh.ProfileSnapshotVersion) == "" ||
+			refresh.RefreshedAt.IsZero() ||
+			refresh.StaleAfter.IsZero()) {
 		return contracts.SchedulerProfileRefreshResponse{}, fmt.Errorf("profile-service returned an invalid refresh contract")
 	}
 	if refresh.UserID != userID {
@@ -1000,7 +1003,7 @@ func (e *httpProfileRefreshExecutor) RefreshProfile(ctx context.Context, userID 
 	}
 
 	return contracts.SchedulerProfileRefreshResponse{
-		Status:                 refresh.Status,
+		Status:                 status,
 		UserID:                 refresh.UserID,
 		ProfileSnapshotID:      strings.TrimSpace(refresh.ProfileSnapshotID),
 		ProfileSnapshotVersion: strings.TrimSpace(refresh.ProfileSnapshotVersion),
@@ -1010,6 +1013,9 @@ func (e *httpProfileRefreshExecutor) RefreshProfile(ctx context.Context, userID 
 		SourceWatermark:        refresh.SourceWatermark.UTC(),
 		RefreshedAt:            refresh.RefreshedAt.UTC(),
 		StaleAfter:             refresh.StaleAfter.UTC(),
+		ScoreEventCount:        refresh.ScoreEventCount,
+		SnapshotPersisted:      refresh.SnapshotPersisted,
+		Message:                strings.TrimSpace(refresh.Message),
 		CorrelationID:          strings.TrimSpace(correlationID),
 		StartedAt:              startedAt,
 		FinishedAt:             time.Now().UTC(),

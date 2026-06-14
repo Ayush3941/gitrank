@@ -116,6 +116,16 @@ describe("sync run activity helpers", () => {
     );
   });
 
+  it("summarizes pending profile evidence without calling refresh settled", () => {
+    expect(
+      summarizeRunMetrics({
+        post_sync_refresh_ok: 1,
+        post_sync_profile_refresh_pending_score_evidence: 1,
+        post_sync_profile_refresh_score_events: 0,
+      }),
+    ).toBe("Profile evidence pending");
+  });
+
   it("uses repository, requested user, subject, then fallback labels", () => {
     expect(syncRunLabel(buildRun({ requested_repository: "owner/repo" }))).toBe("owner/repo");
     expect(syncRunLabel(buildRun({ requested_user: "octocat" }))).toBe("@octocat");

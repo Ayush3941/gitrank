@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gitrank/gitrank/packages/config"
+	"github.com/gitrank/gitrank/packages/contracts"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -125,6 +126,62 @@ func TestRefreshProfileByUserIDPersistsFreshSnapshot(t *testing.T) {
 	}
 
 	assertProfileSnapshotCount(t, ctx, pool, userID, 2)
+}
+
+func TestRefreshProfileByUserIDSkipsSnapshotWhenScoreEvidenceMissing(t *testing.T) {
+	databaseURL := strings.TrimSpace(os.Getenv("GITRANK_PROFILE_DATABASE_URL"))
+	if databaseURL == "" {
+		t.Skip("GITRANK_PROFILE_DATABASE_URL is not set")
+	}
+
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, databaseURL)
+	if err != nil {
+		t.Fatalf("pgxpool.New() error = %v", err)
+	}
+	defer pool.Close()
+
+	cfg := config.App{
+		ServiceName: "profile-service",
+		Database:    config.Database{URL: databaseURL},
+		Auth: config.Auth{
+			SessionSecret:     "profile-refresh-pending-test-secret",
+			SessionCookieName: "gitrank_session",
+			CSRFCookieName:    "gitrank_csrf",
+		},
+	}
+	svc, err := New(cfg, pool, &Cache{}, profileTestLogger())
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+
+	now := time.Now().UTC()
+	suffix := now.UnixNano()
+	handle := fmt.Sprintf("refresh-pending-%d", suffix%1000000000)
+
+	var userID string
+	if err := pool.QueryRow(ctx, `
+		INSERT INTO users (display_name, public_handle, avatar_url)
+		VALUES ($1, $2, $3)
+		RETURNING id::text
+	`, "Profile Pending User", handle, "https://avatars.example.test/u/refresh-pending").Scan(&userID); err != nil {
+		t.Fatalf("insert user: %v", err)
+	}
+
+	refresh, err := svc.RefreshProfileByUserID(ctx, userID, now)
+	if err != nil {
+		t.Fatalf("RefreshProfileByUserID() error = %v", err)
+	}
+	if refresh.Status != contracts.ProfileRefreshStatusPendingScoreEvidence {
+		t.Fatalf("refresh status = %q, want pending score evidence", refresh.Status)
+	}
+	if refresh.ProfileSnapshotID != "" || refresh.SnapshotPersisted {
+		t.Fatalf("refresh snapshot = %+v, want no persisted snapshot", refresh)
+	}
+	if refresh.ScoreEventCount != 0 {
+		t.Fatalf("ScoreEventCount = %d, want 0", refresh.ScoreEventCount)
+	}
+	assertProfileSnapshotCount(t, ctx, pool, userID, 0)
 }
 
 func TestRefreshProfileByUserIDNormalizesLegacyBadgeEvidence(t *testing.T) {

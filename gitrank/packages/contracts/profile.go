@@ -359,6 +359,11 @@ type ProfileStaleness struct {
 	PartialProfileAvailable bool      `json:"partial_profile_available"`
 }
 
+const (
+	ProfileRefreshStatusCompleted            = "completed"
+	ProfileRefreshStatusPendingScoreEvidence = "pending_score_evidence"
+)
+
 type ProfileRefreshResponse struct {
 	Status                 string    `json:"status"`
 	UserID                 string    `json:"user_id"`
@@ -370,6 +375,9 @@ type ProfileRefreshResponse struct {
 	SourceWatermark        time.Time `json:"source_watermark"`
 	RefreshedAt            time.Time `json:"refreshed_at"`
 	StaleAfter             time.Time `json:"stale_after"`
+	ScoreEventCount        int       `json:"score_event_count"`
+	SnapshotPersisted      bool      `json:"snapshot_persisted"`
+	Message                string    `json:"message,omitempty"`
 }
 
 type ShareableProfileCard struct {

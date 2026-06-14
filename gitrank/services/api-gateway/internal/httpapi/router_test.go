@@ -897,8 +897,17 @@ func TestUserSyncExecutionMarksPartialWhenScoreReplayYieldsNoEventsAfterAuthored
 
 	profile := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {
-		case strings.Contains(r.URL.Path, "/refresh"),
-			strings.Contains(r.URL.Path, "/pr-reports/backfill"),
+		case strings.Contains(r.URL.Path, "/refresh"):
+			w.WriteHeader(http.StatusAccepted)
+			_ = json.NewEncoder(w).Encode(contracts.ProfileRefreshResponse{
+				Status:            contracts.ProfileRefreshStatusPendingScoreEvidence,
+				UserID:            "00000000-0000-0000-0000-000000000001",
+				ScoreVersion:      "v1alpha1",
+				ScoreEventCount:   0,
+				SnapshotPersisted: false,
+				Message:           "profile refresh skipped because no scored PR evidence is available yet",
+			})
+		case strings.Contains(r.URL.Path, "/pr-reports/backfill"),
 			strings.Contains(r.URL.Path, "/quests/backfill"):
 			w.WriteHeader(http.StatusAccepted)
 			_, _ = w.Write([]byte(`{"status":"accepted"}`))
@@ -951,8 +960,11 @@ func TestUserSyncExecutionMarksPartialWhenScoreReplayYieldsNoEventsAfterAuthored
 	if observed.Fetched["post_sync_score_replay_events"] != 0 {
 		t.Fatalf("Fetched[post_sync_score_replay_events] = %d, want 0", observed.Fetched["post_sync_score_replay_events"])
 	}
-	if observed.Fetched["post_sync_refresh_ok"] != 1 {
-		t.Fatalf("Fetched[post_sync_refresh_ok] = %d, want 1", observed.Fetched["post_sync_refresh_ok"])
+	if observed.Fetched["post_sync_profile_refresh_pending_score_evidence"] != 1 {
+		t.Fatalf(
+			"Fetched[post_sync_profile_refresh_pending_score_evidence] = %d, want 1",
+			observed.Fetched["post_sync_profile_refresh_pending_score_evidence"],
+		)
 	}
 }
 
@@ -1009,8 +1021,17 @@ func TestUserSyncExecutionDoesNotMarkMismatchWhenOnlyUnmergedTargetsWereSelected
 
 	profile := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {
-		case strings.Contains(r.URL.Path, "/refresh"),
-			strings.Contains(r.URL.Path, "/pr-reports/backfill"),
+		case strings.Contains(r.URL.Path, "/refresh"):
+			w.WriteHeader(http.StatusAccepted)
+			_ = json.NewEncoder(w).Encode(contracts.ProfileRefreshResponse{
+				Status:            contracts.ProfileRefreshStatusPendingScoreEvidence,
+				UserID:            "00000000-0000-0000-0000-000000000001",
+				ScoreVersion:      "v1alpha1",
+				ScoreEventCount:   0,
+				SnapshotPersisted: false,
+				Message:           "profile refresh skipped because no scored PR evidence is available yet",
+			})
+		case strings.Contains(r.URL.Path, "/pr-reports/backfill"),
 			strings.Contains(r.URL.Path, "/quests/backfill"):
 			w.WriteHeader(http.StatusAccepted)
 			_, _ = w.Write([]byte(`{"status":"accepted"}`))
@@ -1045,8 +1066,8 @@ func TestUserSyncExecutionDoesNotMarkMismatchWhenOnlyUnmergedTargetsWereSelected
 	if err := json.Unmarshal(response.Body.Bytes(), &observed); err != nil {
 		t.Fatalf("unmarshal response: %v", err)
 	}
-	if observed.Status != "completed" {
-		t.Fatalf("execution status = %q, want completed", observed.Status)
+	if observed.Status != "partial" {
+		t.Fatalf("execution status = %q, want partial", observed.Status)
 	}
 	if observed.Fetched["post_sync_score_replay_empty"] != 1 {
 		t.Fatalf("Fetched[post_sync_score_replay_empty] = %d, want 1", observed.Fetched["post_sync_score_replay_empty"])
@@ -1058,6 +1079,12 @@ func TestUserSyncExecutionDoesNotMarkMismatchWhenOnlyUnmergedTargetsWereSelected
 		t.Fatalf(
 			"Fetched[post_sync_score_replay_expected_zero_unmerged] = %d, want 1",
 			observed.Fetched["post_sync_score_replay_expected_zero_unmerged"],
+		)
+	}
+	if observed.Fetched["post_sync_profile_refresh_pending_score_evidence"] != 1 {
+		t.Fatalf(
+			"Fetched[post_sync_profile_refresh_pending_score_evidence] = %d, want 1",
+			observed.Fetched["post_sync_profile_refresh_pending_score_evidence"],
 		)
 	}
 }
@@ -1096,12 +1123,26 @@ func TestUserSyncExecutionContinuesProfileStepsWhenScoreReplayFails(t *testing.T
 	var refreshCalls int
 	var reportBackfillCalls int
 	var questBackfillCalls int
+	profileRefreshedAt := time.Date(2026, 5, 6, 10, 0, 5, 0, time.UTC)
 	profile := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case strings.Contains(r.URL.Path, "/refresh"):
 			refreshCalls++
 			w.WriteHeader(http.StatusAccepted)
-			_, _ = w.Write([]byte(`{"status":"accepted"}`))
+			_ = json.NewEncoder(w).Encode(contracts.ProfileRefreshResponse{
+				Status:                 contracts.ProfileRefreshStatusCompleted,
+				UserID:                 "00000000-0000-0000-0000-000000000001",
+				ProfileSnapshotID:      "snap-score-failed",
+				ProfileSnapshotVersion: "profile/v1",
+				ScoreVersion:           "v1alpha1",
+				TotalXP:                20,
+				LevelLabel:             "Bronze I",
+				SourceWatermark:        profileRefreshedAt,
+				RefreshedAt:            profileRefreshedAt,
+				StaleAfter:             profileRefreshedAt.Add(15 * time.Minute),
+				ScoreEventCount:        1,
+				SnapshotPersisted:      true,
+			})
 		case strings.Contains(r.URL.Path, "/pr-reports/backfill"):
 			reportBackfillCalls++
 			w.WriteHeader(http.StatusAccepted)
@@ -1156,6 +1197,132 @@ func TestUserSyncExecutionContinuesProfileStepsWhenScoreReplayFails(t *testing.T
 	}
 	if observed.Fetched["post_sync_quests_backfill_ok"] != 1 {
 		t.Fatalf("Fetched[post_sync_quests_backfill_ok] = %d, want 1", observed.Fetched["post_sync_quests_backfill_ok"])
+	}
+	if refreshCalls != 1 || reportBackfillCalls != 1 || questBackfillCalls != 1 {
+		t.Fatalf("profile post-sync calls = refresh:%d reports:%d quests:%d, want exactly 1 each", refreshCalls, reportBackfillCalls, questBackfillCalls)
+	}
+}
+
+func TestUserSyncExecutionMarksProfileRefreshPendingWhenScoreEvidenceMissing(t *testing.T) {
+	auth := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_ = json.NewEncoder(w).Encode(contracts.SessionEnvelope{
+			Session: contracts.SessionIdentity{
+				Subject:     "00000000-0000-0000-0000-000000000001",
+				GitHubLogin: "octocat",
+				Roles:       []string{"user"},
+			},
+		})
+	}))
+	defer auth.Close()
+
+	ingestor := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_ = json.NewEncoder(w).Encode(contracts.GitHubSyncExecutionResponse{
+			Status:        "completed",
+			Mode:          "user",
+			User:          "octocat",
+			CorrelationID: "req-user-pending-profile",
+			StartedAt:     time.Date(2026, 5, 6, 10, 0, 0, 0, time.UTC),
+			FinishedAt:    time.Date(2026, 5, 6, 10, 0, 4, 0, time.UTC),
+			Fetched:       map[string]int{"authored_pull_requests_selected": 2, "authored_pull_requests_selected_merged": 2},
+			Persisted:     map[string]int{"pull_requests": 2},
+		})
+	}))
+	defer ingestor.Close()
+
+	scoring := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusAccepted)
+		_ = json.NewEncoder(w).Encode(contracts.ReplayUserScoresResponse{
+			Snapshot: contracts.UserScoreSnapshotResponse{
+				ReplayRunID:  "run-pending-profile",
+				UserID:       "00000000-0000-0000-0000-000000000001",
+				ScoreVersion: "v1alpha1",
+				TriggerType:  "live",
+				TotalXP:      0,
+				Level:        "1",
+				RankTier:     "Bronze I",
+			},
+			Badges: []contracts.BadgeView{},
+			Events: 0,
+		})
+	}))
+	defer scoring.Close()
+
+	var refreshCalls int
+	var reportBackfillCalls int
+	var questBackfillCalls int
+	profile := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case strings.Contains(r.URL.Path, "/refresh"):
+			refreshCalls++
+			w.WriteHeader(http.StatusAccepted)
+			_ = json.NewEncoder(w).Encode(contracts.ProfileRefreshResponse{
+				Status:            contracts.ProfileRefreshStatusPendingScoreEvidence,
+				UserID:            "00000000-0000-0000-0000-000000000001",
+				ScoreVersion:      "v1alpha1",
+				ScoreEventCount:   0,
+				SnapshotPersisted: false,
+				Message:           "profile refresh skipped because no scored PR evidence is available yet",
+			})
+		case strings.Contains(r.URL.Path, "/pr-reports/backfill"):
+			reportBackfillCalls++
+			w.WriteHeader(http.StatusAccepted)
+			_, _ = w.Write([]byte(`{"status":"accepted"}`))
+		case strings.Contains(r.URL.Path, "/quests/backfill"):
+			questBackfillCalls++
+			w.WriteHeader(http.StatusAccepted)
+			_, _ = w.Write([]byte(`{"status":"accepted"}`))
+		default:
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"ok":true}`))
+		}
+	}))
+	defer profile.Close()
+
+	cfg := testConfig(profile.URL, auth.URL, ingestor.URL)
+	cfg.Services.ScoringBaseURL = scoring.URL
+	cfg.Services.ProfileBaseURL = profile.URL
+	router := NewRouter(cfg, testLogger(), "test")
+
+	request := httptest.NewRequest(http.MethodPost, "/v1/sync/user/execute", strings.NewReader(`{}`))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Cookie", "gitrank_session=session-pending-profile; gitrank_csrf=csrf-pending-profile")
+	csrfToken, err := authkit.DoubleSubmitCSRFFromToken([]byte("test-session-secret"), "session-pending-profile")
+	if err != nil {
+		t.Fatalf("csrf token: %v", err)
+	}
+	request.Header.Set("X-CSRF-Token", csrfToken)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusOK, response.Body.String())
+	}
+
+	var observed contracts.GitHubSyncExecutionResponse
+	if err := json.Unmarshal(response.Body.Bytes(), &observed); err != nil {
+		t.Fatalf("unmarshal response: %v", err)
+	}
+	if observed.Status != "partial" {
+		t.Fatalf("execution status = %q, want partial", observed.Status)
+	}
+	if observed.Fetched["post_sync_profile_refresh_ok"] != 0 {
+		t.Fatalf("Fetched[post_sync_profile_refresh_ok] = %d, want 0", observed.Fetched["post_sync_profile_refresh_ok"])
+	}
+	if observed.Fetched["post_sync_profile_refresh_pending_score_evidence"] != 1 {
+		t.Fatalf(
+			"Fetched[post_sync_profile_refresh_pending_score_evidence] = %d, want 1",
+			observed.Fetched["post_sync_profile_refresh_pending_score_evidence"],
+		)
+	}
+	if observed.Fetched["post_sync_profile_refresh_score_events"] != 0 {
+		t.Fatalf(
+			"Fetched[post_sync_profile_refresh_score_events] = %d, want 0",
+			observed.Fetched["post_sync_profile_refresh_score_events"],
+		)
+	}
+	if observed.Fetched["post_sync_pr_reports_backfill_ok"] != 1 || observed.Fetched["post_sync_quests_backfill_ok"] != 1 {
+		t.Fatalf("post-sync backfills = reports:%d quests:%d, want ok", observed.Fetched["post_sync_pr_reports_backfill_ok"], observed.Fetched["post_sync_quests_backfill_ok"])
 	}
 	if refreshCalls != 1 || reportBackfillCalls != 1 || questBackfillCalls != 1 {
 		t.Fatalf("profile post-sync calls = refresh:%d reports:%d quests:%d, want exactly 1 each", refreshCalls, reportBackfillCalls, questBackfillCalls)

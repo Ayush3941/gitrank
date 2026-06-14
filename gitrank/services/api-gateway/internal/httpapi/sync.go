@@ -356,12 +356,31 @@ func refreshUserDashboardEvidence(
 		{name: "pr report backfill", metricKey: "pr_reports_backfill", path: "/v1/profile/users/" + userID + "/pr-reports/backfill", expectCode: http.StatusAccepted},
 		{name: "quest backfill", metricKey: "quests_backfill", path: "/v1/profile/users/" + userID + "/quests/backfill", expectCode: http.StatusAccepted},
 	} {
-		if _, err := postInternalJSON(ctx, client, profileBaseURL, step.path, nil, step.expectCode); err != nil {
+		payload, err := postInternalJSON(ctx, client, profileBaseURL, step.path, nil, step.expectCode)
+		if err != nil {
 			if execution != nil {
 				execution.Fetched["post_sync_"+step.metricKey+"_failed"] = 1
 			}
 			postSyncErrors = append(postSyncErrors, fmt.Errorf("%s failed: %w", step.name, err))
 			continue
+		}
+		if step.metricKey == "profile_refresh" {
+			var refresh contracts.ProfileRefreshResponse
+			if err := json.Unmarshal(payload, &refresh); err == nil {
+				if execution != nil {
+					execution.Fetched["post_sync_profile_refresh_score_events"] = max(0, refresh.ScoreEventCount)
+					if !refresh.SnapshotPersisted || refresh.Status != contracts.ProfileRefreshStatusCompleted {
+						execution.Fetched["post_sync_profile_refresh_pending_score_evidence"] = 1
+					}
+				}
+				if !refresh.SnapshotPersisted || refresh.Status != contracts.ProfileRefreshStatusCompleted {
+					postSyncErrors = append(
+						postSyncErrors,
+						fmt.Errorf("profile refresh pending score evidence: %s", strings.TrimSpace(refresh.Message)),
+					)
+					continue
+				}
+			}
 		}
 		if execution != nil {
 			execution.Fetched["post_sync_"+step.metricKey+"_ok"] = 1

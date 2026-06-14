@@ -1129,7 +1129,7 @@ func TestRunNextExecutesProfileRefreshJobAndCompletes(t *testing.T) {
 		observedTraceParent = r.Header.Get("traceparent")
 		w.WriteHeader(http.StatusAccepted)
 		_ = json.NewEncoder(w).Encode(contracts.ProfileRefreshResponse{
-			Status:                 "completed",
+			Status:                 contracts.ProfileRefreshStatusCompleted,
 			UserID:                 userID,
 			ProfileSnapshotID:      "snap-1",
 			ProfileSnapshotVersion: "profile/v1",
@@ -1139,6 +1139,8 @@ func TestRunNextExecutesProfileRefreshJobAndCompletes(t *testing.T) {
 			SourceWatermark:        now,
 			RefreshedAt:            now,
 			StaleAfter:             now.Add(15 * time.Minute),
+			ScoreEventCount:        2,
+			SnapshotPersisted:      true,
 		})
 	}))
 	defer server.Close()
@@ -1169,6 +1171,9 @@ func TestRunNextExecutesProfileRefreshJobAndCompletes(t *testing.T) {
 	if run.ProfileRefresh.TotalXP != 180 || run.ProfileRefresh.ScoreVersion != "score/v1" {
 		t.Fatalf("profile refresh summary = %+v, want total_xp=180 score/v1", run.ProfileRefresh)
 	}
+	if run.ProfileRefresh.ScoreEventCount != 2 || !run.ProfileRefresh.SnapshotPersisted {
+		t.Fatalf("profile refresh evidence = %+v, want persisted score-backed snapshot", run.ProfileRefresh)
+	}
 	if run.ProfileRefresh.RefreshedAt.IsZero() || run.ProfileRefresh.StaleAfter.IsZero() {
 		t.Fatalf("profile refresh freshness = %+v, want refreshed/stale timestamps", run.ProfileRefresh)
 	}
@@ -1180,6 +1185,57 @@ func TestRunNextExecutesProfileRefreshJobAndCompletes(t *testing.T) {
 	}
 	if observedTraceParent == "" {
 		t.Fatal("observed traceparent header missing")
+	}
+	if run.Job == nil || run.Job.ID != enqueue.JobIDs[0] || run.Job.Type != string(store.ProfileRefreshUserJob) {
+		t.Fatalf("run job = %+v, want executed profile refresh job id %q", run.Job, enqueue.JobIDs[0])
+	}
+}
+
+func TestRunNextExecutesProfileRefreshJobWithPendingScoreEvidence(t *testing.T) {
+	now := time.Now().UTC().Add(2 * time.Minute).Truncate(time.Second)
+	const userID = "8f0c38c9-671f-499d-a1b7-1f9f4f57cbb4"
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusAccepted)
+		_ = json.NewEncoder(w).Encode(contracts.ProfileRefreshResponse{
+			Status:            contracts.ProfileRefreshStatusPendingScoreEvidence,
+			UserID:            userID,
+			ScoreVersion:      "v1alpha1",
+			ScoreEventCount:   0,
+			SnapshotPersisted: false,
+			Message:           "profile refresh skipped because no scored PR evidence is available yet",
+		})
+	}))
+	defer server.Close()
+
+	cfg := testServiceConfig()
+	cfg.Services.ProfileBaseURL = server.URL
+	cfg.Services.RequestTimeout = time.Second
+	scheduler := New(cfg)
+
+	enqueue, err := scheduler.EnqueueSync(contracts.SyncRequest{Mode: "profile_refresh", UserID: userID}, "profile-pending-correlation", now)
+	if err != nil {
+		t.Fatalf("EnqueueSync() error = %v", err)
+	}
+
+	run, err := scheduler.RunNext(context.Background(), now)
+	if err != nil {
+		t.Fatalf("RunNext() error = %v", err)
+	}
+	if run.Status != "completed" {
+		t.Fatalf("run status = %q, want completed transport execution", run.Status)
+	}
+	if run.ProfileRefresh == nil {
+		t.Fatal("run.ProfileRefresh is nil, want pending evidence response")
+	}
+	if run.ProfileRefresh.Status != contracts.ProfileRefreshStatusPendingScoreEvidence {
+		t.Fatalf("profile refresh status = %q, want pending score evidence", run.ProfileRefresh.Status)
+	}
+	if run.ProfileRefresh.ProfileSnapshotID != "" || run.ProfileRefresh.RefreshedAt.IsZero() == false {
+		t.Fatalf("profile refresh snapshot = %+v, want no persisted fresh snapshot", run.ProfileRefresh)
+	}
+	if run.ProfileRefresh.ScoreEventCount != 0 || run.ProfileRefresh.SnapshotPersisted {
+		t.Fatalf("profile refresh evidence = %+v, want zero events and no persisted snapshot", run.ProfileRefresh)
 	}
 	if run.Job == nil || run.Job.ID != enqueue.JobIDs[0] || run.Job.Type != string(store.ProfileRefreshUserJob) {
 		t.Fatalf("run job = %+v, want executed profile refresh job id %q", run.Job, enqueue.JobIDs[0])
@@ -2358,6 +2414,10 @@ func testServiceConfig() config.App {
 		},
 		Services: config.Services{
 			RequestTimeout: time.Second,
+		},
+		Scoring: config.Scoring{
+			LeaderboardBackfillDefaultWeeks: 26,
+			LeaderboardBackfillMaxWeeks:     156,
 		},
 	}
 }
