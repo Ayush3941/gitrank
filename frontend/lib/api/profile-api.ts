@@ -648,24 +648,23 @@ function collapseScoreHistoryByPullRequest(
       continue;
     }
 
-    existing.delta_xp += entry.delta_xp;
-    existing.explanation = mergeUniqueStrings(existing.explanation, entry.explanation);
-    existing.evidence_missing = mergeUniqueStrings(existing.evidence_missing, entry.evidence_missing);
-    existing.evidence_state = strongestEvidenceState(existing.evidence_state, entry.evidence_state);
+    const mergedExplanation = mergeUniqueStrings(existing.explanation, entry.explanation);
+    const mergedMissing = mergeUniqueStrings(existing.evidence_missing, entry.evidence_missing);
+    const mergedEvidenceState = strongestEvidenceState(existing.evidence_state, entry.evidence_state);
 
-    if (isNewerTimestamp(entry.created_at, existing.created_at)) {
-      existing.event_id = entry.event_id;
-      existing.event_type = entry.event_type;
-      existing.category = entry.category || existing.category;
-      existing.created_at = entry.created_at;
-      existing.score_version = entry.score_version || existing.score_version;
-      existing.formula_version = entry.formula_version || existing.formula_version;
-      existing.pull_request_id = entry.pull_request_id || existing.pull_request_id;
-      existing.analysis_id = entry.analysis_id || existing.analysis_id;
-      existing.pull_request = entry.pull_request || existing.pull_request;
+    if (shouldReplaceCollapsedScoreEntry(existing, entry)) {
+      collapsedByKey.set(key, {
+        ...entry,
+        explanation: mergedExplanation,
+        evidence_missing: mergedMissing,
+        evidence_state: mergedEvidenceState,
+      });
       continue;
     }
 
+    existing.explanation = mergedExplanation;
+    existing.evidence_missing = mergedMissing;
+    existing.evidence_state = mergedEvidenceState;
     if (!existing.score_version && entry.score_version) {
       existing.score_version = entry.score_version;
     }
@@ -686,6 +685,25 @@ function collapseScoreHistoryByPullRequest(
   return collapsedOrder
     .map((key) => collapsedByKey.get(key))
     .filter((entry): entry is ApiScoreHistoryEntry => Boolean(entry));
+}
+
+function shouldReplaceCollapsedScoreEntry(
+  existing: ApiScoreHistoryEntry,
+  candidate: ApiScoreHistoryEntry,
+): boolean {
+  const existingCanonical = isCanonicalPRScoreEntry(existing);
+  const candidateCanonical = isCanonicalPRScoreEntry(candidate);
+  if (candidateCanonical && !existingCanonical) {
+    return true;
+  }
+  if (!candidateCanonical && existingCanonical) {
+    return false;
+  }
+  return isNewerTimestamp(candidate.created_at, existing.created_at);
+}
+
+function isCanonicalPRScoreEntry(entry: ApiScoreHistoryEntry): boolean {
+  return entry.event_type.trim().toLowerCase() === "score.computed";
 }
 
 function mergeUniqueStrings(base?: string[], next?: string[]): string[] {

@@ -1,5 +1,11 @@
 # Frontend UX Changelog
 
+## 2026-06-14
+
+- Contribution XP projection:
+  - stopped summing score-history rows that point at the same PR when building profile contribution cards.
+  - kept PR-card XP tied to the canonical deterministic `score.computed` row while preserving linked quest evidence as supporting signals.
+
 ## 2026-06-13
 
 - Sync evidence diagnostics:

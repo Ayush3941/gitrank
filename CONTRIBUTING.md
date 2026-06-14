@@ -1,8 +1,12 @@
 # Contributing to GitRank
 
-Last reviewed: June 13, 2026
+Last reviewed: June 14, 2026
 
 This document is intentionally detailed.
+
+## Session Notes (June 14, 2026)
+
+- Kept contribution-card XP canonical by changing profile score-history collapse to prefer `score.computed` PR events instead of summing linked quest/history rows for the same pull request.
 
 ## Session Notes (June 13, 2026)
 

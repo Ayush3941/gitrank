@@ -238,4 +238,68 @@ describe("profile API sync-state adaptation", () => {
     expect(byRepo.get("repo-unknown")).toBe("open");
     expect(byRepo.get("repo-merged")).toBe("merged");
   });
+
+  it("keeps PR contribution XP canonical when quest rewards reference the same PR", async () => {
+    const payload = buildPrivateProfileResponse({
+      score_history: [
+        {
+          event_id: "quest-reward",
+          event_type: "quest.reward",
+          delta_xp: 240,
+          created_at: "2026-05-27T12:30:00Z",
+          score_version: "quest-rewards/v1",
+          formula_version: "quest-rewards/v1",
+          pull_request_id: "pr-merged",
+          analysis_id: "analysis-merged",
+          evidence_state: "complete",
+          pull_request: {
+            repository: "owner/repo-merged",
+            number: 13,
+            title: "merged change",
+            state: "closed",
+            merged: true,
+          },
+          explanation: ["Quest reward: testing streak."],
+        },
+        {
+          event_id: "score-merged",
+          event_type: "score.computed",
+          delta_xp: 120,
+          created_at: "2026-05-27T12:10:00Z",
+          score_version: "v1alpha1",
+          formula_version: "score-components/v1",
+          pull_request_id: "pr-merged",
+          analysis_id: "analysis-merged",
+          evidence_state: "complete",
+          pull_request: {
+            repository: "owner/repo-merged",
+            number: 13,
+            title: "merged change",
+            state: "closed",
+            merged: true,
+          },
+          explanation: ["Final deterministic PR score."],
+        },
+      ],
+    });
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify(payload), { status: 200 })),
+    );
+
+    const adapted = await getMyProfile();
+    expect(adapted.user.contributions).toHaveLength(1);
+    expect(adapted.user.contributions[0]).toMatchObject({
+      id: "score-merged",
+      scoreEventId: "score-merged",
+      xpEarned: 120,
+      scoreVersion: "v1alpha1",
+      formulaVersion: "score-components/v1",
+    });
+    expect(adapted.user.contributions[0]?.evidenceSignals).toEqual([
+      "Quest reward: testing streak.",
+      "Final deterministic PR score.",
+    ]);
+  });
 });
