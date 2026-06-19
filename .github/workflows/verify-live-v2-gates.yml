@@ -179,7 +179,7 @@ jobs:
 
       - name: Upload render artifact
         if: ${{ env.LIVE_GATES_RUN_RELEASE_RENDER == 'true' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: rendered-k8s-${{ env.LIVE_GATES_ENVIRONMENT }}-${{ github.run_id }}
           path: ${{ runner.temp }}/rendered-k8s.yaml
