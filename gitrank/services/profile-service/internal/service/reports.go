@@ -80,6 +80,10 @@ type pullRequestReportBackfillTarget struct {
 }
 
 func (s *Service) PublicPullRequestReport(ctx context.Context, owner, repo string, number int, now time.Time) (contracts.PullRequestReportResponse, error) {
+	return s.PullRequestReport(ctx, "", owner, repo, number, now)
+}
+
+func (s *Service) InternalPullRequestReport(ctx context.Context, owner, repo string, number int, now time.Time) (contracts.PullRequestReportResponse, error) {
 	if strings.TrimSpace(owner) == "" || strings.TrimSpace(repo) == "" || number <= 0 {
 		return contracts.PullRequestReportResponse{}, ErrInvalidRequest
 	}
@@ -205,10 +209,23 @@ func (s *Store) LoadPullRequestReport(ctx context.Context, owner, repo string, n
 			LIMIT 1
 		) ca ON true
 		LEFT JOIN LATERAL (
-			SELECT id, score_version, delta_total_xp, explanation_jsonb, metadata_jsonb
-			FROM score_events
-			WHERE pull_request_id = pr.id
-			ORDER BY created_at DESC
+			SELECT se.id, se.score_version, se.delta_total_xp, se.explanation_jsonb, se.metadata_jsonb
+			FROM score_events se
+			LEFT JOIN score_replay_runs replay ON replay.id = se.replay_run_id
+			WHERE se.pull_request_id = pr.id
+			  AND se.event_type = 'score.computed'
+			  AND (
+				se.replay_run_id = (
+					SELECT id FROM score_replay_runs
+					WHERE user_id = se.user_id AND status = 'completed'
+					ORDER BY created_at DESC, id DESC LIMIT 1
+				)
+				OR (se.replay_run_id IS NULL AND NOT EXISTS (
+					SELECT 1 FROM score_replay_runs
+					WHERE user_id = se.user_id AND status = 'completed'
+				))
+			  )
+			ORDER BY COALESCE(replay.created_at, se.created_at) DESC, se.created_at DESC, se.id DESC
 			LIMIT 1
 		) se ON true
 		LEFT JOIN LATERAL (
@@ -335,8 +352,9 @@ func (s *Store) LoadRecentPullRequestReportsForUser(ctx context.Context, userID 
 			FROM score_events se
 			WHERE se.user_id = $1::uuid
 			  AND se.pull_request_id IS NOT NULL
+			  AND se.event_type = 'score.computed'
 			  AND %s
-			ORDER BY se.pull_request_id, se.created_at DESC
+			ORDER BY se.pull_request_id, se.created_at DESC, se.id DESC
 		),
 		recent_score_events AS (
 			SELECT *

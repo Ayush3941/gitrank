@@ -205,7 +205,7 @@ func (s *Store) LoadLatestScoreSelection(ctx context.Context, userID string) (sc
 		FROM score_replay_runs
 		WHERE user_id = $1::uuid
 		  AND status = 'completed'
-		ORDER BY created_at DESC
+		ORDER BY created_at DESC, id DESC
 		LIMIT 1
 	`, userID)
 
@@ -825,7 +825,7 @@ func (s *Store) LoadLatestSnapshot(ctx context.Context, userID string) (snapshot
 			COALESCE(source_watermark, refreshed_at)
 		FROM profile_snapshots
 		WHERE user_id = $1::uuid
-		ORDER BY refreshed_at DESC, created_at DESC
+		ORDER BY refreshed_at DESC, created_at DESC, id DESC
 		LIMIT 1
 	`, userID)
 
@@ -991,7 +991,7 @@ func (s *Store) InsertSnapshot(ctx context.Context, userID string, snapshot snap
 			stale_after,
 			source_watermark
 		) VALUES (
-			$1::uuid, $2, $3, $4, $5::jsonb, $6::jsonb, $7::jsonb, $8::jsonb, $9::jsonb, $10::jsonb, $11::jsonb, $12, $12, $13, $14
+			$1::uuid, $2, $3, $4, $5::jsonb, $6::jsonb, $7::jsonb, $8::jsonb, $9::jsonb, $10::jsonb, $11::jsonb, clock_timestamp(), $12, $13, $14
 		)
 		RETURNING id::text
 	`, userID, snapshot.SnapshotVersion, snapshot.TotalXP, snapshot.LevelLabel, string(payload.skills), string(payload.badges), string(payload.timeline), string(payload.summary), string(payload.repos), string(payload.history), string(payload.card), snapshot.RefreshedAt.UTC(), snapshot.StaleAfter.UTC(), snapshot.SourceWatermark.UTC())

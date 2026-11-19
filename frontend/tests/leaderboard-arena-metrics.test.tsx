@@ -4,6 +4,16 @@ import { LeaderboardArena } from "@/features/leaderboard/components/LeaderboardA
 import type { LeaderboardSnapshot } from "@/types/gitrank";
 
 describe("LeaderboardArena", () => {
+  it("shows rising rank gains as places rather than XP", () => {
+    const snapshot = buildSnapshot({ season: { rankingMetric: "global_rank_movement", rankingLabel: "Global places gained" } });
+    snapshot.rows[0].rankingValue = 1;
+
+    render(<LeaderboardArena snapshot={snapshot} showDetails />);
+
+    expect(screen.getByText("Global places gained")).toBeTruthy();
+    expect(screen.getByText("+1 place")).toBeTruthy();
+  });
+
   it("formats row XP metrics with shared XP labels", () => {
     render(<LeaderboardArena snapshot={buildSnapshot()} showDetails />);
 

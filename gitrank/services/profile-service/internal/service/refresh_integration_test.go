@@ -10,7 +10,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gitrank/gitrank/packages/config"
 	"github.com/gitrank/gitrank/packages/contracts"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -28,15 +27,7 @@ func TestRefreshProfileByUserIDPersistsFreshSnapshot(t *testing.T) {
 	}
 	defer pool.Close()
 
-	cfg := config.App{
-		ServiceName: "profile-service",
-		Database:    config.Database{URL: databaseURL},
-		Auth: config.Auth{
-			SessionSecret:     "profile-refresh-test-secret",
-			SessionCookieName: "gitrank_session",
-			CSRFCookieName:    "gitrank_csrf",
-		},
-	}
+	cfg := profileIntegrationConfig(databaseURL)
 	svc, err := New(cfg, pool, &Cache{}, profileTestLogger())
 	if err != nil {
 		t.Fatalf("New() error = %v", err)
@@ -141,15 +132,7 @@ func TestRefreshProfileByUserIDSkipsSnapshotWhenScoreEvidenceMissing(t *testing.
 	}
 	defer pool.Close()
 
-	cfg := config.App{
-		ServiceName: "profile-service",
-		Database:    config.Database{URL: databaseURL},
-		Auth: config.Auth{
-			SessionSecret:     "profile-refresh-pending-test-secret",
-			SessionCookieName: "gitrank_session",
-			CSRFCookieName:    "gitrank_csrf",
-		},
-	}
+	cfg := profileIntegrationConfig(databaseURL)
 	svc, err := New(cfg, pool, &Cache{}, profileTestLogger())
 	if err != nil {
 		t.Fatalf("New() error = %v", err)
@@ -197,15 +180,7 @@ func TestRefreshProfileByUserIDNormalizesLegacyBadgeEvidence(t *testing.T) {
 	}
 	defer pool.Close()
 
-	cfg := config.App{
-		ServiceName: "profile-service",
-		Database:    config.Database{URL: databaseURL},
-		Auth: config.Auth{
-			SessionSecret:     "profile-refresh-badge-test-secret",
-			SessionCookieName: "gitrank_session",
-			CSRFCookieName:    "gitrank_csrf",
-		},
-	}
+	cfg := profileIntegrationConfig(databaseURL)
 	svc, err := New(cfg, pool, &Cache{}, profileTestLogger())
 	if err != nil {
 		t.Fatalf("New() error = %v", err)
@@ -276,15 +251,7 @@ func TestRefreshProfileByUserIDBackfillsLegacyScoreEventEvidenceLinks(t *testing
 	}
 	defer pool.Close()
 
-	cfg := config.App{
-		ServiceName: "profile-service",
-		Database:    config.Database{URL: databaseURL},
-		Auth: config.Auth{
-			SessionSecret:     "profile-refresh-legacy-score-secret",
-			SessionCookieName: "gitrank_session",
-			CSRFCookieName:    "gitrank_csrf",
-		},
-	}
+	cfg := profileIntegrationConfig(databaseURL)
 	svc, err := New(cfg, pool, &Cache{}, profileTestLogger())
 	if err != nil {
 		t.Fatalf("New() error = %v", err)

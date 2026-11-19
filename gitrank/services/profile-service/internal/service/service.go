@@ -93,8 +93,8 @@ func (s *Service) PublicProfile(ctx context.Context, handle string, now time.Tim
 		"profile:public:%s:%s:%d:%d",
 		strings.ToLower(strings.TrimSpace(handle)),
 		snapshot.ID,
-		settings.UpdatedAt.Unix(),
-		visUpdatedAt.Unix(),
+		settings.UpdatedAt.UnixNano(),
+		visUpdatedAt.UnixNano(),
 	)
 
 	var cached contracts.PublicProfileResponse
@@ -127,6 +127,14 @@ func (s *Service) PublicProfileCard(ctx context.Context, handle string, now time
 }
 
 func (s *Service) Leaderboard(ctx context.Context, limit int, now time.Time) (contracts.LeaderboardResponse, error) {
+	return s.LeaderboardForLane(ctx, contracts.LeaderboardGlobal, limit, now)
+}
+
+func (s *Service) LeaderboardForLane(ctx context.Context, lane contracts.LeaderboardLane, limit int, now time.Time) (contracts.LeaderboardResponse, error) {
+	lane, err := contracts.NormalizeLeaderboardLane(string(lane))
+	if err != nil {
+		return contracts.LeaderboardResponse{}, fmt.Errorf("%w: %v", ErrInvalidRequest, err)
+	}
 	if limit <= 0 {
 		limit = s.cfg.Scoring.LeaderboardDefaultLimit
 	}
@@ -134,15 +142,16 @@ func (s *Service) Leaderboard(ctx context.Context, limit int, now time.Time) (co
 		limit = s.cfg.Scoring.LeaderboardMaxLimit
 	}
 
-	season, entries, ok, err := s.store.LoadFreshLeaderboardSeason(ctx, now.UTC(), limit)
+	season, entries, ok, err := s.store.loadFreshLeaderboardLane(ctx, now.UTC(), limit, lane)
 	if err != nil {
 		return contracts.LeaderboardResponse{}, err
 	}
 	if !ok {
-		season, entries, err = s.store.MaterializeLeaderboardSeason(
+		season, entries, err = s.store.materializeLeaderboardLane(
 			ctx,
 			now.UTC(),
 			s.cfg.Scoring.LeaderboardMaxLimit,
+			lane,
 		)
 		if err != nil {
 			return contracts.LeaderboardResponse{}, err
@@ -158,7 +167,9 @@ func (s *Service) Leaderboard(ctx context.Context, limit int, now time.Time) (co
 	}
 
 	return contracts.LeaderboardResponse{
-		Entries: views,
+		Lane:          lane,
+		RankingMetric: lane.RankingMetric(),
+		Entries:       views,
 		Window: contracts.ProfileTimeWindow{
 			Label:   season.SeasonKey,
 			Bucket:  "week",
@@ -320,8 +331,8 @@ func (s *Service) PrivateProfile(ctx context.Context, sessionToken string, now t
 		"profile:private:%s:%s:%d:%d",
 		user.ID,
 		snapshot.ID,
-		settings.UpdatedAt.Unix(),
-		visUpdatedAt.Unix(),
+		settings.UpdatedAt.UnixNano(),
+		visUpdatedAt.UnixNano(),
 	)
 
 	var cached contracts.PrivateProfileResponse

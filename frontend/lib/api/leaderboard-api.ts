@@ -13,14 +13,9 @@ import {
 import { normalizeSkillCategory as normalizeRuntimeSkillCategory } from "@/lib/runtime/skill-category-policy";
 import { leaderboardSeasonPolicy } from "@/lib/runtime/leaderboard-season-policy";
 import { formatUtcMonthDay } from "@/lib/formatters";
+import { leaderboardLanes, type LeaderboardTab } from "@/lib/runtime/leaderboard-lane-policy";
 
-export type LeaderboardTab =
-  | "Global"
-  | "Backend"
-  | "Testing"
-  | "Documentation"
-  | "Weekly XP"
-  | "Rising Contributors";
+export type { LeaderboardTab } from "@/lib/runtime/leaderboard-lane-policy";
 
 type ApiLeaderboardEntry = {
   rank: number;
@@ -31,6 +26,7 @@ type ApiLeaderboardEntry = {
   rank_tier: string;
   total_xp: number;
   weekly_xp: number;
+  ranking_value?: number;
   movement: number;
   focus?: string;
   profile_snapshot_id?: string;
@@ -47,6 +43,8 @@ type ApiLeaderboardEntry = {
 };
 
 type ApiLeaderboardResponse = {
+  lane?: string;
+  ranking_metric?: LeaderboardSeason["rankingMetric"];
   entries?: ApiLeaderboardEntry[];
   generated_at?: string;
   season_key?: string;
@@ -70,7 +68,9 @@ type ApiErrorResponse = {
 };
 
 export async function getLeaderboard(tab: LeaderboardTab): Promise<LeaderboardSnapshot> {
-  const response = await fetch("/api/leaderboard", {
+  const lane = leaderboardLanes[tab];
+  const endpoint = lane.id === "global" ? "/api/leaderboard" : `/api/leaderboard?lane=${lane.id}`;
+  const response = await fetch(endpoint, {
     cache: "no-store",
     credentials: "same-origin",
   });
@@ -79,8 +79,18 @@ export async function getLeaderboard(tab: LeaderboardTab): Promise<LeaderboardSn
   }
 
   const payload = (await response.json()) as ApiLeaderboardResponse;
-  const season = seasonFromResponse(payload);
-  const rows = rankForTab(
+  if ((payload.lane ?? "global") !== lane.id) {
+    throw new Error("The backend did not return the requested leaderboard lane.");
+  }
+  if (lane.id !== "global" && (payload.entries ?? []).some((row) => !Number.isFinite(row.ranking_value))) {
+    throw new Error("The leaderboard lane is missing its ranking values.");
+  }
+  const season = {
+    ...seasonFromResponse(payload),
+    rankingMetric: payload.ranking_metric ?? lane.metric,
+    rankingLabel: lane.label,
+  };
+  const rows = presentRankedRows(
     (payload.entries ?? []).map(toLeaderboardEntry),
     tab,
     season.scoringVersion,
@@ -112,6 +122,7 @@ function toLeaderboardEntry(entry: ApiLeaderboardEntry): LeaderboardEntry {
     title: entry.level_label,
     rankTier: normalizeRankTier(entry.rank_tier),
     weeklyXp: entry.weekly_xp,
+    rankingValue: entry.ranking_value,
     totalXp: entry.total_xp,
     movement: entry.movement,
     focus: normalizeSkillCategory(entry.focus ?? ""),
@@ -143,35 +154,26 @@ function leaderboardEvidenceSummary(entry: ApiLeaderboardEntry): string {
   return "Verified season snapshot with rank movement and bounded scoring evidence.";
 }
 
-function rankForTab(
+function presentRankedRows(
   rows: LeaderboardEntry[],
   tab: LeaderboardTab,
   scoringVersion: string,
   promotionCutoffRank: number,
   safetyCutoffRank: number,
 ): LeaderboardEntry[] {
-  const scoped =
-    tab === "Global" || tab === "Weekly XP" || tab === "Rising Contributors"
-      ? [...rows]
-      : rows.filter((row) => row.focus === tab);
-  const sorted =
-    tab === "Weekly XP"
-      ? scoped.sort((a, b) => b.weeklyXp - a.weeklyXp || b.totalXp - a.totalXp)
-      : tab === "Rising Contributors"
-        ? scoped.sort((a, b) => b.movement - a.movement || b.weeklyXp - a.weeklyXp)
-        : scoped.sort((a, b) => a.rank - b.rank);
-
-  return sorted.map((row, index) => {
-    const nextBetterRow = sorted[index - 1];
+  const ranked = rows.map((row) => ({
+    ...row,
+    rankingValue: row.rankingValue ?? (tab === "Weekly XP" ? row.weeklyXp : row.totalXp),
+  }));
+  return ranked.map((row, index) => {
+    const nextBetterRow = ranked[index - 1];
     return {
       ...row,
-      rank: index + 1,
-      seasonXp: row.seasonXp || row.weeklyXp,
-      xpToNextRank: nextBetterRow
-        ? Math.max(0, (nextBetterRow.seasonXp || nextBetterRow.weeklyXp) - (row.seasonXp || row.weeklyXp) + 1)
+      xpToNextRank: nextBetterRow && tab !== "Rising Contributors"
+        ? Math.max(0, nextBetterRow.rankingValue - row.rankingValue + 1)
         : 0,
-      promotionZone: index < promotionCutoffRank,
-      demotionRisk: index + 1 >= Math.min(Math.max(1, safetyCutoffRank), sorted.length),
+      promotionZone: row.rank <= promotionCutoffRank,
+      demotionRisk: row.rank >= safetyCutoffRank,
       scoreFormulaVersion: scoringVersion,
     };
   });

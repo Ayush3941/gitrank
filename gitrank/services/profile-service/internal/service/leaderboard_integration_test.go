@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gitrank/gitrank/packages/config"
 	"github.com/gitrank/gitrank/packages/contracts"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -24,17 +23,9 @@ func TestLeaderboardMaterializesSeasonSnapshotsAndRankMovements(t *testing.T) {
 	if err != nil {
 		t.Fatalf("pgxpool.New() error = %v", err)
 	}
-	defer pool.Close()
+	t.Cleanup(pool.Close)
 
-	cfg := config.App{
-		ServiceName: "profile-service",
-		Database:    config.Database{URL: databaseURL},
-		Auth: config.Auth{
-			SessionSecret:     "profile-leaderboard-test-secret",
-			SessionCookieName: "gitrank_session",
-			CSRFCookieName:    "gitrank_csrf",
-		},
-	}
+	cfg := profileIntegrationConfig(databaseURL)
 	svc, err := New(cfg, pool, &Cache{}, profileTestLogger())
 	if err != nil {
 		t.Fatalf("New() error = %v", err)
@@ -102,6 +93,11 @@ func insertLeaderboardUserWithScore(t *testing.T, ctx context.Context, pool *pgx
 	`, handle, handle, "https://avatars.example.test/u/"+handle).Scan(&userID); err != nil {
 		t.Fatalf("insert leaderboard user: %v", err)
 	}
+	t.Cleanup(func() {
+		if _, err := pool.Exec(ctx, `DELETE FROM users WHERE id = $1::uuid`, userID); err != nil {
+			t.Errorf("delete leaderboard fixture: %v", err)
+		}
+	})
 	insertLeaderboardScore(t, ctx, pool, userID, xp, createdAt)
 	return userID
 }

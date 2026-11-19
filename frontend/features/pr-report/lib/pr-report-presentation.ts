@@ -57,7 +57,7 @@ export function buildPRReportPresentation(report: PullRequestAnalysis) {
       hasPersistedScoreEvidence,
       fallbackDetail,
     }),
-    canRetryAiSummary: shouldShowAiSummaryRetry({
+    canRetryAiSummary: report.aiSummaryVisible !== false && shouldShowAiSummaryRetry({
       status: evidenceState.status,
       deterministicOnly: evidenceState.deterministicOnly,
       aiFallback: evidenceState.aiFallback,

@@ -1,4 +1,5 @@
 import type { LeaderboardTab } from "@/lib/api/leaderboard-api";
+import { leaderboardRankingValue } from "@/features/leaderboard/lib/leaderboard-ranking";
 import {
   buildStaleSyncNotice,
   type StaleSyncNotice,
@@ -165,7 +166,7 @@ export function buildLeaderboardArenaModel({
     currentUserIndex > 0 ? rows[currentUserIndex - 1] : null;
   const nextAboveGap =
     currentUser && nextAboveRow
-      ? Math.max(0, nextAboveRow.seasonXp - currentUser.seasonXp)
+      ? Math.max(0, leaderboardRankingValue(nextAboveRow) - leaderboardRankingValue(currentUser) + 1)
       : 0;
   const nearbyRows = buildLeaderboardNearbyRows(rows, localBracketRows);
   const sourceRows = viewMode === "nearby" ? nearbyRows : rows;

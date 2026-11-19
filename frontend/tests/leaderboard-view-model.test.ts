@@ -114,7 +114,7 @@ describe("buildLeaderboardArenaModel", () => {
     expect(model.currentUser?.username).toBe("player-6");
     expect(model.localBracketRows.map((row) => row.rank)).toEqual([4, 5, 6, 7, 8]);
     expect(model.nextAboveRow?.rank).toBe(5);
-    expect(model.nextAboveGap).toBe(100);
+    expect(model.nextAboveGap).toBe(101);
     expect(model.visibleRows.map((row) => row.rank)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
   });
 

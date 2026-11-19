@@ -328,9 +328,11 @@ export function LeaderboardPageClient() {
                   Rank #{leaderboardModel.snapshot.currentUser.rank} in {tab}
                 </p>
                 <p className="mt-1 text-xs text-muted">
-                  {leaderboardModel.snapshot.currentUser.xpToNextRank > 0
-                    ? `${formatXpLabel(leaderboardModel.snapshot.currentUser.xpToNextRank)} to next band`
-                    : "You currently lead this lane"}
+                  {leaderboardModel.snapshot.currentUser.rank === 1
+                    ? "You currently lead this lane"
+                    : tab === "Rising Contributors"
+                      ? "Ranked by global places gained."
+                      : `${formatXpLabel(leaderboardModel.snapshot.currentUser.xpToNextRank)} to next band`}
                 </p>
               </div>
             ) : null}

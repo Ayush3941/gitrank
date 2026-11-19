@@ -136,12 +136,14 @@ These observations describe the reviewed implementation, not additional policy:
 - Report test-signal, difficulty, and impact meters use deterministic heuristics.
   Changed test-file counts and text signals do not establish measured test
   coverage or proven production impact.
-- Leaderboard seasons use weekly windows, while candidate ordering uses total
-  profile XP. A weekly season does not imply weekly-only XP scoring or automated
-  promotion and demotion.
-- Public profile and repository visibility settings, public PR reports, and
-  leaderboard visibility have separate read paths. Check each affected reader
-  when changing privacy behavior.
+- Leaderboard seasons use weekly windows. Global ranks use total profile XP;
+  weekly and skill lanes rank their full eligible population by their own metric
+  before limiting results. Season snapshots do not implement automated promotion
+  and demotion.
+- Public PR reports enforce profile, exact-PR, repository, and AI-summary
+  visibility. A valid owner session can read unpublished reports. Scheduler
+  readback uses a signed internal profile-service request; the gateway does not
+  expose that route.
 - Local tests and committed Kubernetes/observability assets do not establish
   live production readiness. Remaining operational evidence is tracked in the
   [live gates](./releases/v2-remaining-live-gates.md); older status snapshots there

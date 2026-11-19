@@ -71,6 +71,8 @@ interface GitRankLevel {
 }
 
 export interface LeaderboardSeason {
+  rankingMetric?: "total_xp" | "weekly_xp" | "skill_xp" | "global_rank_movement";
+  rankingLabel?: string;
   id: string;
   name: string;
   windowLabel: string;
@@ -170,6 +172,7 @@ export interface Contribution {
 }
 
 export interface PullRequestAnalysis {
+  aiSummaryVisible?: boolean;
   contribution: Contribution;
   aiConfidence: number;
   scoreComponents: ScoreComponent[];
@@ -251,6 +254,7 @@ export interface SyncStatus {
 }
 
 export interface LeaderboardEntry {
+  rankingValue?: number;
   rank: number;
   username: string;
   displayName: string;

@@ -3,6 +3,7 @@ module github.com/gitrank/gitrank/services/scheduler-worker
 go 1.26.3
 
 require (
+	github.com/gitrank/gitrank/packages/authkit v0.0.0
 	github.com/gitrank/gitrank/packages/config v0.0.0
 	github.com/gitrank/gitrank/packages/contracts v0.0.0
 	github.com/gitrank/gitrank/packages/httpkit v0.0.0
@@ -19,6 +20,8 @@ require (
 	golang.org/x/sync v0.17.0 // indirect
 	golang.org/x/text v0.29.0 // indirect
 )
+
+replace github.com/gitrank/gitrank/packages/authkit => ../../packages/authkit
 
 replace github.com/gitrank/gitrank/packages/config => ../../packages/config
 

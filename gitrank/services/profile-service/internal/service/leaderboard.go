@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -12,11 +13,12 @@ import (
 )
 
 const (
-	leaderboardSeasonSnapshotVersion = "leaderboard-season/v1"
+	leaderboardSeasonSnapshotVersion = "leaderboard-season/v2"
 	leaderboardSeasonRefreshTTL      = 5 * time.Minute
 )
 
 type leaderboardSeasonRecord struct {
+	Lane            contracts.LeaderboardLane
 	ID              string
 	SeasonKey       string
 	SeasonType      string
@@ -38,6 +40,8 @@ type leaderboardSeasonSnapshotRecord struct {
 	Movement            int
 	RankMovementEventID string
 	WeeklyXP            int
+	RankingValue        int
+	GlobalSnapshotID    string
 	Focus               string
 }
 
@@ -47,7 +51,11 @@ type previousLeaderboardRank struct {
 }
 
 func (s *Store) LoadFreshLeaderboardSeason(ctx context.Context, now time.Time, limit int) (leaderboardSeasonRecord, []leaderboardSeasonSnapshotRecord, bool, error) {
-	seasonKey, _, _ := currentLeaderboardSeason(now.UTC())
+	return s.loadFreshLeaderboardLane(ctx, now, limit, contracts.LeaderboardGlobal)
+}
+
+func (s *Store) loadFreshLeaderboardLane(ctx context.Context, now time.Time, limit int, lane contracts.LeaderboardLane) (leaderboardSeasonRecord, []leaderboardSeasonSnapshotRecord, bool, error) {
+	seasonKey, _, _ := leaderboardSeasonForLane(now.UTC(), lane)
 	rows, err := s.pool.Query(ctx, `
 		SELECT
 			ls.id::text,
@@ -67,6 +75,8 @@ func (s *Store) LoadFreshLeaderboardSeason(ctx context.Context, now time.Time, l
 			COALESCE(lss.rank_movement_event_id::text, ''),
 			lss.weekly_xp,
 			lss.focus,
+			COALESCE((lss.snapshot_jsonb->>'ranking_value')::integer, lss.total_xp),
+			COALESCE(lss.snapshot_jsonb->>'global_snapshot_id', ''),
 			ps.id::text,
 			ps.user_id::text,
 			ps.snapshot_version,
@@ -85,11 +95,20 @@ func (s *Store) LoadFreshLeaderboardSeason(ctx context.Context, now time.Time, l
 		FROM leaderboard_seasons ls
 		JOIN leaderboard_season_snapshots lss ON lss.season_id = ls.id
 		JOIN profile_snapshots ps ON ps.id = lss.profile_snapshot_id
+		JOIN users u ON u.id = ps.user_id
+		LEFT JOIN user_profile_settings settings ON settings.user_id = u.id
 		WHERE ls.season_key = $1
 		  AND ls.generated_at >= $2
+		  AND ls.snapshot_version = $4
+		  AND LOWER(u.profile_visibility) = 'public'
+		  AND COALESCE(settings.show_leaderboard_participation, TRUE)
+		  AND NOT EXISTS (
+			SELECT 1 FROM user_profile_settings changed
+			WHERE changed.updated_at > ls.generated_at
+		  )
 		ORDER BY lss.rank ASC
 		LIMIT $3
-	`, seasonKey, now.UTC().Add(-leaderboardSeasonRefreshTTL), limit)
+	`, seasonKey, now.UTC().Add(-leaderboardSeasonRefreshTTL), limit, leaderboardSeasonSnapshotVersion)
 	if err != nil {
 		return leaderboardSeasonRecord{}, nil, false, err
 	}
@@ -103,25 +122,51 @@ func (s *Store) LoadFreshLeaderboardSeason(ctx context.Context, now time.Time, l
 			return leaderboardSeasonRecord{}, nil, false, err
 		}
 		if season.ID == "" {
+			record.Season.Lane = lane
 			season = record.Season
 		}
+		record.Season.Lane = lane
 		entries = append(entries, record)
 	}
 	if err := rows.Err(); err != nil {
 		return leaderboardSeasonRecord{}, nil, false, err
 	}
 	if season.ID == "" {
-		return leaderboardSeasonRecord{}, nil, false, nil
+		err := s.pool.QueryRow(ctx, `
+			SELECT id::text, season_key, season_type, status, snapshot_version, score_version,
+				window_start_at, window_end_at, source_watermark, generated_at, entry_count
+			FROM leaderboard_seasons ls
+			WHERE season_key = $1 AND generated_at >= $2 AND snapshot_version = $3
+			  AND entry_count = 0
+			  AND NOT EXISTS (
+				SELECT 1 FROM user_profile_settings changed WHERE changed.updated_at > ls.generated_at
+			  )
+		`, seasonKey, now.UTC().Add(-leaderboardSeasonRefreshTTL), leaderboardSeasonSnapshotVersion).Scan(
+			&season.ID, &season.SeasonKey, &season.SeasonType, &season.Status,
+			&season.SnapshotVersion, &season.ScoreVersion, &season.WindowStart,
+			&season.WindowEnd, &season.SourceWatermark, &season.GeneratedAt, &season.EntryCount,
+		)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return leaderboardSeasonRecord{}, nil, false, nil
+		}
+		if err != nil {
+			return leaderboardSeasonRecord{}, nil, false, err
+		}
+		season.Lane = lane
 	}
 	return season, entries, true, nil
 }
 
 func (s *Store) MaterializeLeaderboardSeason(ctx context.Context, now time.Time, limit int) (leaderboardSeasonRecord, []leaderboardSeasonSnapshotRecord, error) {
+	return s.materializeLeaderboardLane(ctx, now, limit, contracts.LeaderboardGlobal)
+}
+
+func (s *Store) materializeLeaderboardLane(ctx context.Context, now time.Time, limit int, lane contracts.LeaderboardLane) (leaderboardSeasonRecord, []leaderboardSeasonSnapshotRecord, error) {
 	if limit <= 0 {
 		limit = 1
 	}
 	generatedAt := now.UTC()
-	seasonKey, windowStart, windowEnd := currentLeaderboardSeason(generatedAt)
+	seasonKey, windowStart, windowEnd := leaderboardSeasonForLane(generatedAt, lane)
 
 	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
@@ -131,7 +176,7 @@ func (s *Store) MaterializeLeaderboardSeason(ctx context.Context, now time.Time,
 		_ = tx.Rollback(ctx)
 	}()
 
-	candidates, err := loadRankedLeaderboardCandidates(ctx, tx, generatedAt, limit)
+	candidates, err := loadLeaderboardCandidates(ctx, tx, generatedAt, limit, lane)
 	if err != nil {
 		return leaderboardSeasonRecord{}, nil, err
 	}
@@ -156,6 +201,7 @@ func (s *Store) MaterializeLeaderboardSeason(ctx context.Context, now time.Time,
 	}
 
 	season, err := upsertLeaderboardSeason(ctx, tx, leaderboardSeasonRecord{
+		Lane:            lane,
 		SeasonKey:       seasonKey,
 		SeasonType:      "weekly",
 		Status:          "active",
@@ -202,84 +248,14 @@ func currentLeaderboardSeason(now time.Time) (string, time.Time, time.Time) {
 	return fmt.Sprintf("weekly:%04d-W%02d", year, week), start, start.AddDate(0, 0, 7)
 }
 
-func loadRankedLeaderboardCandidates(ctx context.Context, tx pgx.Tx, asOf time.Time, limit int) ([]leaderboardSeasonSnapshotRecord, error) {
-	rows, err := tx.Query(ctx, `
-		WITH latest_snapshots AS (
-			SELECT DISTINCT ON (ps.user_id)
-				ps.id,
-				ps.user_id,
-				ps.snapshot_version,
-				ps.total_score,
-				ps.level,
-				ps.summary_jsonb,
-				ps.top_skills_jsonb,
-				ps.badges_jsonb,
-				ps.trend_jsonb,
-				ps.repositories_jsonb,
-				ps.score_history_jsonb,
-				ps.share_card_jsonb,
-				ps.refreshed_at,
-				COALESCE(ps.stale_after, ps.refreshed_at) AS stale_after,
-				COALESCE(ps.source_watermark, ps.refreshed_at) AS source_watermark,
-				ps.created_at
-			FROM profile_snapshots ps
-			WHERE ps.refreshed_at <= $1
-			ORDER BY ps.user_id, ps.refreshed_at DESC, ps.created_at DESC
-		), ranked AS (
-			SELECT
-				ROW_NUMBER() OVER (
-					ORDER BY ls.total_score DESC, ls.refreshed_at DESC, ls.created_at DESC, ls.user_id
-				)::integer AS rank,
-				ls.*
-			FROM latest_snapshots ls
-			JOIN users u ON u.id = ls.user_id
-			LEFT JOIN user_profile_settings ups ON ups.user_id = u.id
-			WHERE LOWER(COALESCE(u.profile_visibility, 'public')) = 'public'
-			  AND COALESCE(u.public_handle, '') <> ''
-			  AND COALESCE(ups.show_leaderboard_participation, TRUE)
-		)
-		SELECT
-			rank,
-			id::text,
-			user_id::text,
-			snapshot_version,
-			total_score,
-			level,
-			summary_jsonb,
-			top_skills_jsonb,
-			badges_jsonb,
-			trend_jsonb,
-			repositories_jsonb,
-			score_history_jsonb,
-			share_card_jsonb,
-			refreshed_at,
-			stale_after,
-			source_watermark
-		FROM ranked
-		ORDER BY rank ASC
-		LIMIT $2
-	`, asOf.UTC(), limit)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	records := make([]leaderboardSeasonSnapshotRecord, 0)
-	for rows.Next() {
-		record, err := scanRankedLeaderboardCandidate(rows)
-		if err != nil {
-			return nil, err
-		}
-		records = append(records, record)
-	}
-	return records, rows.Err()
-}
-
 func scanRankedLeaderboardCandidate(row rowScanner) (leaderboardSeasonSnapshotRecord, error) {
 	var record leaderboardSeasonSnapshotRecord
 	var summaryRaw, skillsRaw, badgesRaw, timelineRaw, reposRaw, historyRaw, cardRaw []byte
 	if err := row.Scan(
 		&record.Rank,
+		&record.RankingValue,
+		&record.WeeklyXP,
+		&record.GlobalSnapshotID,
 		&record.Snapshot.ID,
 		&record.Snapshot.UserID,
 		&record.Snapshot.SnapshotVersion,
@@ -299,7 +275,6 @@ func scanRankedLeaderboardCandidate(row rowScanner) (leaderboardSeasonSnapshotRe
 		return leaderboardSeasonSnapshotRecord{}, err
 	}
 	decodeSnapshotJSON(&record.Snapshot, summaryRaw, skillsRaw, badgesRaw, timelineRaw, reposRaw, historyRaw, cardRaw)
-	record.WeeklyXP = weeklyXPFromSnapshot(record.Snapshot)
 	record.Focus = leaderboardFocus(record.Snapshot)
 	return record, nil
 }
@@ -406,7 +381,10 @@ func upsertLeaderboardSeasonSnapshot(ctx context.Context, tx pgx.Tx, season lead
 		"profile_snapshot_version": candidate.Snapshot.SnapshotVersion,
 		"score_version":            scoreVersion,
 		"source_watermark":         candidate.Snapshot.SourceWatermark.UTC(),
-		"rank_basis":               "total_xp_desc",
+		"rank_basis":               season.Lane.RankingMetric() + "_desc",
+		"ranking_metric":           season.Lane.RankingMetric(),
+		"ranking_value":            candidate.RankingValue,
+		"global_snapshot_id":       candidate.GlobalSnapshotID,
 	})
 	if err != nil {
 		return leaderboardSeasonSnapshotRecord{}, err
@@ -472,7 +450,7 @@ func upsertLeaderboardRankMovement(ctx context.Context, tx pgx.Tx, season leader
 		"profile_snapshot_id":      candidate.Snapshot.ID,
 		"profile_snapshot_version": candidate.Snapshot.SnapshotVersion,
 		"source_watermark":         candidate.Snapshot.SourceWatermark.UTC(),
-		"rank_basis":               "total_xp_desc",
+		"rank_basis":               season.Lane.RankingMetric() + "_desc",
 	})
 	if err != nil {
 		return "", err
@@ -570,6 +548,8 @@ func scanLeaderboardSeasonSnapshot(row rowScanner) (leaderboardSeasonSnapshotRec
 		&record.RankMovementEventID,
 		&record.WeeklyXP,
 		&record.Focus,
+		&record.RankingValue,
+		&record.GlobalSnapshotID,
 		&record.Snapshot.ID,
 		&record.Snapshot.UserID,
 		&record.Snapshot.SnapshotVersion,
@@ -609,6 +589,7 @@ func leaderboardEntryFromSeasonSnapshot(record leaderboardSeasonSnapshotRecord, 
 	entry.RankMovementEventID = record.RankMovementEventID
 	entry.Movement = record.Movement
 	entry.WeeklyXP = record.WeeklyXP
+	entry.RankingValue = record.RankingValue
 	entry.Focus = record.Focus
 	entry.RankEvidenceState, entry.RankEvidenceMissing = leaderboardRankEvidenceStateFromSeason(record, entry.ScoreVersion)
 	return entry
@@ -631,17 +612,24 @@ func leaderboardRankEvidenceStateFromSeason(record leaderboardSeasonSnapshotReco
 	if record.Snapshot.SourceWatermark.IsZero() {
 		missing = append(missing, "source_watermark")
 	}
+	if record.Season.Lane == contracts.LeaderboardRising && record.GlobalSnapshotID == "" {
+		missing = append(missing, "global_rank_history")
+	}
 	if len(missing) > 0 {
 		return "partial", missing
 	}
 	return "complete", nil
 }
 
-func weeklyXPFromSnapshot(snapshot snapshotRecord) int {
-	if points := snapshot.Timeline.Points; len(points) > 0 {
-		return points[len(points)-1].DeltaXP
+func weeklyXPFromSnapshot(snapshot snapshotRecord, now time.Time) int {
+	_, start, end := currentLeaderboardSeason(now)
+	total := 0
+	for _, point := range snapshot.Timeline.Points {
+		if !point.BucketStart.Before(start) && !point.BucketEnd.After(end) && point.BucketStart.Before(point.BucketEnd) {
+			total += point.DeltaXP
+		}
 	}
-	return 0
+	return total
 }
 
 func leaderboardFocus(snapshot snapshotRecord) string {

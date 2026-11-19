@@ -227,6 +227,7 @@ type PRReportEvidenceState struct {
 }
 
 type PullRequestReportResponse struct {
+	AISummaryVisible *bool                    `json:"ai_summary_visible,omitempty"`
 	Contribution     PRReportContribution     `json:"contribution"`
 	BaseValue        int                      `json:"base_value"`
 	MergedBonus      int                      `json:"merged_bonus"`
@@ -284,6 +285,7 @@ type LeaderboardEntryView struct {
 	RankTier               string    `json:"rank_tier"`
 	TotalXP                int       `json:"total_xp"`
 	WeeklyXP               int       `json:"weekly_xp"`
+	RankingValue           int       `json:"ranking_value"`
 	Movement               int       `json:"movement"`
 	Focus                  string    `json:"focus,omitempty"`
 	ProfileSnapshotID      string    `json:"profile_snapshot_id,omitempty"`
@@ -304,6 +306,8 @@ type LeaderboardEntryView struct {
 }
 
 type LeaderboardResponse struct {
+	Lane                  LeaderboardLane        `json:"lane,omitempty"`
+	RankingMetric         string                 `json:"ranking_metric,omitempty"`
 	Entries               []LeaderboardEntryView `json:"entries"`
 	Window                ProfileTimeWindow      `json:"window"`
 	GeneratedAt           time.Time              `json:"generated_at"`

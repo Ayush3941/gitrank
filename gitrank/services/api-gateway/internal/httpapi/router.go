@@ -89,7 +89,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		proxyRequest(w, r, client, profileBaseURL, r.URL.Path, proxyOptions{
 			ForwardHeaders: defaultForwardHeaders(r),
 			ResponseHeaders: map[string]string{
-				"Cache-Control": "public, max-age=60, stale-while-revalidate=300",
+				"Cache-Control": "private, no-store",
 			},
 		})
 	})))
@@ -116,7 +116,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		proxyRequest(w, r, client, profileBaseURL, r.URL.Path, proxyOptions{
 			ForwardHeaders: defaultForwardHeaders(r),
 			ResponseHeaders: map[string]string{
-				"Cache-Control": "public, max-age=60, stale-while-revalidate=300",
+				"Cache-Control": "private, no-store",
 			},
 			Transform: analyticsProfileTransform(analytics, handle),
 		})
@@ -138,7 +138,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		proxyRequest(w, r, client, profileBaseURL, r.URL.Path, proxyOptions{
 			ForwardHeaders: defaultForwardHeaders(r),
 			ResponseHeaders: map[string]string{
-				"Cache-Control": "public, max-age=60, stale-while-revalidate=300",
+				"Cache-Control": "private, no-store",
 			},
 		})
 	}))

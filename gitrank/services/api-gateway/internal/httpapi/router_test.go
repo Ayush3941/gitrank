@@ -99,7 +99,7 @@ func TestProxyPublicProfileRequest(t *testing.T) {
 	if response.Code != http.StatusOK {
 		t.Fatalf("status = %d, want %d", response.Code, http.StatusOK)
 	}
-	if response.Header().Get("Cache-Control") != "public, max-age=60, stale-while-revalidate=300" {
+	if response.Header().Get("Cache-Control") != "private, no-store" {
 		t.Fatalf("cache-control = %q", response.Header().Get("Cache-Control"))
 	}
 
@@ -197,7 +197,7 @@ func TestProxyPullRequestReportRequest(t *testing.T) {
 	if response.Code != http.StatusOK {
 		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusOK, response.Body.String())
 	}
-	if response.Header().Get("Cache-Control") != "public, max-age=60, stale-while-revalidate=300" {
+	if response.Header().Get("Cache-Control") != "private, no-store" {
 		t.Fatalf("cache-control = %q", response.Header().Get("Cache-Control"))
 	}
 }

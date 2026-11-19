@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gitrank/gitrank/packages/authkit"
 	"github.com/gitrank/gitrank/packages/config"
 	"github.com/gitrank/gitrank/packages/contracts"
 	"github.com/gitrank/gitrank/packages/store"
@@ -2054,7 +2055,10 @@ func TestRunNextExecutesPullRequestGradeJobAndCompletes(t *testing.T) {
 				EvidenceStatus:   "deterministic_only",
 				GeneratedAt:      now.Add(4 * time.Second),
 			})
-		case "/v1/pr/octo/repo/7/report":
+		case "/internal/v1/pr/octo/repo/7/report":
+			if err := authkit.VerifyServiceReadRequest(r, [][]byte{[]byte("scheduler-test-session-secret")}, time.Now().UTC()); err != nil {
+				t.Fatalf("unauthenticated report readback: %v", err)
+			}
 			_ = json.NewEncoder(w).Encode(contracts.PullRequestReportResponse{
 				Contribution: contracts.PRReportContribution{
 					ID:     "score-event-1",
@@ -2112,7 +2116,7 @@ func TestRunNextExecutesPullRequestGradeJobAndCompletes(t *testing.T) {
 		"POST /v1/score/users/" + userID + "/replay",
 		"POST /v1/profile/users/" + userID + "/refresh",
 		"POST /v1/pr/octo/repo/7/report/materialize",
-		"GET /v1/pr/octo/repo/7/report",
+		"GET /internal/v1/pr/octo/repo/7/report",
 	}
 	if len(observedPaths) != len(expectedPaths) {
 		t.Fatalf("observed paths = %+v, want %+v", observedPaths, expectedPaths)
@@ -2391,6 +2395,7 @@ func BenchmarkEnqueueSyncBurst(b *testing.B) {
 func testServiceConfig() config.App {
 	return config.App{
 		ServiceName: "scheduler-worker",
+		Auth:        config.Auth{SessionSecret: "scheduler-test-session-secret"},
 		Env:         config.Development,
 		Addr:        ":8086",
 		Log: config.Log{

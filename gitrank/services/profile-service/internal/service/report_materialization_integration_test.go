@@ -10,7 +10,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gitrank/gitrank/packages/config"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -27,15 +26,7 @@ func TestMaterializePullRequestReportPersistsIdempotentSnapshot(t *testing.T) {
 	}
 	defer pool.Close()
 
-	cfg := config.App{
-		ServiceName: "profile-service",
-		Database:    config.Database{URL: databaseURL},
-		Auth: config.Auth{
-			SessionSecret:     "profile-report-test-secret",
-			SessionCookieName: "gitrank_session",
-			CSRFCookieName:    "gitrank_csrf",
-		},
-	}
+	cfg := profileIntegrationConfig(databaseURL)
 	svc, err := New(cfg, pool, &Cache{}, slog.New(slog.NewTextHandler(io.Discard, nil)))
 	if err != nil {
 		t.Fatalf("New() error = %v", err)

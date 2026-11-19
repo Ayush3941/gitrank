@@ -93,6 +93,15 @@ describe("BFF route mapping contracts", () => {
     expect(proxyGateway).toHaveBeenCalledWith(request, "/v1/leaderboard");
   });
 
+  it("forwards leaderboard lane and limit without unrelated query parameters", async () => {
+    const route = await import("@/app/api/leaderboard/route");
+    const request = new Request("http://gitrank.test/api/leaderboard?lane=testing&limit=10&ignored=value");
+
+    await route.GET(request);
+
+    expect(proxyGateway).toHaveBeenCalledWith(request, "/v1/leaderboard?lane=testing&limit=10");
+  });
+
   it("maps /api/sync/user POST to /v1/sync/user/execute", async () => {
     const route = await import("@/app/api/sync/user/route");
     const request = new Request("http://gitrank.test/api/sync/user", { method: "POST" });

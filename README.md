@@ -51,6 +51,12 @@ without those entries show an unavailable-details state. Legacy `/v1` bonus and
 penalty estimates remain in API responses for compatibility; the frontend does
 not use them to explain or award XP.
 
+Reports use the contribution award from the latest completed replay. Quest
+rewards increase profile totals separately. Public reports respect profile,
+exact-PR, repository, and AI-summary visibility; owners retain access to their
+own unpublished reports. Weekly and skill leaderboards rank their eligible
+population before applying the response limit.
+
 ## Architecture
 
 ```text

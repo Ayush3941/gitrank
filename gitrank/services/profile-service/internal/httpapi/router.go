@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gitrank/gitrank/packages/authkit"
 	"github.com/gitrank/gitrank/packages/config"
 	"github.com/gitrank/gitrank/packages/contracts"
 	"github.com/gitrank/gitrank/packages/httpkit"
@@ -91,7 +92,21 @@ func NewRouter(cfg config.App, profileService *service.Service, log *slog.Logger
 	})))
 
 	mux.Handle("/v1/leaderboard", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		response, err := profileService.Leaderboard(r.Context(), cfg.Scoring.LeaderboardDefaultLimit, time.Now().UTC())
+		w.Header().Set("Cache-Control", "private, no-store")
+		lane, err := contracts.NormalizeLeaderboardLane(r.URL.Query().Get("lane"))
+		if err != nil {
+			httpkit.WriteError(w, http.StatusBadRequest, "invalid_lane", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		limit := cfg.Scoring.LeaderboardDefaultLimit
+		if raw := r.URL.Query().Get("limit"); raw != "" {
+			limit, err = strconv.Atoi(raw)
+			if err != nil || limit <= 0 {
+				httpkit.WriteError(w, http.StatusBadRequest, "invalid_limit", "limit must be a positive integer", httpkit.RequestIDFromContext(r.Context()))
+				return
+			}
+		}
+		response, err := profileService.LeaderboardForLane(r.Context(), lane, limit, time.Now().UTC())
 		if err != nil {
 			writeProfileError(w, r, err)
 			return
@@ -133,6 +148,7 @@ func NewRouter(cfg config.App, profileService *service.Service, log *slog.Logger
 	})))
 
 	mux.Handle("/v1/pr/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "private, no-store")
 		switch r.Method {
 		case http.MethodGet:
 			owner, repo, number, ok := parsePullRequestReportPath(r.URL.Path)
@@ -140,7 +156,8 @@ func NewRouter(cfg config.App, profileService *service.Service, log *slog.Logger
 				httpkit.WriteError(w, http.StatusNotFound, "not_found", "pull request report not found", httpkit.RequestIDFromContext(r.Context()))
 				return
 			}
-			response, err := profileService.PublicPullRequestReport(r.Context(), owner, repo, number, time.Now().UTC())
+			sessionCookie, _ := r.Cookie(cfg.Auth.SessionCookieName)
+			response, err := profileService.PullRequestReport(r.Context(), cookieValue(sessionCookie), owner, repo, number, time.Now().UTC())
 			if err != nil {
 				writeProfileError(w, r, err)
 				return
@@ -162,6 +179,25 @@ func NewRouter(cfg config.App, profileService *service.Service, log *slog.Logger
 			httpkit.WriteError(w, http.StatusMethodNotAllowed, "method_not_allowed", "method not allowed", httpkit.RequestIDFromContext(r.Context()))
 		}
 	}))
+
+	mux.Handle("/internal/v1/pr/", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "private, no-store")
+		if err := authkit.VerifyServiceReadRequest(r, cfg.SessionSecretRing(), time.Now().UTC()); err != nil {
+			httpkit.WriteError(w, http.StatusUnauthorized, "unauthorized", "service authentication required", httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		owner, repo, number, ok := parsePullRequestReportPath(strings.TrimPrefix(r.URL.Path, "/internal"))
+		if !ok {
+			httpkit.WriteError(w, http.StatusNotFound, "not_found", "pull request report not found", httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		response, err := profileService.InternalPullRequestReport(r.Context(), owner, repo, number, time.Now().UTC())
+		if err != nil {
+			writeProfileError(w, r, err)
+			return
+		}
+		httpkit.WriteJSON(w, http.StatusOK, response)
+	})))
 
 	mux.Handle("/v1/users/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {

@@ -25,14 +25,13 @@ export function useQuests() {
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
     queryFn: async () => {
-      const [questsView, profile] = await Promise.all([
-        getMyQuestsView(),
-        queryClient.ensureQueryData({
-          queryKey: myProfileQueryKey,
-          queryFn: getMyProfile,
-          staleTime: constrainedNetwork ? 120_000 : 60_000,
-        }),
-      ]);
+      const questsView = await getMyQuestsView();
+      await queryClient.cancelQueries({ queryKey: myProfileQueryKey, exact: true });
+      const profile = await queryClient.fetchQuery({
+        queryKey: myProfileQueryKey,
+        queryFn: getMyProfile,
+        staleTime: 0,
+      });
       return {
         quests: questsView.quests,
         generatedAt: questsView.generatedAt,

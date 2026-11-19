@@ -166,7 +166,10 @@ export function PRBattleReportPageClient({
           </div>
         )}
       />
-      <InPageSectionNav sections={PR_REPORT_SECTION_LINKS} className="render-opt-section" />
+      <InPageSectionNav
+        sections={PR_REPORT_SECTION_LINKS.filter((section) => data.aiSummaryVisible !== false || section.id !== "pr-report-summary")}
+        className="render-opt-section"
+      />
       <section id="pr-report-overview" data-scroll-target="true" className="render-opt-section">
         <PRReportOverviewCard
           report={data}
@@ -197,17 +200,19 @@ export function PRBattleReportPageClient({
           }}
         />
       ) : null}
-      <section
-        id="pr-report-summary"
-        data-scroll-target="true"
-        className="render-opt-section"
-      >
-        <PRReportImpactSummaryCard
-          label={presentation.summarySectionLabel}
-          summary={presentation.reportSummary}
-          fallbackDetail={presentation.fallbackDetail}
-        />
-      </section>
+      {data.aiSummaryVisible !== false ? (
+        <section
+          id="pr-report-summary"
+          data-scroll-target="true"
+          className="render-opt-section"
+        >
+          <PRReportImpactSummaryCard
+            label={presentation.summarySectionLabel}
+            summary={presentation.reportSummary}
+            fallbackDetail={presentation.fallbackDetail}
+          />
+        </section>
+      ) : null}
       <PRReportTechnicalBreakdownSection
         report={data}
         badgeRewards={presentation.uniqueBadgeUnlocks}

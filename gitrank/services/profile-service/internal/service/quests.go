@@ -97,6 +97,11 @@ func (s *Service) PrivateQuests(ctx context.Context, sessionToken string, now ti
 	if err != nil {
 		return contracts.UserQuestsResponse{}, err
 	}
+	snapshot, err = s.ensureSnapshot(ctx, user, now.UTC())
+	if err != nil {
+		return contracts.UserQuestsResponse{}, err
+	}
+	cacheKey = fmt.Sprintf("profile:quests:v1:%s:%s", user.ID, snapshot.ID)
 
 	response := contracts.UserQuestsResponse{
 		Quests:      quests,
@@ -127,6 +132,9 @@ func (s *Service) BackfillQuestsForUser(ctx context.Context, userID string, now 
 
 	quests, err := s.store.MaterializeQuestBoard(ctx, user.ID, snapshot, buildQuestsFromSnapshot(snapshot, now.UTC()), now.UTC())
 	if err != nil {
+		return contracts.QuestBackfillResponse{}, err
+	}
+	if _, err := s.ensureSnapshot(ctx, user, now.UTC()); err != nil {
 		return contracts.QuestBackfillResponse{}, err
 	}
 
@@ -167,6 +175,14 @@ func (s *Store) MaterializeQuestBoard(ctx context.Context, userID string, snapsh
 		return nil, err
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
+	var lockedUserID string
+	if err := tx.QueryRow(ctx, `SELECT id::text FROM users WHERE id = $1::uuid FOR UPDATE`, userID).Scan(&lockedUserID); err != nil {
+		return nil, err
+	}
+	previousRewards, err := questRewardState(ctx, tx, userID)
+	if err != nil {
+		return nil, err
+	}
 
 	materialized := make([]contracts.QuestView, 0, len(quests))
 	for _, quest := range quests {
@@ -230,6 +246,15 @@ func (s *Store) MaterializeQuestBoard(ctx context.Context, userID string, snapsh
 		materialized = append(materialized, quest)
 	}
 
+	currentRewards, err := questRewardState(ctx, tx, userID)
+	if err != nil {
+		return nil, err
+	}
+	if currentRewards != previousRewards {
+		if err := invalidateQuestSnapshots(ctx, tx, userID, now); err != nil {
+			return nil, err
+		}
+	}
 	if err := tx.Commit(ctx); err != nil {
 		return nil, err
 	}

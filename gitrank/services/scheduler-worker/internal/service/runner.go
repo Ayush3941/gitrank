@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gitrank/gitrank/packages/authkit"
 	"github.com/gitrank/gitrank/packages/config"
 	"github.com/gitrank/gitrank/packages/contracts"
 	"github.com/gitrank/gitrank/packages/httpkit"
@@ -76,6 +77,7 @@ type httpProfileRefreshExecutor struct {
 type httpPullRequestReportExecutor struct {
 	baseURL string
 	client  *http.Client
+	secret  []byte
 }
 
 type httpLeaderboardExecutor struct {
@@ -177,6 +179,7 @@ func newPullRequestReportExecutor(cfg config.App) pullRequestReportExecutor {
 	}
 	return &httpPullRequestReportExecutor{
 		baseURL: baseURL,
+		secret:  []byte(strings.TrimSpace(cfg.Auth.SessionSecret)),
 		client: &http.Client{
 			Timeout: cfg.Services.RequestTimeout,
 		},
@@ -1096,10 +1099,13 @@ func (e *httpPullRequestReportExecutor) LoadPullRequestReport(ctx context.Contex
 	request, err := http.NewRequestWithContext(
 		ctx,
 		http.MethodGet,
-		e.baseURL+"/v1/pr/"+url.PathEscape(owner)+"/"+url.PathEscape(repo)+"/"+strconv.Itoa(number)+"/report",
+		e.baseURL+"/internal/v1/pr/"+url.PathEscape(owner)+"/"+url.PathEscape(repo)+"/"+strconv.Itoa(number)+"/report",
 		nil,
 	)
 	if err != nil {
+		return contracts.SchedulerPullRequestReportResponse{}, err
+	}
+	if err := authkit.SignServiceReadRequest(request, e.secret, time.Now().UTC()); err != nil {
 		return contracts.SchedulerPullRequestReportResponse{}, err
 	}
 	request.Header.Set("Accept", "application/json")

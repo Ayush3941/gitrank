@@ -164,8 +164,7 @@ Gateway behavior:
 - rotates downstream cookies if `auth-service` rotates the session
 - forwards downstream session-clearing `Set-Cookie` headers from `auth-service`
 - requires `X-CSRF-Token` on state-changing browser routes
-- returns short-lived public caching headers for public profiles and leaderboard reads
-- returns `Cache-Control: private, no-store` for authenticated profile, sync, and account-action routes
+- returns `Cache-Control: private, no-store` for profiles, leaderboards, PR reports, sync, and account-action routes
 
 ### Auth Service
 
@@ -336,6 +335,23 @@ Read-model behavior:
 - applies privacy settings and per-repository visibility redaction
 - caches public and private profile responses in Redis when configured
 
+`GET /v1/leaderboard` accepts `lane` (`global`, `weekly`, `backend`, `testing`,
+`documentation`, or `rising`) and a positive `limit`, bounded by the configured
+maximum. Ranking and skill eligibility are applied across public profiles before
+the limit. The response identifies `lane` and `ranking_metric`; each entry's
+`ranking_value` is the metric used for its lane rank.
+
+| Lane | Ranking metric |
+| --- | --- |
+| `global` | Cumulative profile XP |
+| `weekly` | XP in the current season window |
+| `backend`, `testing`, `documentation` | Cumulative XP in the selected skill, including contributors whose primary focus differs |
+| `rising` | Last persisted global rank movement; missing global history is marked as partial evidence |
+
+Each lane has its own `leaderboard-season/v2` snapshots. Existing v1 snapshots
+are rebuilt on read. Fresh reads recheck publication settings, and privacy
+updates invalidate cached seasons before the five-minute refresh interval.
+
 PR report `score_components` come from persisted score-event metadata and the
 stored final XP. The frontend displays all supplied components, or an explicit
 unavailable-details state when they are absent. The `/v1` response still includes
@@ -343,6 +359,25 @@ legacy `base_value`, `merged_bonus`, `review_bonus`, `test_bonus`, `repo_bonus`,
 and `penalties` estimates for compatibility. These estimates are not the scorer's
 formula or an additional XP award, and are excluded from the frontend report
 model.
+
+PR award selection excludes quest rewards and follows the author's latest
+completed replay, with deterministic ordering for contribution timestamps shared
+by multiple replays. Legacy awards without replay runs remain readable when no
+completed replay exists.
+
+Public report reads apply profile, exact-PR, repository, and AI-summary visibility.
+The same URL permits a session-authenticated author to inspect their own report.
+When the public narrative is hidden, `ai_summary_visible: false` suppresses the
+summary and related controls. Scheduler readback uses
+`GET /internal/v1/pr/{owner}/{repo}/{number}/report` directly on profile-service;
+the gateway does not expose this internal route. Profile-service requires a
+short-lived HMAC signature bound to the method and URI, using a purpose-derived
+key from the existing session secret ring. Unsigned internal reads return `401`.
+
+Quest reward changes expire affected profile snapshots in the award transaction.
+Quest backfill then rebuilds the snapshot, and dashboard sync backfills reports
+after quests. The frontend reads the profile after quest materialization rather
+than reusing a profile fetch started before an award.
 
 ### Scheduler Worker
 
@@ -449,14 +484,14 @@ Headers:
 
 Current cache policy:
 
-- public profile reads: `Cache-Control: public, max-age=60, stale-while-revalidate=300`
+- public profile, leaderboard, and PR-report reads: `Cache-Control: private, no-store`
 - authenticated profile reads: `Cache-Control: private, no-store`
 - sync trigger responses: `Cache-Control: private, no-store`
 
 Profile-service cache behavior:
 
-- public profile cache key includes handle, snapshot ID, privacy settings timestamp, and repository visibility timestamp
-- private profile cache key includes user ID, snapshot ID, privacy settings timestamp, and repository visibility timestamp
+- public profile cache key includes handle, snapshot ID, and full-resolution privacy and repository-visibility timestamps
+- private profile cache key includes user ID, snapshot ID, and full-resolution privacy and repository-visibility timestamps
 
 ## Sync Modes
 

@@ -38,6 +38,22 @@ describe("pr report public recovery states", () => {
     mockRefetch.mockResolvedValue(undefined);
   });
 
+  it("does not render a hidden AI narrative, copy action, or retry action", () => {
+    mockUsePrReport.mockReturnValue({
+      data: toPullRequestAnalysis({ ...prReportFixture, ai_summary_visible: false }),
+      isLoading: false,
+      isError: false,
+      refetch: mockRefetch,
+    });
+
+    const rendered = render(<PRBattleReportPageClient owner="octo" repo="gitrank" number={42} />);
+
+    expect(rendered.container.querySelector("#pr-report-summary")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Copy impact summary" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /retry ai/i })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Summary" })).toBeNull();
+  });
+
   it("keeps fetch-error recovery on public evidence destinations", async () => {
     mockUsePrReport.mockReturnValue({
       data: undefined,

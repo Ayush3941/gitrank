@@ -84,6 +84,7 @@ type ApiPRReportEvidenceState = {
 };
 
 export type ApiPRReportResponse = {
+  ai_summary_visible?: boolean;
   contribution: ApiPRReportContribution;
   // Legacy v1 estimates are accepted on the wire but excluded from the view model.
   base_value: number;
@@ -138,6 +139,7 @@ export function toPullRequestAnalysis(
   report: ApiPRReportResponse,
 ): PullRequestAnalysis {
   return {
+    aiSummaryVisible: report.ai_summary_visible ?? true,
     contribution: toContribution(report.contribution),
     aiConfidence: report.ai_confidence,
     scoreComponents: (report.score_components ?? []).map(toScoreComponent),

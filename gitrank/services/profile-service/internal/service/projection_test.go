@@ -350,6 +350,7 @@ func TestPrivateResponseIncludesRecentPullRequestReports(t *testing.T) {
 
 func TestLeaderboardEntryFromSnapshotUsesProfileSnapshotEvidence(t *testing.T) {
 	now := time.Date(2026, 5, 5, 13, 0, 0, 0, time.UTC)
+	week := startOfWeek(now)
 	snapshot := snapshotRecord{
 		ID:              "profile-snapshot-1",
 		SnapshotVersion: profileSnapshotVersion,
@@ -365,8 +366,8 @@ func TestLeaderboardEntryFromSnapshotUsesProfileSnapshotEvidence(t *testing.T) {
 		},
 		Timeline: contracts.ProfileTimeline{
 			Points: []contracts.ProfileTimelinePoint{
-				{DeltaXP: 120, TotalXP: 4080},
-				{DeltaXP: 220, TotalXP: 4200},
+				{BucketStart: week.AddDate(0, 0, -7), BucketEnd: week, DeltaXP: 120, TotalXP: 4080},
+				{BucketStart: week, BucketEnd: week.AddDate(0, 0, 7), DeltaXP: 220, TotalXP: 4200},
 			},
 		},
 		ScoreHistory: []contracts.ScoreHistoryEntry{

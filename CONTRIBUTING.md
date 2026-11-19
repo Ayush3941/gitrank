@@ -1449,6 +1449,15 @@ Product requirements:
 - [x] profile data is refreshed predictably
 - [x] stale profile states are visible or handled
 
+PR reports must select `score.computed` events from the current completed replay;
+quest grants remain separate awards. Quest award transactions expire affected
+profile snapshots, and backfill rebuilds them before returning. Public report
+reads enforce publication settings while session-authenticated owners retain
+access. Leaderboard lane ranking happens before the response limit, and cached
+seasons are rechecked against current privacy settings. See the
+[API contracts](gitrank/docs/api-architecture.md#profile-service) before changing
+these readers or their writers.
+
 ## 11. Scheduler and Async Job System Checklist
 
 Target directory:

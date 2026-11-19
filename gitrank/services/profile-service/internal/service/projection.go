@@ -505,10 +505,7 @@ func leaderboardEntryFromSnapshot(snapshot snapshotRecord, rank int, now time.Ti
 		focus = snapshot.TopSkills[0].Key
 	}
 
-	weeklyXP := 0
-	if points := snapshot.Timeline.Points; len(points) > 0 {
-		weeklyXP = points[len(points)-1].DeltaXP
-	}
+	weeklyXP := weeklyXPFromSnapshot(snapshot, now)
 	scoreVersion := scoreVersionFromSnapshot(snapshot)
 	rankEvidence := leaderboardRankEvidenceFromSnapshot(snapshot)
 	rankEvidenceState, rankEvidenceMissing := leaderboardRankEvidenceState(snapshot, scoreVersion)

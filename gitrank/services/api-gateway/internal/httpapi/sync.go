@@ -353,8 +353,8 @@ func refreshUserDashboardEvidence(
 	}
 	for _, step := range []profileStep{
 		{name: "profile refresh", metricKey: "profile_refresh", path: "/v1/profile/users/" + userID + "/refresh", expectCode: http.StatusAccepted},
-		{name: "pr report backfill", metricKey: "pr_reports_backfill", path: "/v1/profile/users/" + userID + "/pr-reports/backfill", expectCode: http.StatusAccepted},
 		{name: "quest backfill", metricKey: "quests_backfill", path: "/v1/profile/users/" + userID + "/quests/backfill", expectCode: http.StatusAccepted},
+		{name: "pr report backfill", metricKey: "pr_reports_backfill", path: "/v1/profile/users/" + userID + "/pr-reports/backfill", expectCode: http.StatusAccepted},
 	} {
 		payload, err := postInternalJSON(ctx, client, profileBaseURL, step.path, nil, step.expectCode)
 		if err != nil {

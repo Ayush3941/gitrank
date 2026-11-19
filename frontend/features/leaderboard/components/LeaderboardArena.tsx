@@ -15,6 +15,7 @@ import {
   formatXpLabel,
 } from "@/lib/formatters";
 import type { LeaderboardSnapshot } from "@/types/gitrank";
+import { formatLeaderboardRankingValue, leaderboardRankingValue } from "@/features/leaderboard/lib/leaderboard-ranking";
 
 export function LeaderboardArena({
   snapshot,
@@ -96,12 +97,12 @@ export function LeaderboardArena({
           <GlowCard className="space-y-4 border border-primary/22">
             <div className="neon-chip neon-chip-info rounded-full px-3 py-1 text-xs font-semibold">
               {nextAboveRow
-                ? `${formatXpLabel(nextAboveGap)} to pass #${nextAboveRow.rank}`
+                ? `${formatLeaderboardRankingValue(nextAboveGap, snapshot.season)} to pass #${nextAboveRow.rank}`
                 : "You lead this lane"}
             </div>
             <ol className="grid gap-2">
               {localBracketRows.map((row) => {
-                const gapToCurrent = row.seasonXp - currentUser.seasonXp;
+                const gapToCurrent = leaderboardRankingValue(row) - leaderboardRankingValue(currentUser);
                 const movementLabel = formatSignedNumber(row.movement);
                 return (
                   <li
@@ -124,7 +125,7 @@ export function LeaderboardArena({
                     </div>
                     <div className="flex flex-wrap items-center gap-2 text-xs">
                       <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
-                        {formatXpLabel(row.seasonXp)}
+                        {formatLeaderboardRankingValue(leaderboardRankingValue(row), snapshot.season)}
                       </span>
                       <span className="neon-chip neon-chip-muted rounded-full px-3 py-1 font-semibold">
                         Move {movementLabel}
@@ -207,8 +208,11 @@ export function LeaderboardArena({
                     </div>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                    <Metric label="Season XP" value={formatXpLabel(row.seasonXp)} />
-                    <Metric label="To next rank" value={row.xpToNextRank ? formatXpLabel(row.xpToNextRank) : "Lead"} />
+                    <Metric label={snapshot.season.rankingLabel ?? "Season XP"} value={formatLeaderboardRankingValue(leaderboardRankingValue(row), snapshot.season)} />
+                    <Metric
+                      label="To next rank"
+                      value={row.rank === 1 ? "Lead" : snapshot.season.rankingMetric === "global_rank_movement" ? "By global rank gains" : formatXpLabel(row.xpToNextRank)}
+                    />
                     {showDetails ? <Metric label="Total XP" value={formatXpLabel(row.totalXp)} /> : null}
                     <Metric
                       label="Movement"

@@ -125,3 +125,13 @@ V1 baseline:
 - users can hide individual repositories from public profile views
 - users can disable public profile visibility
 - users can request account or data deletion
+
+Public PR report URLs follow the author's publication settings. A disabled
+profile, disabled exact PRs, or hidden repository returns `404` to other readers;
+a valid owner session retains access. Disabling AI summaries removes the public
+narrative and its copy/retry actions while preserving score components.
+
+Leaderboard reads recheck current visibility and participation settings, including
+when using a cached season. Profile, leaderboard, and PR-report HTTP responses
+use `private, no-store` so subsequent reads can observe privacy changes. Redis
+profile caches include the full privacy and repository-visibility timestamps.
