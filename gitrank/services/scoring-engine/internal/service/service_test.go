@@ -44,12 +44,12 @@ func TestBuildReplayMonitorsAndExcludesSelfMergedPullRequests(t *testing.T) {
 			}},
 		},
 		AnalyzerVersion: "deterministic.v1",
-		AnalysisSource:  contracts.AnalysisSourceDeterministic,
-		Classification:  "feature",
-		Confidence:      0.9,
-		SignalHints:     []string{"languages=Go"},
-		AuthorLogin:     "octocat",
-		MergedByLogin:   "octocat",
+
+		Classification: "feature",
+		Confidence:     0.9,
+		SignalHints:    []string{"languages=Go"},
+		AuthorLogin:    "octocat",
+		MergedByLogin:  "octocat",
 	}}, now)
 
 	if len(events) != 1 {

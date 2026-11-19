@@ -1,3 +1,4 @@
+import { buildDeterministicImpactSummary } from "@/lib/presentation/deterministic-impact-summary";
 import type {
   Contribution,
   PRBadgeUnlock,
@@ -30,7 +31,6 @@ type ApiPRReportContribution = {
   maintainer_reviewed: boolean;
   linked_issue: boolean;
   ci_passed: boolean;
-  ai_summary: string;
   evidence_signals?: string[];
 };
 
@@ -75,11 +75,7 @@ type ApiPRReportEvidenceState = {
   status: PREvidenceState["status"];
   reasons?: string[];
   missing_evidence?: string[];
-  analysis_source?: string;
   analysis_confidence?: number;
-  deterministic_only?: boolean;
-  ai_fallback?: boolean;
-  rate_limited?: boolean;
   stale?: boolean;
 };
 
@@ -92,7 +88,7 @@ export type ApiPRReportResponse = {
   review_bonus: number;
   test_bonus: number;
   repo_bonus: number;
-  ai_confidence: number;
+  analysis_confidence: number;
   penalties?: ApiScoreBreakdown[];
   score_components?: ApiScoreComponent[];
   badge_unlocks?: ApiPRReportBadgeUnlock[];
@@ -141,7 +137,7 @@ export function toPullRequestAnalysis(
   return {
     aiSummaryVisible: report.ai_summary_visible ?? true,
     contribution: toContribution(report.contribution),
-    aiConfidence: report.ai_confidence,
+    analysisConfidence: report.analysis_confidence,
     scoreComponents: (report.score_components ?? []).map(toScoreComponent),
     badgeUnlocks: (report.badge_unlocks ?? []).map(toBadgeUnlock),
     suggestedQuestId: report.suggested_quest_id,
@@ -172,17 +168,13 @@ function toEvidenceState(source?: ApiPRReportEvidenceState): PREvidenceState {
     status: source?.status ?? "incomplete",
     reasons: source?.reasons ?? [],
     missingEvidence: source?.missing_evidence ?? [],
-    analysisSource: source?.analysis_source,
     analysisConfidence: source?.analysis_confidence,
-    deterministicOnly: source?.deterministic_only ?? false,
-    aiFallback: source?.ai_fallback ?? false,
-    rateLimited: source?.rate_limited ?? false,
     stale: source?.stale ?? false,
   };
 }
 
 function toContribution(source: ApiPRReportContribution): Contribution {
-  return {
+  const contribution: Omit<Contribution, "impactSummary"> = {
     id: source.id,
     owner: source.owner,
     repo: source.repo,
@@ -204,8 +196,11 @@ function toContribution(source: ApiPRReportContribution): Contribution {
     maintainerReviewed: source.maintainer_reviewed,
     linkedIssue: source.linked_issue,
     ciPassed: source.ci_passed,
-    aiSummary: source.ai_summary,
     evidenceSignals: source.evidence_signals ?? [],
+  };
+  return {
+    ...contribution,
+    impactSummary: buildDeterministicImpactSummary(contribution),
   };
 }
 

@@ -41,7 +41,7 @@ profile caching; scheduler execution uses its own PostgreSQL-backed state.
 | API gateway | Authenticated API edge, proxying, sync ownership, and post-sync refresh orchestration | [Router](../services/api-gateway/internal/httpapi/router.go) and [sync flow](../services/api-gateway/internal/httpapi/sync.go) |
 | Auth service | OAuth identity linking, session lifecycle, CSRF validation, unlinking, and deletion | [Service](../services/auth-service/internal/service/service.go) |
 | GitHub ingestor | App-authenticated extraction, webhook intake, bounded discovery, entity persistence, and sync diagnostics | [Executor](../services/github-ingestor/internal/service/executor.go) and [store](../services/github-ingestor/internal/service/store.go) |
-| PR analyzer | Deterministic classification and feature extraction, optional AI summary, and analysis persistence | [Analyzer](../services/pr-analyzer/internal/analyzer/analyzer.go) and [store](../services/pr-analyzer/internal/analyzer/store.go) |
+| PR analyzer | Deterministic classification and feature extraction, analysis persistence, and separate on-demand AI explanations | [Analyzer](../services/pr-analyzer/internal/analyzer/analyzer.go) and [store](../services/pr-analyzer/internal/analyzer/store.go) |
 | Scoring engine | Versioned formula, historical replay, skill XP, and evidence-linked badge awards | [Formula](../services/scoring-engine/internal/scoring/engine.go) and [replay](../services/scoring-engine/internal/service/service.go) |
 | Profile service | Profile snapshots, public/private projections, reports, quests, and leaderboard seasons | [Service](../services/profile-service/internal/service/service.go), [reports](../services/profile-service/internal/service/reports.go), and [quests](../services/profile-service/internal/service/quests.go) |
 | Scheduler worker | Explicit jobs, leases, retries, dead letters, repair, and grading orchestration | [Runner](../services/scheduler-worker/internal/service/runner.go) and [durable state](../services/scheduler-worker/internal/service/state_store.go) |
@@ -85,18 +85,18 @@ when analysis is absent, it derives score inputs from stored PR/file evidence
 and defaults the category to `feature`. A completed extraction is therefore not
 proof that full analysis and review evidence exist.
 
-### PR Report AI Retry
+### On-Demand PR Summary
 
-**Retry AI summary** calls `/api/sync/pull-request`, forwarding to the gateway's
-`/v1/sync/pull-request/execute`. After GitHub extraction, the gateway invokes
-`/v1/analyze/pull-request/execute`, waits for persisted analysis, then requests
-score replay and profile, quest, and report refresh. Follow the
-[PR execution handler](../services/api-gateway/internal/httpapi/pull_request_analysis.go).
+**Generate AI summary** calls `/api/pr/{owner}/{repo}/{number}/summary` and the
+matching gateway endpoint. The gateway checks the session, CSRF token, rate
+limit, report visibility, and summary preference before invoking
+`/v1/analyze/pull-request/summary`.
 
-The response includes the saved analysis source and fallback reason. AI provider
-failures retain deterministic analysis; analyzer or refresh failures produce a
-partial result. The frontend reports these outcomes directly and refetches the
-report. This request does not schedule background AI retries.
+The analyzer loads stored source evidence, applies input limits, and streams a
+plain-language explanation from the configured provider. It does not save the
+text, alter analysis records, sync GitHub, or replay scores. The browser holds the
+explanation only while the page is open. An unrequested or failed explanation
+has no effect on deterministic report completeness.
 
 ### Full PR Grading
 
@@ -118,14 +118,14 @@ scheduler. Use scheduler job admission explicitly when durable execution is requ
 | Stored layer | Meaning |
 | --- | --- |
 | GitHub entities, PR files, reviews, and comments | Normalized source evidence used for replay and inspection. |
-| Contribution analyses | Persisted classification, confidence, narrative, and analyzer provenance. |
+| Contribution analyses | Persisted deterministic classification, confidence, signals, and analyzer version. |
 | Score events and replay runs | Versioned contribution decisions, formula components, and replay history. |
 | Profile snapshots | Rebuildable aggregates served by profile reads. |
 | Quest assignments, completions, and reward grants | Evidence-linked progression; XP grants become separate `quest.reward` score events. |
 | Leaderboard season snapshots and movement events | Persisted ranking observations with version and freshness metadata. |
 
-The scoring engine owns final contribution XP. The analyzer's optional AI path
-changes summary text; deterministic code chooses category, depth, review strength,
+The scoring engine owns final contribution XP. On-demand AI generates explanation
+text; deterministic code chooses category, depth, review strength,
 and skills. The frontend also has a separate server-side
 [ABRA narrative path](../../frontend/lib/ai/abra-insights.ts) for identity summaries,
 contribution narratives, badge stories, and skill explanations. Neither AI path

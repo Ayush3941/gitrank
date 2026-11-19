@@ -25,6 +25,7 @@ const REQUIRED_GATEWAY_TO_BFF = new Map([
   ["GET /v1/profile/schema", "app/api/profile/schema/route.ts"],
   ["GET /v1/leaderboard", "app/api/leaderboard/route.ts"],
   ["GET /v1/pr/{owner}/{repo}/{number}/report", "app/api/pr/[owner]/[repo]/[number]/report/route.ts"],
+  ["POST /v1/pr/{owner}/{repo}/{number}/summary", "app/api/pr/[owner]/[repo]/[number]/summary/route.ts"],
   ["POST /v1/analytics/events", "app/api/analytics/events/route.ts"],
   ["POST /v1/sync", "app/api/sync/route.ts"],
   ["GET /v1/sync/runs", "app/api/sync/runs/route.ts"],

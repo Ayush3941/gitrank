@@ -539,7 +539,7 @@ function toContributions(
         maintainerReviewed: false,
         linkedIssue: false,
         ciPassed: false,
-        aiSummary: showAiSummaries
+        impactSummary: showAiSummaries
           ? bestExplanationLine(entry.explanation) ||
             "Profile snapshot evidence does not include detailed PR analysis metrics yet."
           : REDACTED_AI_SUMMARY,
@@ -584,7 +584,6 @@ function mergeContributionDetails(
       evidenceState:
         report.evidenceState.status === "complete" ? "complete" : "partial",
       reportEvidenceStatus: report.evidenceState.status,
-      reportAnalysisSource: report.evidenceState.analysisSource,
       reportStale: report.evidenceState.stale,
       difficultyScore: live.difficultyScore,
       impactScore: live.impactScore,
@@ -598,7 +597,7 @@ function mergeContributionDetails(
       maintainerReviewed: live.maintainerReviewed,
       linkedIssue: live.linkedIssue,
       ciPassed: live.ciPassed,
-      aiSummary: showAiSummaries ? live.aiSummary || row.aiSummary : REDACTED_AI_SUMMARY,
+      impactSummary: showAiSummaries ? live.impactSummary || row.impactSummary : REDACTED_AI_SUMMARY,
       evidenceSignals:
         live.evidenceSignals.length > 0 ? live.evidenceSignals : row.evidenceSignals,
     };
@@ -616,7 +615,7 @@ function redactReportSummaries(
     ...report,
     contribution: {
       ...report.contribution,
-      aiSummary: REDACTED_AI_SUMMARY,
+      impactSummary: REDACTED_AI_SUMMARY,
     },
   }));
 }

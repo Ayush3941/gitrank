@@ -137,6 +137,9 @@ func (s *Store) SavePullRequestAnalysis(ctx context.Context, req contracts.PullR
 	if err := canonical.Validate(); err != nil {
 		return PersistedAnalysis{}, err
 	}
+	if canonical.AnalysisSource != contracts.AnalysisSourceDeterministic || canonical.ModelName != "" || canonical.PromptVersion != "" || canonical.FallbackReason != "" {
+		return PersistedAnalysis{}, errors.New("only deterministic analysis may be persisted")
+	}
 
 	signals, err := json.Marshal(canonical.Signals)
 	if err != nil {
@@ -171,9 +174,6 @@ func (s *Store) SavePullRequestAnalysis(ctx context.Context, req contracts.PullR
 	lockKey := strings.Join([]string{
 		pullRequestID,
 		strings.TrimSpace(canonical.AnalyzerVersion),
-		strings.TrimSpace(canonical.PromptVersion),
-		strings.TrimSpace(canonical.ModelName),
-		strings.TrimSpace(canonical.AnalysisSource),
 	}, "|")
 	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(hashtext($1), hashtext($2))`, "contribution_analyses", lockKey); err != nil {
 		return PersistedAnalysis{}, err
@@ -225,35 +225,16 @@ func decodeReviewSignals(raw []byte) []contracts.ReviewSignal {
 func updateLatestAnalysis(ctx context.Context, tx pgx.Tx, pullRequestID string, analysis contracts.PullRequestAnalysisResponse, signals []byte, now time.Time) (PersistedAnalysis, error) {
 	var persisted PersistedAnalysis
 	err := tx.QueryRow(ctx, `
-		UPDATE contribution_analyses
-		SET classification = $6,
-		    confidence = $7,
-		    summary = $8,
-		    signals_jsonb = $9::jsonb,
-		    created_at = $10
-		WHERE id = (
-			SELECT id
-			FROM contribution_analyses
-			WHERE pull_request_id = $1::uuid
-			  AND analyzer_version = $2
-			  AND prompt_version = $3
-			  AND model_name = $4
-			  AND analysis_source = $5
-			ORDER BY created_at DESC, id DESC
-			LIMIT 1
-		)
-		RETURNING id::text, pull_request_id::text, created_at
-	`,
-		pullRequestID,
-		strings.TrimSpace(analysis.AnalyzerVersion),
-		strings.TrimSpace(analysis.PromptVersion),
-		strings.TrimSpace(analysis.ModelName),
-		strings.TrimSpace(analysis.AnalysisSource),
-		strings.TrimSpace(analysis.Category),
-		analysis.Confidence,
-		strings.TrimSpace(analysis.Summary),
-		string(signals),
-		now,
+        UPDATE contribution_analyses
+        SET classification = $3, confidence = $4, signals_jsonb = $5::jsonb, created_at = $6
+        WHERE id = (
+            SELECT id FROM contribution_analyses
+            WHERE pull_request_id = $1::uuid AND analyzer_version = $2
+            ORDER BY created_at DESC, id DESC LIMIT 1
+        )
+        RETURNING id::text, pull_request_id::text, created_at
+    `, pullRequestID, strings.TrimSpace(analysis.AnalyzerVersion), strings.TrimSpace(analysis.Category),
+		analysis.Confidence, string(signals), now,
 	).Scan(&persisted.ID, &persisted.PullRequestID, &persisted.CreatedAt)
 	return persisted, err
 }
@@ -261,32 +242,11 @@ func updateLatestAnalysis(ctx context.Context, tx pgx.Tx, pullRequestID string, 
 func insertAnalysis(ctx context.Context, tx pgx.Tx, pullRequestID string, analysis contracts.PullRequestAnalysisResponse, signals []byte, now time.Time) (PersistedAnalysis, error) {
 	var persisted PersistedAnalysis
 	err := tx.QueryRow(ctx, `
-		INSERT INTO contribution_analyses (
-			pull_request_id,
-			analyzer_version,
-			prompt_version,
-			model_name,
-			analysis_source,
-			classification,
-			confidence,
-			summary,
-			signals_jsonb,
-			created_at
-		) VALUES (
-			$1::uuid, $2, $3, $4, $5, $6, $7, $8, $9::jsonb, $10
-		)
-		RETURNING id::text, pull_request_id::text, created_at
-	`,
-		pullRequestID,
-		strings.TrimSpace(analysis.AnalyzerVersion),
-		strings.TrimSpace(analysis.PromptVersion),
-		strings.TrimSpace(analysis.ModelName),
-		strings.TrimSpace(analysis.AnalysisSource),
-		strings.TrimSpace(analysis.Category),
-		analysis.Confidence,
-		strings.TrimSpace(analysis.Summary),
-		string(signals),
-		now,
+        INSERT INTO contribution_analyses (pull_request_id, analyzer_version, classification, confidence, signals_jsonb, created_at)
+        VALUES ($1::uuid, $2, $3, $4, $5::jsonb, $6)
+        RETURNING id::text, pull_request_id::text, created_at
+    `, pullRequestID, strings.TrimSpace(analysis.AnalyzerVersion), strings.TrimSpace(analysis.Category),
+		analysis.Confidence, string(signals), now,
 	).Scan(&persisted.ID, &persisted.PullRequestID, &persisted.CreatedAt)
 	return persisted, err
 }

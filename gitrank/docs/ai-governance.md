@@ -1,133 +1,50 @@
-# AI Governance
+# AI Explanations
 
-Last reviewed: May 5, 2026
+AI explains PR evidence on request. Deterministic code owns classification,
+confidence, skill signals, XP, ranks, and badges.
 
-This document defines the v1 AI governance baseline for GitRank.
+## Generation flow
 
-## Purpose
+The PR report's **Generate AI summary** action requires a signed-in session and
+valid CSRF token. The gateway applies a generation rate limit and checks profile,
+repository, exact-PR, and AI-summary visibility before the analyzer contacts the
+provider. Authors retain access to their own reports.
 
-AI is optional enrichment in GitRank v1.
+The analyzer loads the stored PR description, metadata, file paths, review
+states, and deterministic signals. Existing input, token, estimated-cost, and
+request-time limits apply. The provider output is capped at 2,200 tokens and
+streams to the browser. Closing the page or stopping generation cancels it.
 
-AI may help with:
+Ordinary extraction, analysis, grading, and score replay never generate AI text.
+Generation does not sync GitHub, refresh profiles, or write analysis records.
 
-- contribution-type classification
-- bounded PR summarization
-- skill-area hints
-- human-readable explanation enrichment
+## Writing and evidence
 
-AI may not:
+The prompt lives in
+[`ai_summary.go`](../services/pr-analyzer/internal/analyzer/ai_summary.go).
+It asks for engaging, plain-language paragraphs of up to 1,000 words, scaled to
+the available evidence. It explains unfamiliar terms, the change, and its
+supported practical significance. Small changes should receive short explanations.
 
-- assign final scores directly
-- bypass deterministic validation
-- analyze private repository code in v1
+GitHub text is untrusted evidence, not instructions. The model must distinguish
+open proposals from implemented or released behavior. It must not invent measured
+benefits, deployment results, code behavior, or business impact. The current
+request contains metadata and descriptions rather than full code diffs; the
+explanation must not imply that full diffs were inspected.
 
-## Input Policy
+The browser renders provider output as plain text. Provider errors and incomplete
+streams appear only in the generation panel. They do not mark a PR as rate
+limited, change report completeness, or alter deterministic scores.
 
-Allowed AI inputs:
+## Storage
 
-- bounded public PR diff hunks
-- PR title and description
-- changed file names
-- labels
-- review metadata
-- deterministic derived features
+Generated PR explanations exist only in the active request and browser component
+state. They are never saved in PostgreSQL, score events, report snapshots, browser
+storage, or an automatic retry queue. Generating again makes another provider
+request and may produce different wording.
 
-Disallowed AI inputs:
-
-- full repository file contents
-- private repository code
-- raw secrets or tokens
-- unbounded public diff payloads
-
-## Prompt Versioning
-
-- every prompt family must have a stable version identifier such as `pr-analyzer.v1`
-- prompt version must be stored with each AI-assisted analysis record
-- prompt changes that can affect classification behavior require a version bump
-
-## Structured Output Contract
-
-AI output must validate against a versioned JSON schema before use.
-
-Baseline schema fields:
-
-- `schema_version`
-- `analyzer_version`
-- `analysis_source`
-- `validation_status`
-- `classification`
-- `confidence`
-- `summary`
-- `skill_signals`
-- `risk_flags`
-- `notes`
-
-Current deterministic implementation note:
-
-- deterministic analyzer output uses `analysis_source=deterministic`
-- deterministic analyzer output records a fallback reason such as `ai_not_enabled`
-- if a future artifact claims `analysis_source=ai_assisted` or `analysis_source=hybrid`, `prompt_version` and `model_name` are required before the artifact may be used
-
-Classification must be one of the supported contribution categories already defined in the scoring model.
-
-Confidence must be a bounded numeric field between `0.0` and `1.0`.
-
-## Validation Rules
-
-- reject output that does not parse as JSON
-- reject output with unknown required fields missing
-- reject output with unsupported categories
-- reject output that exceeds size limits
-- reject output that tries to emit a final score or score override
-
-If validation fails:
-
-1. retry once with the same bounded evidence
-2. if validation fails again, fall back to deterministic-only analysis
-3. never pass an invalid analysis artifact into deterministic scoring
-
-## Fallback Behavior
-
-Deterministic extraction remains the source of truth.
-
-If AI is unavailable, rate-limited, over budget, or invalid:
-
-- continue deterministic classification where available
-- mark AI enrichment as unavailable
-- keep the contribution score pipeline operational without AI
-
-## Confidence and User Language
-
-- low-confidence AI hints should not be rendered as certainty
-- public profile language must remain evidence-backed and non-absolute
-- AI confidence may influence explanatory wording, but not the deterministic score formula directly
-
-Contributor-facing claim threshold:
-
-- strong skill claims require deterministic corroboration from at least 3 scored contributions in the current snapshot window
-- if AI-assisted wording is used for a strong claim, confidence should be at least `0.70`
-- otherwise the UI should fall back to softer wording such as `recent signals` or `appears strongest in`
-
-## Retention
-
-- retain only prompt and response metadata needed for debugging, audit, and score explanation
-- apply the retention targets defined in [privacy-and-data-handling.md](./privacy-and-data-handling.md)
-
-## Budget Baseline
-
-V1 operating caps:
-
-- at most 12 diff hunks sent per PR
-- at most 15,000 input tokens worth of diff and metadata per PR after truncation
-- at most 2,000 output tokens per PR
-- at most one retry after validation failure
-- maintain a daily environment-level AI spend cap before background enrichment is paused
-
-The exact daily spend threshold may differ by environment, but production must enforce one.
-
-## Guardrails
-
-- never trust AI output without schema validation
-- never let AI emit the authoritative final score
-- redact secrets before any outbound provider call
-- record prompt version, model name, and fallback reason when AI is bypassed
+Migration 0022 removes stored summaries and provider provenance from analysis
+rows and clears old report snapshots that copied the text. Deterministic source
+evidence, classifications, confidence, score history, and privacy settings remain.
+Other profile-storytelling features use the separate frontend ABRA path; they do
+not grant AI authority over scores.

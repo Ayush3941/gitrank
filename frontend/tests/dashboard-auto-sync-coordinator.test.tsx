@@ -196,7 +196,7 @@ describe("DashboardAutoSyncCoordinator", () => {
               maintainerReviewed: true,
               linkedIssue: false,
               ciPassed: true,
-              aiSummary: "Merged test improvement",
+              impactSummary: "Merged test improvement",
               evidenceSignals: [],
             },
           ],

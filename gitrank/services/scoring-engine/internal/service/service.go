@@ -363,12 +363,9 @@ func buildReplayAnalysis(candidate replayCandidate, policy config.Scoring) contr
 	return contracts.PullRequestAnalysisResponse{
 		SchemaVersion:           contracts.PullRequestAnalysisSchemaVersion,
 		AnalyzerVersion:         candidate.AnalyzerVersion,
-		AnalysisSource:          defaultString(candidate.AnalysisSource, contracts.AnalysisSourceDeterministic),
-		PromptVersion:           candidate.PromptVersion,
-		ModelName:               candidate.ModelName,
+		AnalysisSource:          contracts.AnalysisSourceDeterministic,
 		ValidationStatus:        contracts.AnalysisValidationValidated,
 		Category:                category,
-		Summary:                 candidate.Summary,
 		Confidence:              candidate.Confidence,
 		TechnicalDepth:          deriveTechnicalDepth(candidate.PullRequest, breakdown, criticality, policy),
 		ReviewStrength:          deriveReviewStrength(candidate.PullRequest.Reviews, policy),

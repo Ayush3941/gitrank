@@ -2067,7 +2067,7 @@ func TestRunNextExecutesPullRequestGradeJobAndCompletes(t *testing.T) {
 					Number: 7,
 					Title:  "Grade PR end to end",
 				},
-				EvidenceState:   contracts.PRReportEvidenceState{Status: "deterministic_only", DeterministicOnly: true},
+				EvidenceState:   contracts.PRReportEvidenceState{Status: "complete"},
 				ScoreVersion:    "score/v1",
 				AnalysisVersion: "deterministic.v1",
 				GeneratedAt:     now.Add(5 * time.Second),
@@ -2107,7 +2107,7 @@ func TestRunNextExecutesPullRequestGradeJobAndCompletes(t *testing.T) {
 	if run.Grade.ReportMaterialization.ReportSnapshotID != "b2000000-0000-4000-8000-000000000006" {
 		t.Fatalf("report materialization = %+v, want persisted snapshot id", run.Grade.ReportMaterialization)
 	}
-	if run.Grade.Report.EvidenceStatus != "deterministic_only" || run.Grade.Report.IsStale {
+	if run.Grade.Report.EvidenceStatus != "complete" || run.Grade.Report.IsStale {
 		t.Fatalf("report = %+v, want non-stale deterministic report", run.Grade.Report)
 	}
 	expectedPaths := []string{

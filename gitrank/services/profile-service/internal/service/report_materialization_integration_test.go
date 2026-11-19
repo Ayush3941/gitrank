@@ -109,23 +109,15 @@ func TestMaterializePullRequestReportPersistsIdempotentSnapshot(t *testing.T) {
 		INSERT INTO contribution_analyses (
 			pull_request_id,
 			analyzer_version,
-			prompt_version,
-			model_name,
-			analysis_source,
 			classification,
 			confidence,
-			summary,
 			signals_jsonb,
 			created_at
 		) VALUES (
 			$1::uuid,
 			'deterministic.v1',
-			'prompt.v1',
-			'',
-			'deterministic',
 			'feature',
 			0.88,
-			'Persisted report snapshot evidence.',
 			'["CI passed","Maintainer reviewed"]'::jsonb,
 			$2
 		)
@@ -229,23 +221,15 @@ func TestMaterializePullRequestReportPersistsIdempotentSnapshot(t *testing.T) {
 		INSERT INTO contribution_analyses (
 			pull_request_id,
 			analyzer_version,
-			prompt_version,
-			model_name,
-			analysis_source,
 			classification,
 			confidence,
-			summary,
 			signals_jsonb,
 			created_at
 		) VALUES (
 			$1::uuid,
 			'deterministic.v1',
-			'prompt.v1',
-			'',
-			'deterministic',
 			'bugfix',
 			0.81,
-			'Backfilled report snapshot evidence.',
 			'["Historical score event","Bounded PR evidence"]'::jsonb,
 			$2
 		)

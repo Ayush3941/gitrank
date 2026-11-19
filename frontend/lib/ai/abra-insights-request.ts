@@ -76,7 +76,7 @@ function toAbraContributionInput(row: Contribution): AbraContributionInput {
     status: row.status,
     xpEarned: row.xpEarned,
     mergedAt: row.mergedAt,
-    summary: row.aiSummary,
+    summary: row.impactSummary,
     evidenceSignals: row.evidenceSignals,
   };
 }

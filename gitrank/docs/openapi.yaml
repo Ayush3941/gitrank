@@ -778,6 +778,51 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /v1/pr/{owner}/{repo}/{number}/summary:
+    post:
+      tags: [Profiles]
+      summary: Generate an AI explanation on demand without persistence
+      operationId: generatePullRequestSummary
+      description: Checks report privacy, then streams provider text. Does not sync GitHub, replay scores, persist text, or change report completeness. Limited to six generation requests per minute per signed-in account.
+      security:
+        - sessionCookie: []
+          csrfHeader: []
+      parameters:
+        - name: owner
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: repo
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: number
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        "200":
+          description: OpenAI-compatible event stream with choices[].delta.content and a final data [DONE] event
+          content:
+            text/event-stream:
+              schema:
+                type: string
+        "401":
+          description: Sign-in required
+        "403":
+          description: Invalid CSRF token or summary generation disabled for this report
+        "404":
+          description: Report unavailable or private
+        "429":
+          description: Generation request or provider usage limit reached
+        "502":
+          description: AI provider unavailable or invalid response
+        "503":
+          description: AI generation not configured
   /v1/pr/{owner}/{repo}/{number}/report/materialize:
     post:
       tags: [Profiles]
@@ -1275,7 +1320,7 @@ components:
       properties:
         analysis:
           type: object
-          description: Persisted analyzer envelope returned by PR execution after analysis succeeds; source and fallback reason distinguish AI text from deterministic output.
+          description: Persisted deterministic analyzer envelope returned after PR sync; no AI generation is performed.
           required: [analysis_id, pull_request_id, analysis_source]
           additionalProperties: true
           properties:
@@ -1285,11 +1330,7 @@ components:
               type: string
             analysis_source:
               type: string
-              enum: [deterministic, ai_assisted, hybrid]
-            model_name:
-              type: string
-            fallback_reason:
-              type: string
+              enum: [deterministic]
         status:
           type: string
           example: completed
@@ -1943,7 +1984,6 @@ components:
         - maintainer_reviewed
         - linked_issue
         - ci_passed
-        - ai_summary
       properties:
         id:
           type: string
@@ -1999,8 +2039,6 @@ components:
           type: boolean
         ci_passed:
           type: boolean
-        ai_summary:
-          type: string
         evidence_signals:
           type: array
           items:
@@ -2082,11 +2120,11 @@ components:
             type: string
     PRReportEvidenceState:
       type: object
-      required: [status, deterministic_only, ai_fallback, rate_limited, stale]
+      required: [status]
       properties:
         status:
           type: string
-          enum: [complete, incomplete, stale, deterministic_only, ai_fallback, rate_limited]
+          enum: [complete, incomplete, stale]
         reasons:
           type: array
           items:
@@ -2095,19 +2133,11 @@ components:
           type: array
           items:
             type: string
-        analysis_source:
-          type: string
         analysis_confidence:
           type: number
           format: double
           minimum: 0
           maximum: 1
-        deterministic_only:
-          type: boolean
-        ai_fallback:
-          type: boolean
-        rate_limited:
-          type: boolean
         stale:
           type: boolean
     PullRequestReportResponse:
@@ -2119,7 +2149,7 @@ components:
         - review_bonus
         - test_bonus
         - repo_bonus
-        - ai_confidence
+        - analysis_confidence
         - suggested_quest_id
         - evidence_state
         - source_updated_at
@@ -2138,7 +2168,7 @@ components:
           type: integer
         repo_bonus:
           type: integer
-        ai_confidence:
+        analysis_confidence:
           type: number
           format: double
         penalties:

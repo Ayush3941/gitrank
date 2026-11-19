@@ -273,6 +273,13 @@ describe("BFF route mapping contracts", () => {
     expect(proxyGateway).toHaveBeenCalledWith(request, "/v1/analytics/events");
   });
 
+  it("maps the summary action to the streaming gateway endpoint", async () => {
+    const route = await import("@/app/api/pr/[owner]/[repo]/[number]/summary/route");
+    const request = new Request("http://gitrank.test/api/pr/octo/repo/42/summary", { method: "POST" });
+    await route.POST(request, { params: Promise.resolve({ owner: "octo", repo: "repo", number: "42" }) });
+    expect(proxyGateway).toHaveBeenCalledWith(request, "/v1/pr/octo/repo/42/summary", { stream: true });
+  });
+
   it("maps PR report route params to encoded /v1/pr/.../report path", async () => {
     const route = await import("@/app/api/pr/[owner]/[repo]/[number]/report/route");
     const request = new Request("http://gitrank.test/api/pr/acme/repo/42/report", { method: "GET" });

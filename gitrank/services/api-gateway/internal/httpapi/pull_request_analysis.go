@@ -39,9 +39,6 @@ func handlePullRequestSyncExecution(w http.ResponseWriter, r *http.Request, clie
 		}
 		execution.Analysis = &analysis
 		execution.Fetched["post_sync_analysis_ok"] = 1
-		if analysis.AnalysisSource == contracts.AnalysisSourceHybrid || analysis.AnalysisSource == contracts.AnalysisSourceAIAssisted {
-			execution.Fetched["post_sync_ai_summary_generated"] = 1
-		}
 		if err := refreshUserDashboardEvidence(ctx, client, principal.Subject, scoringBaseURL, profileBaseURL, execution); err != nil {
 			return err
 		}

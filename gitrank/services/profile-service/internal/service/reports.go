@@ -33,10 +33,8 @@ type pullRequestReportRecord struct {
 	UpdatedAt          time.Time
 	AnalysisID         string
 	AnalysisVersion    string
-	AnalysisSource     string
 	Category           string
-	AIConfidence       float64
-	Summary            string
+	AnalysisConfidence float64
 	AnalysisSignals    []string
 	ScoreEventID       string
 	ScoreVersion       string
@@ -179,10 +177,8 @@ func (s *Store) LoadPullRequestReport(ctx context.Context, owner, repo string, n
 			pr.updated_at_source,
 			COALESCE(ca.id::text, ''),
 			COALESCE(ca.analyzer_version, ''),
-			COALESCE(ca.analysis_source, ''),
 			COALESCE(ca.classification, ''),
 			COALESCE(ca.confidence::float8, 0),
-			COALESCE(ca.summary, ''),
 			COALESCE(ca.signals_jsonb, '[]'::jsonb),
 			COALESCE(se.id::text, ''),
 			COALESCE(se.score_version, ''),
@@ -202,7 +198,7 @@ func (s *Store) LoadPullRequestReport(ctx context.Context, owner, repo string, n
 		INNER JOIN pull_requests pr ON pr.repository_id = r.id
 		LEFT JOIN github_accounts author_ga ON author_ga.id = pr.author_github_account_id
 		LEFT JOIN LATERAL (
-			SELECT id, analyzer_version, analysis_source, classification, confidence, summary, signals_jsonb
+			SELECT id, analyzer_version, classification, confidence, signals_jsonb
 			FROM contribution_analyses
 			WHERE pull_request_id = pr.id
 			ORDER BY created_at DESC
@@ -380,10 +376,8 @@ func (s *Store) LoadRecentPullRequestReportsForUser(ctx context.Context, userID 
 			pr.updated_at_source,
 			COALESCE(ca.id::text, ''),
 			COALESCE(ca.analyzer_version, ''),
-			COALESCE(ca.analysis_source, ''),
 			COALESCE(ca.classification, ''),
 			COALESCE(ca.confidence::float8, 0),
-			COALESCE(ca.summary, ''),
 			COALESCE(ca.signals_jsonb, '[]'::jsonb),
 			se.id::text,
 			COALESCE(se.score_version, ''),
@@ -404,7 +398,7 @@ func (s *Store) LoadRecentPullRequestReportsForUser(ctx context.Context, userID 
 		INNER JOIN repositories r ON r.id = pr.repository_id
 		LEFT JOIN github_accounts author_ga ON author_ga.id = pr.author_github_account_id
 		LEFT JOIN LATERAL (
-			SELECT id, analyzer_version, analysis_source, classification, confidence, summary, signals_jsonb
+			SELECT id, analyzer_version, classification, confidence, signals_jsonb
 			FROM contribution_analyses
 			WHERE pull_request_id = pr.id
 			ORDER BY created_at DESC
@@ -612,10 +606,8 @@ func scanPullRequestReport(row rowScanner) (pullRequestReportRecord, error) {
 		&record.UpdatedAt,
 		&record.AnalysisID,
 		&record.AnalysisVersion,
-		&record.AnalysisSource,
 		&record.Category,
-		&record.AIConfidence,
-		&record.Summary,
+		&record.AnalysisConfidence,
 		&signalsRaw,
 		&record.ScoreEventID,
 		&record.ScoreVersion,
@@ -712,26 +704,25 @@ func pullRequestReportFromRecord(record pullRequestReportRecord, now time.Time) 
 			MaintainerReviewed: record.ReviewCount > 0 || record.ReviewCommentCount > 0,
 			LinkedIssue:        reportHasLinkedIssue(record),
 			CIPassed:           reportHasSignal(record, "ci passed", "checks passed"),
-			AISummary:          firstNonEmpty(record.Summary, firstReportExplanation(record), "No analysis summary has been persisted for this PR yet."),
 			EvidenceSignals:    reportEvidenceSignals(record),
 		},
-		BaseValue:        baseValue,
-		MergedBonus:      mergedBonus,
-		ReviewBonus:      reviewBonus,
-		TestBonus:        testBonus,
-		RepoBonus:        repoBonus,
-		AIConfidence:     record.AIConfidence,
-		Penalties:        penalties,
-		ScoreComponents:  scoreComponents,
-		BadgeUnlocks:     badgeUnlocks,
-		SuggestedQuestID: suggestedQuest.ID,
-		SuggestedQuest:   &suggestedQuest,
-		EvidenceState:    evidenceState,
-		ScoreVersion:     record.ScoreVersion,
-		AnalysisVersion:  record.AnalysisVersion,
-		SourceUpdatedAt:  latestTime(record.UpdatedAt, record.OccurredAt),
-		GeneratedAt:      now.UTC(),
-		IsStale:          evidenceState.Stale,
+		BaseValue:          baseValue,
+		MergedBonus:        mergedBonus,
+		ReviewBonus:        reviewBonus,
+		TestBonus:          testBonus,
+		RepoBonus:          repoBonus,
+		AnalysisConfidence: record.AnalysisConfidence,
+		Penalties:          penalties,
+		ScoreComponents:    scoreComponents,
+		BadgeUnlocks:       badgeUnlocks,
+		SuggestedQuestID:   suggestedQuest.ID,
+		SuggestedQuest:     &suggestedQuest,
+		EvidenceState:      evidenceState,
+		ScoreVersion:       record.ScoreVersion,
+		AnalysisVersion:    record.AnalysisVersion,
+		SourceUpdatedAt:    latestTime(record.UpdatedAt, record.OccurredAt),
+		GeneratedAt:        now.UTC(),
+		IsStale:            evidenceState.Stale,
 	}
 }
 
@@ -982,131 +973,24 @@ func reportEvidenceSignals(record pullRequestReportRecord) []string {
 }
 
 func reportEvidenceState(record pullRequestReportRecord) contracts.PRReportEvidenceState {
-	analysisSource := inferReportAnalysisSource(record)
-	deterministicOnly := analysisSource == "deterministic"
-	analysisPersisted := strings.TrimSpace(record.AnalysisID) != ""
-	scoreEventPersisted := strings.TrimSpace(record.ScoreEventID) != ""
-	analysisMissing := !analysisPersisted && !deterministicOnly
-
-	missing := make([]string, 0, 3)
-	reasons := make([]string, 0, 5)
-	if analysisMissing {
-		missing = append(missing, "analysis")
-		reasons = append(reasons, "analysis has not been persisted")
-	}
-	if !scoreEventPersisted {
+	missing := make([]string, 0, 2)
+	reasons := make([]string, 0, 2)
+	if strings.TrimSpace(record.ScoreEventID) == "" {
 		missing = append(missing, "score_event")
-		reasons = append(reasons, "score event has not been persisted")
+		reasons = append(reasons, "Score evidence has not been persisted.")
 	}
-	if record.FileCount == 0 {
+	if record.FileCount == 0 && record.ChangedFiles > 0 {
 		missing = append(missing, "changed_files")
-		reasons = append(reasons, "changed-file evidence has not been persisted")
+		reasons = append(reasons, "Changed-file evidence has not been persisted.")
 	}
-
-	aiFallback := stringFromMap(record.ScoreMetadata, "fallback_reason") != "" || reportHasSignal(record, "ai fallback", "deterministic fallback", "fallback_reason")
-	rateLimited := boolFromMap(record.ScoreMetadata, "rate_limited") || reportHasSignal(record, "rate limited", "rate_limit", "github rate")
-	stale := !scoreEventPersisted || analysisMissing
-	if !analysisPersisted && scoreEventPersisted && deterministicOnly {
-		reasons = append(reasons, "deterministic scoring evidence is available while analysis snapshot persistence is pending")
-	}
-
 	status := "complete"
-	switch {
-	case rateLimited:
-		status = "rate_limited"
-		reasons = append(reasons, "upstream rate-limit evidence is attached to this report")
-	case stale:
-		status = "stale"
-		reasons = append(reasons, "report is stale until analysis and scoring both complete")
-	case len(missing) > 0:
+	if len(missing) > 0 {
 		status = "incomplete"
-	case aiFallback:
-		status = "ai_fallback"
-		reasons = append(reasons, "AI-assisted analysis fell back to deterministic evidence")
-	case deterministicOnly:
-		status = "deterministic_only"
-		reasons = append(reasons, "analysis is deterministic-only; no AI enrichment is attached")
 	}
-
 	return contracts.PRReportEvidenceState{
-		Status:             status,
-		Reasons:            compactStrings(reasons),
-		MissingEvidence:    compactStrings(missing),
-		AnalysisSource:     analysisSource,
-		AnalysisConfidence: record.AIConfidence,
-		DeterministicOnly:  deterministicOnly,
-		AIFallback:         aiFallback,
-		RateLimited:        rateLimited,
-		Stale:              stale,
+		Status: status, Reasons: reasons, MissingEvidence: missing,
+		AnalysisConfidence: record.AnalysisConfidence, Stale: len(missing) > 0,
 	}
-}
-
-func inferReportAnalysisSource(record pullRequestReportRecord) string {
-	analysisSource := normalizeReportAnalysisSource(record.AnalysisSource)
-	if analysisSource != "unknown" {
-		return analysisSource
-	}
-	if strings.TrimSpace(record.ScoreEventID) != "" {
-		return "deterministic"
-	}
-	if strings.TrimSpace(record.ScoreVersion) != "" {
-		return "deterministic"
-	}
-	if record.XP > 0 {
-		return "deterministic"
-	}
-	if len(record.ScoreExplanation) > 0 {
-		return "deterministic"
-	}
-	if hasDeterministicScoreMetadata(record.ScoreMetadata) {
-		return "deterministic"
-	}
-	return analysisSource
-}
-
-func hasDeterministicScoreMetadata(metadata map[string]any) bool {
-	if len(metadata) == 0 {
-		return false
-	}
-	for _, key := range []string{
-		"technical_depth",
-		"review_strength",
-		"category_weight",
-		"repository_weight",
-		"outcome_weight",
-		"consistency_modifier",
-		"diminishing_returns_modifier",
-		"total_xp",
-	} {
-		if _, ok := numberEntryFromMap(metadata, key); ok {
-			return true
-		}
-	}
-	return false
-}
-
-func normalizeReportAnalysisSource(source string) string {
-	switch strings.ToLower(strings.TrimSpace(source)) {
-	case "ai", "ai_assisted", "llm":
-		return "ai_assisted"
-	case "hybrid":
-		return "hybrid"
-	case "deterministic", "rules":
-		return "deterministic"
-	case "":
-		return "unknown"
-	default:
-		return strings.ToLower(strings.TrimSpace(source))
-	}
-}
-
-func firstReportExplanation(record pullRequestReportRecord) string {
-	for _, line := range record.ScoreExplanation {
-		if strings.TrimSpace(line) != "" {
-			return line
-		}
-	}
-	return ""
 }
 
 func reportContributionID(record pullRequestReportRecord) string {

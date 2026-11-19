@@ -88,7 +88,29 @@ func TestAnalyzePullRequestRejectsInvalidRequest(t *testing.T) {
 	}
 }
 
-func TestAnalyzePullRequestRejectsRequestsOverHardAILimits(t *testing.T) {
+func TestRegularAnalysisDoesNotInvokeConfiguredAI(t *testing.T) {
+	provider := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		t.Error("deterministic analysis contacted the AI provider")
+		w.WriteHeader(http.StatusInternalServerError)
+	}))
+	defer provider.Close()
+	cfg := testConfig()
+	cfg.AI.Provider, cfg.AI.APIKey, cfg.AI.Model = "openai", "test-key", "gpt-4o-mini"
+	cfg.AI.BaseURL, cfg.AI.RequestTimeout = provider.URL, time.Second
+	router := NewRouter(cfg, testLogger(), "test")
+	req := httptest.NewRequest(http.MethodPost, "/v1/analyze/pull-request", strings.NewReader(`{"repository":{"full_name":"octo/repo"},"pull_request":{"title":"A small change","changed_files":1}}`))
+	response := httptest.NewRecorder()
+	router.ServeHTTP(response, req)
+	var analysis contracts.PullRequestAnalysisResponse
+	if err := json.Unmarshal(response.Body.Bytes(), &analysis); err != nil {
+		t.Fatal(err)
+	}
+	if response.Code != http.StatusOK || analysis.AnalysisSource != contracts.AnalysisSourceDeterministic || analysis.FallbackReason != "" || analysis.ModelName != "" {
+		t.Fatalf("analysis depends on AI: status=%d response=%+v", response.Code, analysis)
+	}
+}
+
+func TestDeterministicAnalysisIsIndependentOfAILimits(t *testing.T) {
 	cfg := testConfig()
 	cfg.AI.PRMaxChangedFiles = 1
 	router := NewRouter(cfg, testLogger(), "test")
@@ -104,11 +126,19 @@ func TestAnalyzePullRequestRejectsRequestsOverHardAILimits(t *testing.T) {
 	response := httptest.NewRecorder()
 
 	router.ServeHTTP(response, request)
-	if response.Code != http.StatusRequestEntityTooLarge {
-		t.Fatalf("status = %d, want %d, body=%s", response.Code, http.StatusRequestEntityTooLarge, response.Body.String())
+	if response.Code != http.StatusOK {
+		t.Fatalf("deterministic analysis depends on AI budget: status=%d body=%s", response.Code, response.Body.String())
 	}
-	if !strings.Contains(response.Body.String(), "changed_files_limit_exceeded") {
-		t.Fatalf("body = %s, want changed_files_limit_exceeded", response.Body.String())
+}
+
+func TestSummaryGenerationStillEnforcesInputLimits(t *testing.T) {
+	cfg := testConfig()
+	cfg.AI.PRMaxChangedFiles = 1
+	response := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/v1/analyze/pull-request/summary", nil)
+	allowed := allowSummaryGeneration(response, req, contracts.PullRequestAnalysisRequest{PullRequest: contracts.PullRequestContext{ChangedFiles: 2}}, cfg.AI)
+	if allowed || response.Code != http.StatusRequestEntityTooLarge || !strings.Contains(response.Body.String(), "changed_files_limit_exceeded") {
+		t.Fatalf("summary ignored input limits: allowed=%t status=%d", allowed, response.Code)
 	}
 }
 

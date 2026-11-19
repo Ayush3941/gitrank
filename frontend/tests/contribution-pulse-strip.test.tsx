@@ -104,12 +104,11 @@ function buildContribution(overrides: Partial<Contribution>): Contribution {
     maintainerReviewed: overrides.maintainerReviewed ?? true,
     linkedIssue: overrides.linkedIssue ?? false,
     ciPassed: overrides.ciPassed ?? true,
-    aiSummary: overrides.aiSummary ?? "deterministic summary",
+    impactSummary: overrides.impactSummary ?? "deterministic summary",
     evidenceSignals: overrides.evidenceSignals ?? [],
     evidenceState: overrides.evidenceState,
     evidenceMissing: overrides.evidenceMissing,
     reportEvidenceStatus: overrides.reportEvidenceStatus,
-    reportAnalysisSource: overrides.reportAnalysisSource,
     reportStale: overrides.reportStale,
   };
 }

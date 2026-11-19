@@ -14,12 +14,10 @@ describe("status-tone labels", () => {
     expect(formatEvidenceStatusLabel("complete")).toBe("Complete");
     expect(formatEvidenceStatusLabel("incomplete")).toBe("Incomplete");
     expect(formatEvidenceStatusLabel("stale")).toBe("Stale");
-    expect(formatEvidenceStatusLabel("deterministic_only")).toBe("Deterministic only");
-    expect(formatEvidenceStatusLabel("rate_limited")).toBe("Rate limited");
   });
 
   it("formats forward-compatible unknown status tokens as readable labels", () => {
     expect(formatSyncStateLabel("queued_for_backfill" as never)).toBe("Queued for backfill");
-    expect(formatEvidenceStatusLabel("ai_backfill_pending" as never)).toBe("AI backfill pending");
+    expect(formatEvidenceStatusLabel("awaiting_evidence" as never)).toBe("Awaiting evidence");
   });
 });

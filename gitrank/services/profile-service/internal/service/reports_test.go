@@ -27,10 +27,10 @@ func TestPullRequestReportFromRecordUsesPersistedScoreAndAnalysisEvidence(t *tes
 		UpdatedAt:       now.Add(-30 * time.Minute),
 		AnalysisID:      "analysis-1",
 		AnalysisVersion: "deterministic/v1",
-		AnalysisSource:  "deterministic",
-		Category:        "Testing",
-		AIConfidence:    0.91,
-		Summary:         "Added replay regression coverage.",
+
+		Category:           "Testing",
+		AnalysisConfidence: 0.91,
+
 		AnalysisSignals: []string{"Regression coverage", "CI passed"},
 		ScoreEventID:    "score-1",
 		ScoreVersion:    "v1alpha1",
@@ -103,11 +103,11 @@ func TestPullRequestReportFromRecordUsesPersistedScoreAndAnalysisEvidence(t *tes
 	if report.IsStale {
 		t.Fatal("IsStale = true, want false with analysis and score event")
 	}
-	if report.EvidenceState.Status != "deterministic_only" || !report.EvidenceState.DeterministicOnly {
-		t.Fatalf("EvidenceState = %+v, want deterministic_only", report.EvidenceState)
+	if report.EvidenceState.Status != "complete" {
+		t.Fatalf("EvidenceState = %+v, want complete deterministic evidence", report.EvidenceState)
 	}
-	if report.EvidenceState.AnalysisSource != "deterministic" || report.EvidenceState.AnalysisConfidence != 0.91 {
-		t.Fatalf("EvidenceState analysis = %q/%.2f, want deterministic/0.91", report.EvidenceState.AnalysisSource, report.EvidenceState.AnalysisConfidence)
+	if report.EvidenceState.AnalysisConfidence != 0.91 {
+		t.Fatalf("AnalysisConfidence = %.2f, want 0.91", report.EvidenceState.AnalysisConfidence)
 	}
 }
 
@@ -127,8 +127,8 @@ func TestPullRequestReportFromRecordMarksUnscoredReportStale(t *testing.T) {
 	if !report.IsStale {
 		t.Fatal("IsStale = false, want true without analysis and score event")
 	}
-	if report.EvidenceState.Status != "stale" || !containsString(report.EvidenceState.MissingEvidence, "analysis") || !containsString(report.EvidenceState.MissingEvidence, "score_event") {
-		t.Fatalf("EvidenceState = %+v, want stale with missing analysis and score_event", report.EvidenceState)
+	if report.EvidenceState.Status != "incomplete" || !containsString(report.EvidenceState.MissingEvidence, "score_event") {
+		t.Fatalf("EvidenceState = %+v, want incomplete with missing score_event", report.EvidenceState)
 	}
 	if len(report.Penalties) == 0 || report.Penalties[0].Label != "No persisted score event" {
 		t.Fatalf("penalties = %+v, want no persisted score event", report.Penalties)
@@ -161,12 +161,10 @@ func TestPullRequestReportFromRecordInfersDeterministicSourceFromScoreMetadata(t
 		},
 	}, now)
 
-	if report.EvidenceState.AnalysisSource != "deterministic" {
-		t.Fatalf("EvidenceState.AnalysisSource = %q, want deterministic", report.EvidenceState.AnalysisSource)
+	if report.EvidenceState.Status != "complete" || report.IsStale {
+		t.Fatalf("scored report incorrectly depends on AI: %+v", report.EvidenceState)
 	}
-	if !containsString(report.EvidenceState.Reasons, "deterministic scoring evidence is available while analysis snapshot persistence is pending") {
-		t.Fatalf("EvidenceState.Reasons = %+v, want deterministic snapshot pending reason", report.EvidenceState.Reasons)
-	}
+
 }
 
 func TestPullRequestReportFromRecordInfersDeterministicSourceFromScorePayloadWithoutAnalysis(t *testing.T) {
@@ -186,12 +184,10 @@ func TestPullRequestReportFromRecordInfersDeterministicSourceFromScorePayloadWit
 		ScoreExplanation: []string{"score version v1alpha1"},
 	}, now)
 
-	if report.EvidenceState.AnalysisSource != "deterministic" {
-		t.Fatalf("EvidenceState.AnalysisSource = %q, want deterministic", report.EvidenceState.AnalysisSource)
+	if report.EvidenceState.Status != "incomplete" || !containsString(report.EvidenceState.MissingEvidence, "score_event") {
+		t.Fatalf("XP without a persisted score event must remain incomplete: %+v", report.EvidenceState)
 	}
-	if !report.EvidenceState.DeterministicOnly {
-		t.Fatalf("EvidenceState.DeterministicOnly = false, want true with deterministic score payload")
-	}
+
 }
 
 func TestPullRequestReportFromRecordDoesNotInferCategoryFromFreeText(t *testing.T) {
@@ -233,4 +229,13 @@ func containsScoreComponent(values []contracts.PRReportScoreComponent, key, disp
 		}
 	}
 	return false
+}
+
+func TestReportEvidenceIgnoresHistoricalAIOutcomes(t *testing.T) {
+	for _, reason := range []string{"ai_rate_limited", "ai_auth_failed", "ai_not_enabled"} {
+		state := reportEvidenceState(pullRequestReportRecord{ScoreEventID: "score-1", FileCount: 2, ChangedFiles: 2, AnalysisSignals: []string{"fallback_reason=" + reason}, ScoreMetadata: map[string]any{"fallback_reason": reason, "rate_limited": true}})
+		if state.Status != "complete" || state.Stale {
+			t.Fatalf("AI outcome affected deterministic report: %+v", state)
+		}
+	}
 }

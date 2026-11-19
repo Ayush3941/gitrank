@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
-import { useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
@@ -11,24 +10,18 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { RouteLoadingState } from "@/components/shared/RouteLoadingState";
 import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
 import { Button } from "@/components/ui/button";
-import { useRunPullRequestSync } from "@/hooks/use-account-actions";
 import { usePrReport } from "@/hooks/use-pr-report";
 import {
   formatContributionStatusLabel,
   toneForContributionStatus,
 } from "@/lib/presentation/contribution-status";
 import { formatEvidenceStatusLabel, toneForEvidenceStatus } from "@/lib/presentation/status-tone";
-import { sanitizeUserFacingError } from "@/lib/ui-error-messages";
 import { DeterministicMetricsLedgerCard } from "@/features/pr-report/components/DeterministicMetricsLedgerCard";
-import { PRReportImpactSummaryCard } from "@/features/pr-report/components/PRReportImpactSummaryCard";
+import { PRReportAISummaryCard } from "@/features/pr-report/components/PRReportAISummaryCard";
 import { PRReportOverviewCard } from "@/features/pr-report/components/PRReportOverviewCard";
 import { PRReportSuggestedQuestCard } from "@/features/pr-report/components/PRReportSuggestedQuestCard";
 import { PRReportTechnicalBreakdownSection } from "@/features/pr-report/components/PRReportTechnicalBreakdownSection";
-import { ReportProcessingStateCard } from "@/features/pr-report/components/ReportProcessingStateCard";
-import {
-  buildPRReportPresentation,
-  buildRetryAiSummaryNotice,
-} from "@/features/pr-report/lib/pr-report-presentation";
+import { buildPRReportPresentation } from "@/features/pr-report/lib/pr-report-presentation";
 
 export function PRBattleReportPageClient({
   owner,
@@ -40,11 +33,6 @@ export function PRBattleReportPageClient({
   number: number;
 }) {
   const { data, isLoading, isError, refetch } = usePrReport(owner, repo, number);
-  const runPullRequestSync = useRunPullRequestSync();
-  const [retryNotice, setRetryNotice] = useState<{
-    tone: "success" | "warning" | "error";
-    message: string;
-  } | null>(null);
 
   if (isLoading) {
     return (
@@ -86,32 +74,9 @@ export function PRBattleReportPageClient({
     );
   }
 
-  const reportData = data;
   const suggestedQuest = data.suggestedQuest;
   const evidenceState = data.evidenceState;
   const presentation = buildPRReportPresentation(data);
-
-  async function handleRetryAiSummary() {
-    setRetryNotice(null);
-    try {
-      const result = await runPullRequestSync.mutateAsync({
-        repository: `${reportData.contribution.owner}/${reportData.contribution.repo}`,
-        number: reportData.contribution.number,
-      });
-      setRetryNotice(buildRetryAiSummaryNotice(result));
-      await refetch();
-    } catch (error) {
-      const message = sanitizeUserFacingError(
-        (error as Error | null)?.message || "",
-        "pr-report-retry-ai-summary",
-      );
-      setRetryNotice({
-        tone: "error",
-        message: message || "Retry failed. Try again after a short delay while report evidence refreshes.",
-      });
-    }
-  }
-
   return (
     <div className="stable-scroll-scope space-y-6">
       <PageHeader
@@ -163,10 +128,6 @@ export function PRBattleReportPageClient({
           report={data}
           signalTier={presentation.signalTier}
           evidenceAnchored={presentation.evidenceAnchored}
-          hasPersistedScoreEvidence={presentation.hasPersistedScoreEvidence}
-          fallbackDetail={presentation.fallbackDetail}
-          evidenceReasonSummary={presentation.evidenceReasonSummary}
-          showEvidenceReasonSummary={presentation.showEvidenceReasonSummary}
         />
       </section>
       <section
@@ -176,29 +137,13 @@ export function PRBattleReportPageClient({
       >
         <DeterministicMetricsLedgerCard report={data} />
       </section>
-      {presentation.reportStateGuidance ? (
-        <ReportProcessingStateCard
-          guidance={presentation.reportStateGuidance}
-          canRetryAiSummary={presentation.canRetryAiSummary}
-          isRetrying={runPullRequestSync.isPending}
-          retryNotice={retryNotice}
-          onRetryAiSummary={handleRetryAiSummary}
-          onDismissRetryNotice={() => {
-            setRetryNotice(null);
-          }}
-        />
-      ) : null}
       {data.aiSummaryVisible !== false ? (
         <section
           id="pr-report-summary"
           data-scroll-target="true"
           className="render-opt-section"
         >
-          <PRReportImpactSummaryCard
-            label={presentation.summarySectionLabel}
-            summary={presentation.reportSummary}
-            fallbackDetail={presentation.fallbackDetail}
-          />
+          <PRReportAISummaryCard key={`${owner}/${repo}/${number}`} owner={owner} repo={repo} number={number} />
         </section>
       ) : null}
       <PRReportTechnicalBreakdownSection

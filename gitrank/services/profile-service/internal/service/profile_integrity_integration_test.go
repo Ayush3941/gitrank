@@ -342,10 +342,10 @@ func TestPRReportAppliesPrivacyWithoutAuthorAccountID(t *testing.T) {
 	}
 }
 
-func TestPRReportRedactsDisabledAISummary(t *testing.T) {
+func TestPRReportRespectsSummaryGenerationPrivacy(t *testing.T) {
 	f := newProfileIntegrityFixture(t)
 	f.score(t, "score.computed", 320, f.occurred, "")
-	if _, err := f.pool.Exec(f.ctx, `INSERT INTO contribution_analyses(pull_request_id, analyzer_version, prompt_version, analysis_source, classification, confidence, summary) VALUES($1::uuid, 'test', 'test', 'openai', 'feature', 0.9, 'Author opted out of publishing this narrative')`, f.prID); err != nil {
+	if _, err := f.pool.Exec(f.ctx, `INSERT INTO contribution_analyses(pull_request_id, analyzer_version, classification, confidence) VALUES($1::uuid, 'test', 'feature', 0.9)`, f.prID); err != nil {
 		t.Fatal(err)
 	}
 	disabled := false
@@ -356,12 +356,15 @@ func TestPRReportRedactsDisabledAISummary(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if report.Contribution.AISummary != "" || report.AISummaryVisible == nil || *report.AISummaryVisible {
+	if report.AISummaryVisible == nil || *report.AISummaryVisible {
 		t.Fatalf("AI narrative remains public: %+v", report)
 	}
 	ownerReport, err := f.svc.PullRequestReport(f.ctx, f.session(t), f.handle, "repo", 1, f.now)
-	if err != nil || ownerReport.Contribution.AISummary == "" {
-		t.Fatalf("owner's narrative missing: %v", err)
+	if err != nil {
+		t.Fatalf("owner report unavailable: %v", err)
+	}
+	if ownerReport.AISummaryVisible != nil && !*ownerReport.AISummaryVisible {
+		t.Fatal("owner cannot generate their own explanation")
 	}
 }
 

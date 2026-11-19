@@ -45,7 +45,7 @@ export function toneForEvidenceStatus(
   if (status === "complete") {
     return "success";
   }
-  if (status === "incomplete" || status === "ai_fallback" || status === "stale" || status === "deterministic_only" || status === "rate_limited") {
+  if (status === "incomplete" || status === "stale") {
     return "warning";
   }
   return "muted";
@@ -65,15 +65,6 @@ export function formatEvidenceStatusLabel(
   }
   if (status === "stale") {
     return "Stale";
-  }
-  if (status === "deterministic_only") {
-    return "Deterministic only";
-  }
-  if (status === "rate_limited") {
-    return "Rate limited";
-  }
-  if (status === "ai_fallback") {
-    return "AI fallback";
   }
   return formatUnknownStatusLabel(status);
 }

@@ -5,7 +5,6 @@ import {
   deleteMyAccount,
   exportMyAccountData,
   logoutCurrentSession,
-  runPullRequestSync,
   runUserSync,
   startAccountLink,
   unlinkMyAccount,
@@ -58,27 +57,6 @@ export function useRunUserSync() {
   });
 }
 
-export function useRunPullRequestSync() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({
-      repository,
-      number,
-      user,
-      installationId,
-    }: {
-      repository: string;
-      number: number;
-      user?: string;
-      installationId?: number;
-    }) =>
-      runPullRequestSync(repository, number, { user, installationId }),
-    onSuccess: () => {
-      invalidateProfileDerivedQueries(queryClient);
-    },
-  });
-}
 
 export function useUnlinkMyAccount() {
   const queryClient = useQueryClient();

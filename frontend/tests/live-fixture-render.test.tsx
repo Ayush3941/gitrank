@@ -153,11 +153,8 @@ describe("live fixture frontend smoke coverage", () => {
     );
 
     expect(await screen.findByText("Live PR fixture report")).toBeTruthy();
-    expect(
-      await screen.findByText(
-        "Live bounded diff summary from persisted evidence.",
-      ),
-    ).toBeTruthy();
+    expect(await screen.findByRole("button", { name: "Generate AI summary" })).toBeTruthy();
+    expect(screen.queryByText("Live bounded diff summary from persisted evidence.")).toBeNull();
     expect(
       (await screen.findAllByText("Backed by live PR report evidence.")).length,
     ).toBeTruthy();

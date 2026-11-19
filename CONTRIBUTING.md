@@ -1249,13 +1249,20 @@ Must be implemented:
 - [x] sync trigger endpoints
 - [x] no admin-only endpoints in v1 by policy
 
-`POST /v1/sync/pull-request/execute` also runs persisted PR analysis before score
-replay and profile, quest, and report refresh. Its optional `analysis` response
-contains the saved artifact's IDs, source, model, and fallback reason. The PR
-report's retry notice must require a persisted AI artifact before claiming AI
-success; successful GitHub extraction alone is insufficient. Analyzer execution
-uses request cancellation and the same input/token/cost limits as direct analysis.
-Account user sync continues to skip analysis.
+`POST /v1/sync/pull-request/execute` persists deterministic analysis before score
+replay and profile, quest, and report refresh. It never invokes an AI provider.
+`POST /v1/pr/{owner}/{repo}/{number}/summary` is a separate authenticated,
+CSRF-protected action, capped at six requests per minute per account and 2,200
+output tokens. It checks report access and summary privacy,
+then streams an explanation through the analyzer without database writes.
+AI input/token/cost limits apply only to generation; deterministic analysis
+does not depend on provider budgets. Generation never changes report health, scores, or sync state. The browser keeps
+text only in component state and cancels requests when the panel unmounts.
+
+Migration 0022 drops narrative/provider columns and clears copied report
+snapshots. Migration 0015's index uses only retained columns so full migration
+replay remains valid. Verify upgrades, fresh installs, repeat migration runs, and
+both analysis writers and scoring/report readers when changing this boundary.
 
 Production-grade expectations:
 

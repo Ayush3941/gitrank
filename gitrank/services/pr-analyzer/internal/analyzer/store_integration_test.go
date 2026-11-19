@@ -113,7 +113,7 @@ func TestStoreSavePullRequestAnalysisUpsertsLatestArtifact(t *testing.T) {
 	if err != nil {
 		t.Fatalf("SavePullRequestAnalysis(first) error = %v", err)
 	}
-	response.Summary = "Updated deterministic summary."
+	response.Confidence = 0.91
 	second, err := store.SavePullRequestAnalysis(ctx, req, response, time.Now().UTC().Add(time.Minute))
 	if err != nil {
 		t.Fatalf("SavePullRequestAnalysis(second) error = %v", err)
@@ -123,18 +123,22 @@ func TestStoreSavePullRequestAnalysisUpsertsLatestArtifact(t *testing.T) {
 	}
 
 	var count int
-	var summary string
+	var confidence float64
 	if err := pool.QueryRow(ctx, `
-		SELECT count(*), max(summary)
+		SELECT count(*), max(confidence)::float8
 		FROM contribution_analyses
 		WHERE pull_request_id = $1::uuid
-	`, first.PullRequestID).Scan(&count, &summary); err != nil {
+	`, first.PullRequestID).Scan(&count, &confidence); err != nil {
 		t.Fatalf("query contribution_analyses: %v", err)
 	}
 	if count != 1 {
 		t.Fatalf("analysis row count = %d, want 1", count)
 	}
-	if summary != "Updated deterministic summary." {
-		t.Fatalf("summary = %q, want updated summary", summary)
+	if confidence != 0.91 {
+		t.Fatalf("confidence = %f, want updated deterministic confidence", confidence)
+	}
+	var retiredColumns int
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'contribution_analyses' AND column_name IN ('summary','model_name','prompt_version','analysis_source')`).Scan(&retiredColumns); err != nil || retiredColumns != 0 {
+		t.Fatalf("retired narrative columns remain: %d, %v", retiredColumns, err)
 	}
 }

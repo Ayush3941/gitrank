@@ -145,7 +145,6 @@ export interface Contribution {
   evidenceState?: "complete" | "partial";
   evidenceMissing?: string[];
   reportEvidenceStatus?: PREvidenceState["status"];
-  reportAnalysisSource?: string;
   reportStale?: boolean;
   owner: string;
   repo: string;
@@ -167,14 +166,14 @@ export interface Contribution {
   maintainerReviewed: boolean;
   linkedIssue: boolean;
   ciPassed: boolean;
-  aiSummary: string;
+  impactSummary: string;
   evidenceSignals: string[];
 }
 
 export interface PullRequestAnalysis {
   aiSummaryVisible?: boolean;
   contribution: Contribution;
-  aiConfidence: number;
+  analysisConfidence: number;
   scoreComponents: ScoreComponent[];
   badgeUnlocks: PRBadgeUnlock[];
   suggestedQuestId: string;
@@ -188,20 +187,10 @@ export interface PullRequestAnalysis {
 }
 
 export interface PREvidenceState {
-  status:
-    | "complete"
-    | "incomplete"
-    | "stale"
-    | "deterministic_only"
-    | "ai_fallback"
-    | "rate_limited";
+  status: "complete" | "incomplete" | "stale";
   reasons: string[];
   missingEvidence: string[];
-  analysisSource?: string;
   analysisConfidence?: number;
-  deterministicOnly: boolean;
-  aiFallback: boolean;
-  rateLimited: boolean;
   stale: boolean;
 }
 

@@ -28,12 +28,11 @@ func TestPullRequestSyncRunsPersistedAnalysisBeforeScoreAndReportRefresh(t *test
 		wantAnalysis      bool
 		wantRefresh       bool
 	}{
-		{name: "AI summary saved", syncStatus: "completed", analyzerStatus: 200, analysisSource: "hybrid", wantStatus: "completed", wantAnalysis: true, wantRefresh: true},
-		{name: "partial sync", syncStatus: "partial", analyzerStatus: 200, analysisSource: "hybrid", wantStatus: "partial", wantAnalysis: true, wantRefresh: true},
-		{name: "provider fallback", syncStatus: "completed", analyzerStatus: 200, analysisSource: "deterministic", fallbackReason: "ai_rate_limited", wantStatus: "completed", wantAnalysis: true, wantRefresh: true},
+		{name: "deterministic analysis saved", syncStatus: "completed", analyzerStatus: 200, analysisSource: "deterministic", wantStatus: "completed", wantAnalysis: true, wantRefresh: true},
+		{name: "partial sync", syncStatus: "partial", analyzerStatus: 200, analysisSource: "deterministic", wantStatus: "partial", wantAnalysis: true, wantRefresh: true},
 		{name: "analyzer unavailable", syncStatus: "completed", analyzerStatus: 503, wantStatus: "partial"},
-		{name: "analysis not persisted", syncStatus: "completed", analyzerStatus: 200, analysisSource: "hybrid", missingAnalysisID: true, wantStatus: "partial"},
-		{name: "score refresh fails after AI save", syncStatus: "completed", analyzerStatus: 200, analysisSource: "hybrid", refreshFailure: true, wantStatus: "partial", wantAnalysis: true, wantRefresh: true},
+		{name: "analysis not persisted", syncStatus: "completed", analyzerStatus: 200, analysisSource: "deterministic", missingAnalysisID: true, wantStatus: "partial"},
+		{name: "score refresh fails after analysis save", syncStatus: "completed", analyzerStatus: 200, analysisSource: "deterministic", refreshFailure: true, wantStatus: "partial", wantAnalysis: true, wantRefresh: true},
 		{name: "sync failed", syncStatus: "failed", wantStatus: "failed"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

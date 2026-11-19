@@ -8,7 +8,11 @@ import {
 
 const gatewayBaseURL = readOriginWithFallback(["GITRANK_API_BASE_URL"], "http://localhost:8080");
 
-export async function proxyGateway(request: Request, path: string): Promise<Response> {
+export async function proxyGateway(
+  request: Request,
+  path: string,
+  options: { stream?: boolean } = {},
+): Promise<Response> {
   const target = buildGatewayURL(path);
   const outboundHeaders = new Headers();
 
@@ -31,6 +35,7 @@ export async function proxyGateway(request: Request, path: string): Promise<Resp
       headers: outboundHeaders,
       body,
       cache: "no-store",
+      signal: request.signal,
     });
   } catch {
     return new Response(
@@ -50,12 +55,13 @@ export async function proxyGateway(request: Request, path: string): Promise<Resp
     );
   }
 
-  const payload = await response.text();
+  const payload = options.stream && response.ok ? response.body : await response.text();
   const headers = new Headers();
   copyHeaderIfPresent(headers, "Content-Type", response.headers.get("content-type"));
   copyHeaderIfPresent(headers, "Cache-Control", response.headers.get("cache-control"));
   copyHeaderIfPresent(headers, "Retry-After", response.headers.get("retry-after"));
   copyHeaderIfPresent(headers, "X-Request-ID", response.headers.get("x-request-id"));
+  if (options.stream) headers.set("X-Accel-Buffering", "no");
   for (const value of readSetCookieHeaders(response.headers)) {
     headers.append("Set-Cookie", value);
   }

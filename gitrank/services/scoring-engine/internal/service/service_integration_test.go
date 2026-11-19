@@ -28,7 +28,7 @@ func TestReplayUserPersistsLedgerAndSnapshot(t *testing.T) {
 	}
 	defer pool.Close()
 
-	svc, err := New(config.App{ServiceName: "scoring-engine"}, pool, testLogger())
+	svc, err := New(config.App{ServiceName: "scoring-engine", Scoring: config.DefaultScoringPolicy()}, pool, testLogger())
 	if err != nil {
 		t.Fatalf("New() error = %v", err)
 	}
@@ -136,16 +136,12 @@ func TestReplayUserPersistsLedgerAndSnapshot(t *testing.T) {
 		INSERT INTO contribution_analyses (
 			pull_request_id,
 			analyzer_version,
-			prompt_version,
-			model_name,
-			analysis_source,
 			classification,
 			confidence,
-			summary,
 			signals_jsonb,
 			created_at
 		) VALUES (
-			$1::uuid, 'deterministic.v1', '', '', 'deterministic', 'feature', 0.83, 'Replay-worthy feature contribution.', '["criticality=api_surface","languages=Go"]'::jsonb, $2
+			$1::uuid, 'deterministic.v1', 'feature', 0.83, '["criticality=api_surface","languages=Go"]'::jsonb, $2
 		)
 		RETURNING id::text
 	`, pullRequestID, occurredAt.Add(3*time.Hour)).Scan(new(string)); err != nil {
@@ -252,7 +248,7 @@ func TestReplayUserIncludesPullRequestsByLinkedLoginWhenAuthorAccountIDMissing(t
 	}
 	defer pool.Close()
 
-	svc, err := New(config.App{ServiceName: "scoring-engine"}, pool, testLogger())
+	svc, err := New(config.App{ServiceName: "scoring-engine", Scoring: config.DefaultScoringPolicy()}, pool, testLogger())
 	if err != nil {
 		t.Fatalf("New() error = %v", err)
 	}

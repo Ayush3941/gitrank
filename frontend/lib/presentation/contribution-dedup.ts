@@ -31,7 +31,7 @@ export function deduplicateContributionsByPullRequest(rows: Contribution[]): Con
 
     byPullRequest.set(key, {
       ...row,
-      aiSummary: row.aiSummary.trim() ? row.aiSummary : current.aiSummary,
+      impactSummary: row.impactSummary.trim() ? row.impactSummary : current.impactSummary,
       evidenceSignals: uniqueEvidenceSignals([
         ...current.evidenceSignals,
         ...row.evidenceSignals,

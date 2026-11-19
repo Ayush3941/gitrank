@@ -1,4 +1,4 @@
-import { frontendPolicy } from "@/lib/runtime/frontend-policy";
+import { requireCSRFToken } from "@/lib/api/csrf-client";
 import { hasPartialSyncRunMetrics } from "@/lib/sync/sync-run-metrics-policy";
 import {
   appSyncFailureMessage,
@@ -14,7 +14,6 @@ import {
   normalizeSyncRunStatusToken,
 } from "@/lib/sync/sync-run-status-policy";
 
-const DEFAULT_CSRF_COOKIE_NAME = frontendPolicy.csrfCookieName;
 const USER_SYNC_EXECUTION_TIMEOUT_MS = parseBoundedPositiveMs(
   process.env.NEXT_PUBLIC_GITRANK_USER_SYNC_EXECUTION_TIMEOUT_MS,
   180_000,
@@ -700,21 +699,6 @@ async function tryRefreshSessionForUserSync(csrfToken: string): Promise<boolean>
   }
 }
 
-function requireCSRFToken(): string {
-  if (typeof document === "undefined") {
-    throw new Error("CSRF token is only available in the browser.");
-  }
-
-  const cookie = document.cookie
-    .split(";")
-    .map((value) => value.trim())
-    .find((value) => value.startsWith(`${DEFAULT_CSRF_COOKIE_NAME}=`));
-  if (!cookie) {
-    throw new Error("CSRF cookie is missing.");
-  }
-
-  return decodeURIComponent(cookie.slice(DEFAULT_CSRF_COOKIE_NAME.length + 1));
-}
 
 function normalizeSyncExecutionContext(context?: SyncExecutionAuthContext): {
   user?: string;

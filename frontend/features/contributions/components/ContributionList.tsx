@@ -133,7 +133,7 @@ export function ContributionList({
               {showDetails ? (
                 <AIPanel
                   contribution={item}
-                  fallbackSummary={item.aiSummary}
+                  fallbackSummary={item.impactSummary}
                   narrative={narratives?.[item.id]}
                   lite={useLiteCards}
                 />
@@ -179,20 +179,7 @@ function contributionReportState(
 ): { label: string; className: string } | null {
   const status = item.reportEvidenceStatus;
   if (status === "complete") {
-    const analysisSource = (item.reportAnalysisSource ?? "").toLowerCase();
-    if (analysisSource.includes("ai") || analysisSource.includes("gemini") || analysisSource.includes("openai") || analysisSource.includes("hybrid")) {
-      return { label: "AI ready", className: "neon-chip-success" };
-    }
-    return { label: "Deterministic ready", className: "neon-chip-info" };
-  }
-  if (status === "deterministic_only") {
-    return { label: "Deterministic", className: "neon-chip-info" };
-  }
-  if (status === "ai_fallback") {
-    return { label: "AI fallback", className: "neon-chip-warning" };
-  }
-  if (status === "rate_limited") {
-    return { label: "Rate limited", className: "neon-chip-warning" };
+    return { label: "Evidence ready", className: "neon-chip-success" };
   }
   if (status === "stale") {
     return { label: "Pending refresh", className: "neon-chip-muted" };

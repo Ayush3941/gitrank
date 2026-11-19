@@ -48,7 +48,7 @@ export function BestPRsPanel({
           <ol role="list" className="space-y-3">
             {visibleRows.map(({ renderId, item: report }) => {
               const detail = detailByPR.get(detailKey(report.owner, report.repo, report.number));
-              const summary = sanitizeReportSummary(detail?.contribution.aiSummary ?? report.summary);
+              const summary = sanitizeReportSummary(detail?.contribution.impactSummary ?? report.summary);
               const evidencePill = bestPREvidencePill(report, detail);
               return (
             <li
@@ -126,20 +126,7 @@ function bestPREvidencePill(
   if (detail) {
     const state = detail.evidenceState;
     if (state.status === "complete") {
-      const source = (state.analysisSource ?? "").toLowerCase();
-      if (source.includes("gemini") || source.includes("openai") || source.includes("ai") || source.includes("hybrid")) {
-        return { label: "AI ready", className: "neon-chip-success" };
-      }
-      return { label: "Deterministic ready", className: "neon-chip-info" };
-    }
-    if (state.status === "deterministic_only") {
-      return { label: "Deterministic", className: "neon-chip-info" };
-    }
-    if (state.status === "ai_fallback") {
-      return { label: "Deterministic fallback", className: "neon-chip-warning" };
-    }
-    if (state.status === "rate_limited") {
-      return { label: "Rate limited", className: "neon-chip-warning" };
+      return { label: "Evidence ready", className: "neon-chip-success" };
     }
     if (state.status === "stale") {
       return { label: "Pending refresh", className: "neon-chip-muted" };
@@ -151,7 +138,7 @@ function bestPREvidencePill(
     if (report.analysisId) {
       return { label: "Analysis ready", className: "neon-chip-success" };
     }
-    return { label: "Deterministic ready", className: "neon-chip-info" };
+    return { label: "Evidence ready", className: "neon-chip-success" };
   }
   return { label: "Evidence partial", className: "neon-chip-muted" };
 }

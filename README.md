@@ -29,14 +29,19 @@ This repo is optimized for:
 
 ### AI role (ChatGPT)
 
-- ChatGPT provides explanation copy, impact narratives, and profile storytelling.
-- If ChatGPT is missing/rate-limited/fails, the product degrades to deterministic
-  fallback text and still remains usable.
-- Evidence state is shown instead of silently hiding degraded AI conditions.
-- **Retry AI summary** syncs the selected PR, runs and persists analyzer output,
-  then replays scores and refreshes profile/report evidence before responding.
-  Its result distinguishes saved AI text, deterministic fallback, and incomplete
-  processing. Dashboard account refresh still runs without AI analysis.
+- PR extraction, classification, scoring, and saved reports contain deterministic evidence.
+- **Generate AI summary** streams a plain-language explanation when requested.
+  The text stays in the open page and is never written to PostgreSQL, score
+  events, or report snapshots. Generation does not sync GitHub or replay scores.
+- Provider failures appear only beside the generation button. They do not change
+  a PR's evidence status. Existing profile and repository privacy also govern
+  access to generation. Generation is capped at 2,200 output tokens and six
+  requests per minute per signed-in account; these bounds live in code.
+
+Migration `0022_on_demand_pr_summaries.sql` removes stored summaries and AI
+provenance columns and clears old report snapshots containing copied narratives.
+XP, source evidence, classifications, and confidence remain intact. Deploy the
+updated services and frontend together; `./start.sh` applies the migration locally.
 
 ### PR XP award strategy (strict)
 

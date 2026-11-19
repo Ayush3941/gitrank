@@ -287,7 +287,11 @@ func validateSessionCSRF(r *http.Request, sessionCookieName string, sessionSecre
 }
 
 func allowRateLimit(w http.ResponseWriter, r *http.Request, limiter *rateLimiter, scope string) bool {
-	retryAfter, allowed := limiter.Allow(scope+":"+clientIP(r), time.Now().UTC())
+	return allowKeyRateLimit(w, r, limiter, scope+":"+clientIP(r))
+}
+
+func allowKeyRateLimit(w http.ResponseWriter, r *http.Request, limiter *rateLimiter, key string) bool {
+	retryAfter, allowed := limiter.Allow(key, time.Now().UTC())
 	if allowed {
 		return true
 	}

@@ -10,7 +10,7 @@ describe("buildContributionsCSV", () => {
         repo: "quoted-repo",
         number: 7,
         title: "Fix \"quoted\", title",
-        aiSummary: "Summary with \"quotes\", commas, and\nnewlines.",
+        impactSummary: "Summary with \"quotes\", commas, and\nnewlines.",
       }),
     ]);
 

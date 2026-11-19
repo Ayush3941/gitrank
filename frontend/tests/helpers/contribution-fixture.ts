@@ -11,7 +11,6 @@ export function buildContribution(overrides: Partial<Contribution> = {}): Contri
     evidenceState: overrides.evidenceState ?? "complete",
     evidenceMissing: overrides.evidenceMissing ?? [],
     reportEvidenceStatus: overrides.reportEvidenceStatus ?? "complete",
-    reportAnalysisSource: overrides.reportAnalysisSource ?? "deterministic",
     reportStale: overrides.reportStale ?? false,
     owner: overrides.owner ?? "octo",
     repo: overrides.repo ?? "gitrank",
@@ -33,7 +32,7 @@ export function buildContribution(overrides: Partial<Contribution> = {}): Contri
     maintainerReviewed: overrides.maintainerReviewed ?? true,
     linkedIssue: overrides.linkedIssue ?? true,
     ciPassed: overrides.ciPassed ?? true,
-    aiSummary: overrides.aiSummary ?? "Deterministic summary.",
+    impactSummary: overrides.impactSummary ?? "Deterministic summary.",
     evidenceSignals: overrides.evidenceSignals ?? ["backend"],
   };
 }

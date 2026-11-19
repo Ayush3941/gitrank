@@ -39,7 +39,6 @@ func (s *Service) PullRequestReport(ctx context.Context, sessionToken, owner, re
 	}
 	report, err := s.InternalPullRequestReport(ctx, owner, repo, number, now)
 	if err == nil && !access.ShowAISummaries {
-		report.Contribution.AISummary = ""
 		visible := false
 		report.AISummaryVisible = &visible
 	}

@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gitrank/gitrank/packages/authkit"
 	"github.com/gitrank/gitrank/packages/config"
 	"github.com/gitrank/gitrank/packages/contracts"
 	"github.com/gitrank/gitrank/packages/httpkit"
@@ -34,6 +35,18 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 	publicReadLimiter := newRateLimiter(time.Minute, 180)
 	privateReadLimiter := newRateLimiter(time.Minute, 90)
 	writeLimiter := newRateLimiter(time.Minute, 45)
+	summaryLimiter := newRateLimiter(time.Minute, 6)
+	summaryHandler := sessionAuth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := validateSessionCSRF(r, cfg.Auth.SessionCookieName, sessionSecrets); err != nil {
+			httpkit.WriteError(w, http.StatusForbidden, "invalid_csrf", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		principal, _ := authkit.PrincipalFromContext(r.Context())
+		if !allowKeyRateLimit(w, r, summaryLimiter, "pr_summary:"+principal.Subject) {
+			return
+		}
+		handlePullRequestSummary(w, r, syncExecutionClient, profileBaseURL, analyzerBaseURL)
+	}))
 
 	mux.Handle("/healthz", httpkit.RequireMethod(http.MethodGet, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		httpkit.WriteJSON(w, http.StatusOK, contracts.NewHealthResponse(cfg.ServiceName, string(cfg.Env), version, map[string]contracts.ComponentCheck{
@@ -124,6 +137,10 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 	}))
 
 	mux.Handle("/v1/pr/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost && validPullRequestSummaryPath(r.URL.Path) {
+			summaryHandler.ServeHTTP(w, r)
+			return
+		}
 		if r.Method != http.MethodGet {
 			writeMethodNotAllowed(w, r)
 			return

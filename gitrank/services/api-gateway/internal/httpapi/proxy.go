@@ -12,6 +12,7 @@ import (
 )
 
 type proxyOptions struct {
+	StreamResponse  bool
 	ForwardHeaders  map[string]string
 	ResponseHeaders map[string]string
 	Transform       func(*http.Response, []byte) (int, []byte, map[string]string, error)
@@ -70,6 +71,15 @@ func proxyRequest(w http.ResponseWriter, r *http.Request, client *http.Client, b
 		return
 	}
 	defer response.Body.Close()
+	if opts.StreamResponse && response.StatusCode == http.StatusOK && strings.HasPrefix(response.Header.Get("Content-Type"), "text/event-stream") {
+		copyResponseHeaders(w.Header(), response.Header)
+		for name, value := range opts.ResponseHeaders {
+			copyHeaderIfPresent(w.Header(), name, value)
+		}
+		w.Header().Set("X-Accel-Buffering", "no")
+		_ = httpkit.CopyStream(w, response.Body)
+		return
+	}
 
 	payload, err := io.ReadAll(response.Body)
 	if err != nil {

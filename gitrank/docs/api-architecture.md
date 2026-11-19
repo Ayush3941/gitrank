@@ -109,7 +109,7 @@ Current contract:
 
 Used by:
 
-- `pr-analyzer` for optional summary enrichment before analysis persistence
+- `pr-analyzer` for on-demand explanations, separately from deterministic analysis
 
 Config:
 
@@ -125,9 +125,9 @@ Config:
 - `AI_PR_MAX_ESTIMATED_COST_USD`
 - `AI_ESTIMATED_INPUT_TOKEN_COST_USD`
 
-Both analysis routes enforce these limits before invoking the provider. Provider
-errors persist deterministic analysis with a fallback reason instead of claiming
-AI success.
+The summary-generation route enforces AI input, token, and cost limits. Only that
+route invokes the provider; provider failures return an error for that request
+and never write fallback state to a PR.
 
 ## Internal Service APIs
 
@@ -148,6 +148,7 @@ Implemented routes:
 - `POST /v1/sync/installation/execute`
 - `POST /v1/sync/repository/execute`
 - `POST /v1/sync/pull-request/execute`
+- `POST /v1/pr/{owner}/{repo}/{number}/summary`
 - `GET /v1/me/profile`
 - `PATCH /v1/me/profile`
 - `PATCH /v1/me/profile/repositories/{owner}/{repo}`
@@ -168,9 +169,9 @@ Gateway behavior:
 - forwards downstream session-clearing `Set-Cookie` headers from `auth-service`
 - requires `X-CSRF-Token` on state-changing browser routes
 - returns `Cache-Control: private, no-store` for profiles, leaderboards, PR reports, sync, and account-action routes
-- runs persisted analysis after PR execution, then score replay and profile,
-  quest, and report refresh; returns saved analysis provenance for AI retry
-  feedback, or `partial` if analysis/refresh fails
+- runs deterministic analysis after PR sync, followed by score and read-model refresh
+- authorizes on-demand summary generation separately and forwards the provider's
+  event stream without buffering or database writes
 
 ### Auth Service
 
@@ -270,13 +271,13 @@ Implemented routes:
 Current behavior:
 
 - validates normalized PR analysis input before classification
-- emits schema-versioned analysis envelopes with analyzer version, source, validation status, and deterministic fallback metadata
-- enforces hallucination guardrails so future AI-assisted outputs cannot invent unsupported languages, issue links, criticality tags, flags, skills, or certainty-heavy summary phrasing
+- emits validated deterministic analysis envelopes with analyzer version and evidence signals
+- validates classification, languages, links, criticality tags, flags, and skills against source evidence
 - derives detected languages, primary changed language, linked issue references, review-cycle counts, and criticality tags from normalized PR evidence
 - persists deterministic analysis artifacts into `contribution_analyses` when the target repository and pull request have already been synced
 - returns `analysis_id` and `pull_request_id` for persisted analysis envelopes
 - ships a regression dataset for false-positive and false-negative analyzer cases under package testdata
-- does not call a live AI provider yet; current output is deterministic and marked as such
+- `POST /v1/analyze/pull-request/summary` streams an optional explanation from the configured AI provider; the regular analysis routes never call AI and the summary route never persists output
 
 ### Scoring Engine
 

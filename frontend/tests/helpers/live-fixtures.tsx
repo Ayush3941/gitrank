@@ -168,7 +168,7 @@ export const prReportFixture = {
     maintainer_reviewed: true,
     linked_issue: true,
     ci_passed: true,
-    ai_summary: "Live bounded diff summary from persisted evidence.",
+
     evidence_signals: ["bounded_files", "maintainer_review", "ci_passed"],
   },
   base_value: 180,
@@ -176,7 +176,14 @@ export const prReportFixture = {
   review_bonus: 45,
   test_bonus: 35,
   repo_bonus: 20,
-  ai_confidence: 0.74,
+  analysis_confidence: 0.74,
+  evidence_state: {
+    status: "complete" as const,
+    reasons: [],
+    missing_evidence: [],
+    analysis_confidence: 0.74,
+    stale: false,
+  },
   penalties: [
     {
       label: "No penalty",

@@ -48,7 +48,7 @@ export function buildContributionsCSV(rows: Contribution[]): string {
         row.maintainerReviewed,
         row.linkedIssue,
         row.ciPassed,
-        sanitizeReportSummary(row.aiSummary),
+        sanitizeReportSummary(row.impactSummary),
       ]
         .map(toCSVCell)
         .join(","),

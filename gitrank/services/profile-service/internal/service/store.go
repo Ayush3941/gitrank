@@ -290,7 +290,7 @@ func (s *Store) LoadScoreRows(ctx context.Context, userID string, selection scor
 			COALESCE(pr.title, ''),
 			COALESCE(pr.state, ''),
 			COALESCE(pr.merged, FALSE),
-			COALESCE(NULLIF(se.metadata_jsonb->>'analysis_source', ''), ca.analysis_source, ''),
+			COALESCE(NULLIF(se.metadata_jsonb->>'analysis_source', ''), 'deterministic'),
 			COALESCE((NULLIF(se.metadata_jsonb->>'confidence', ''))::double precision, ca.confidence::double precision, 0)
 		FROM score_events se
 		LEFT JOIN pull_requests pr ON pr.id = COALESCE(

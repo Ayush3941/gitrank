@@ -17,7 +17,8 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 }
 
 func NewRouterWithStore(cfg config.App, analysisStore *analyzer.Store, log *slog.Logger, version string) http.Handler {
-	service := analyzer.NewWithAI(analyzer.AIConfig{
+	service := analyzer.New()
+	summaries := analyzer.NewSummaryGenerator(analyzer.AIConfig{
 		Provider:       cfg.AI.Provider,
 		APIKey:         cfg.AI.APIKey,
 		Model:          cfg.AI.Model,
@@ -28,7 +29,7 @@ func NewRouterWithStore(cfg config.App, analysisStore *analyzer.Store, log *slog
 	analysisMetrics := newAnalysisMetricsSource(cfg.ServiceName)
 	manifest := contracts.ServiceManifest{
 		Service:     cfg.ServiceName,
-		Description: "Deterministic pull-request analysis and AI-enrichment boundary.",
+		Description: "Deterministic PR evidence analysis and on-demand, non-persistent AI explanations.",
 		Version:     version,
 		Routes: []contracts.RouteSpec{
 			{Method: "GET", Path: "/healthz", Summary: "Liveness probe", Status: "implemented"},
@@ -37,10 +38,11 @@ func NewRouterWithStore(cfg config.App, analysisStore *analyzer.Store, log *slog
 			{Method: "GET", Path: "/v1/meta/manifest", Summary: "Service route manifest", Status: "implemented"},
 			{Method: "POST", Path: "/v1/analyze/pull-request", Summary: "Analyze PR structure and classify contribution type", Status: "implemented"},
 			{Method: "POST", Path: "/v1/analyze/pull-request/execute", Summary: "Analyze already-synced PR evidence and persist the analysis artifact", Status: "implemented"},
+			{Method: "POST", Path: "/v1/analyze/pull-request/summary", Summary: "Stream an AI explanation from stored PR evidence without persistence", Status: "implemented"},
 		},
 		Dependencies: []contracts.DependencySpec{
 			{Name: "PostgreSQL", Kind: "database", Purpose: "Persisted contribution analysis artifacts", Critical: true, Status: dependencyStatus(analysisStore != nil)},
-			{Name: "AI chat completions API", Kind: "external_http", BaseURL: cfg.AI.BaseURL, Purpose: "AI summary enrichment for persisted PR analysis", Auth: "API key", Critical: false, Status: "configured"},
+			{Name: "AI chat completions API", Kind: "external_http", BaseURL: cfg.AI.BaseURL, Purpose: "On-demand PR explanations; never persisted or used in scoring", Auth: "API key", Critical: false, Status: "configured"},
 		},
 	}
 
@@ -73,9 +75,6 @@ func NewRouterWithStore(cfg config.App, analysisStore *analyzer.Store, log *slog
 			httpkit.WriteError(w, http.StatusBadRequest, "invalid_request", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
-		if !allowAnalysis(w, r, req, cfg.AI) {
-			return
-		}
 		start := time.Now()
 		response, err := service.AnalyzeContext(r.Context(), req)
 		if err != nil {
@@ -99,32 +98,9 @@ func NewRouterWithStore(cfg config.App, analysisStore *analyzer.Store, log *slog
 		httpkit.WriteJSON(w, http.StatusOK, response)
 	})))
 	mux.Handle("/v1/analyze/pull-request/execute", httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if analysisStore == nil {
-			httpkit.WriteError(w, http.StatusServiceUnavailable, "analysis_store_unavailable", "analysis persistence is not configured", httpkit.RequestIDFromContext(r.Context()))
-			return
-		}
-		var req contracts.SyncRequest
-		if err := httpkit.DecodeJSON(r, &req, 1<<20); err != nil {
-			httpkit.WriteError(w, http.StatusBadRequest, "invalid_json", err.Error(), httpkit.RequestIDFromContext(r.Context()))
-			return
-		}
-		req.Mode = "analysis_pull_request"
-		if err := req.Normalize(); err != nil {
-			httpkit.WriteError(w, http.StatusBadRequest, "invalid_request", err.Error(), httpkit.RequestIDFromContext(r.Context()))
-			return
-		}
-
 		start := time.Now()
-		analysisRequest, err := analysisStore.LoadPullRequestAnalysisRequest(r.Context(), req.Repository, req.Number)
-		if err != nil {
-			if errors.Is(err, analyzer.ErrPullRequestNotFound) {
-				httpkit.WriteError(w, http.StatusNotFound, "pull_request_not_found", "pull request evidence must be synced before analysis can run", httpkit.RequestIDFromContext(r.Context()))
-				return
-			}
-			httpkit.WriteError(w, http.StatusInternalServerError, "analysis_load_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
-			return
-		}
-		if !allowAnalysis(w, r, analysisRequest, cfg.AI) {
+		analysisRequest, ok := loadStoredAnalysisRequest(w, r, analysisStore)
+		if !ok {
 			return
 		}
 		response, err := service.AnalyzeContext(r.Context(), analysisRequest)
@@ -142,11 +118,67 @@ func NewRouterWithStore(cfg config.App, analysisStore *analyzer.Store, log *slog
 		analysisMetrics.Observe(response.Category, time.Since(start), estimateAnalysisUsage(analysisRequest, response, cfg.AI.Provider, cfg.AI.Model))
 		httpkit.WriteJSON(w, http.StatusOK, response)
 	})))
+	mux.Handle("/v1/analyze/pull-request/summary", httpkit.RequireMethod(http.MethodPost, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		req, ok := loadStoredAnalysisRequest(w, r, analysisStore)
+		if !ok || !allowSummaryGeneration(w, r, req, cfg.AI) {
+			return
+		}
+		baseline, err := service.AnalyzeContext(r.Context(), req)
+		if err != nil {
+			httpkit.WriteError(w, http.StatusInternalServerError, "analysis_validation_failed", "PR evidence could not be prepared for an explanation.", httpkit.RequestIDFromContext(r.Context()))
+			return
+		}
+		response, err := summaries.Generate(r.Context(), req, baseline)
+		if err != nil {
+			var failure *analyzer.SummaryError
+			if errors.As(err, &failure) {
+				httpkit.WriteError(w, failure.Status, failure.Code, failure.Message, httpkit.RequestIDFromContext(r.Context()))
+			} else {
+				httpkit.WriteError(w, http.StatusInternalServerError, "summary_failed", "An AI explanation could not be generated.", httpkit.RequestIDFromContext(r.Context()))
+			}
+			return
+		}
+		defer response.Body.Close()
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.Header().Set("Cache-Control", "private, no-store")
+		w.Header().Set("X-Accel-Buffering", "no")
+		if err := httpkit.CopyStream(w, response.Body); err != nil && r.Context().Err() == nil {
+			log.Warn("PR summary stream interrupted", "request_id", httpkit.RequestIDFromContext(r.Context()))
+		}
+	})))
 
 	return httpkit.Chain(mux, httpkit.RequestID, httpkit.Instrument(metrics), httpkit.AccessLog(log), httpkit.Recoverer(log))
 }
 
-func allowAnalysis(w http.ResponseWriter, r *http.Request, req contracts.PullRequestAnalysisRequest, cfg config.AI) bool {
+func loadStoredAnalysisRequest(w http.ResponseWriter, r *http.Request, store *analyzer.Store) (contracts.PullRequestAnalysisRequest, bool) {
+	var empty contracts.PullRequestAnalysisRequest
+	if store == nil {
+		httpkit.WriteError(w, http.StatusServiceUnavailable, "analysis_store_unavailable", "PR evidence storage is not configured", httpkit.RequestIDFromContext(r.Context()))
+		return empty, false
+	}
+	var req contracts.SyncRequest
+	if err := httpkit.DecodeJSON(r, &req, 1<<20); err != nil {
+		httpkit.WriteError(w, http.StatusBadRequest, "invalid_json", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+		return empty, false
+	}
+	req.Mode = "analysis_pull_request"
+	if err := req.Normalize(); err != nil {
+		httpkit.WriteError(w, http.StatusBadRequest, "invalid_request", err.Error(), httpkit.RequestIDFromContext(r.Context()))
+		return empty, false
+	}
+	loaded, err := store.LoadPullRequestAnalysisRequest(r.Context(), req.Repository, req.Number)
+	if err != nil {
+		status, code := http.StatusInternalServerError, "analysis_load_failed"
+		if errors.Is(err, analyzer.ErrPullRequestNotFound) {
+			status, code = http.StatusNotFound, "pull_request_not_found"
+		}
+		httpkit.WriteError(w, status, code, "Stored PR evidence is unavailable.", httpkit.RequestIDFromContext(r.Context()))
+		return empty, false
+	}
+	return loaded, true
+}
+
+func allowSummaryGeneration(w http.ResponseWriter, r *http.Request, req contracts.PullRequestAnalysisRequest, cfg config.AI) bool {
 	if err := enforceAnalysisLimits(req, cfg); err != nil {
 		limitErr, ok := err.(analysisLimitError)
 		if !ok {

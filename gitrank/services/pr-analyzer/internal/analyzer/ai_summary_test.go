@@ -2,7 +2,9 @@ package analyzer
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -12,108 +14,64 @@ import (
 	"github.com/gitrank/gitrank/packages/contracts"
 )
 
-func TestNewGeminiSummaryClientRequiresCredentials(t *testing.T) {
-	client := newGeminiSummaryClient(AIConfig{
-		Provider: "gemini",
-		Model:    "gemini-2.5-flash",
-		BaseURL:  "https://generativelanguage.googleapis.com/v1beta/openai",
-	})
-	if client != nil {
-		t.Fatal("newGeminiSummaryClient() = non-nil, want nil without API key")
-	}
-}
-
-func TestGeminiSummaryClientSummarizeSuccess(t *testing.T) {
+func TestSummaryGenerationStreamsLongExplanationFromEvidence(t *testing.T) {
+	narrative := strings.Repeat("A client-friendly explanation. ", 40)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if got := r.URL.Path; got != "/v1beta/openai/chat/completions" {
-			t.Fatalf("path = %q, want chat completions path", got)
+		if r.URL.Path != "/v1/chat/completions" || r.Header.Get("Authorization") != "Bearer test-key" {
+			t.Error("incorrect provider request")
 		}
-		if got := r.Header.Get("Authorization"); got != "Bearer test-key" {
-			t.Fatalf("authorization = %q, want Bearer token", got)
+		var payload struct {
+			Stream   bool                             `json:"stream"`
+			Messages []struct{ Role, Content string } `json:"messages"`
 		}
-		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"choices":[{"message":{"content":"  Added regression tests for API handlers.  "}}]}`))
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			t.Error(err)
+		}
+		if !payload.Stream || len(payload.Messages) != 2 || !strings.Contains(payload.Messages[0].Content, "1000 words") || !strings.Contains(payload.Messages[1].Content, "A proposal, not a release") {
+			t.Errorf("invalid prompt: %+v", payload)
+		}
+		w.Header().Set("Content-Type", "text/event-stream")
+		event, _ := json.Marshal(map[string]any{"choices": []any{map[string]any{"delta": map[string]string{"content": narrative}}}})
+		_, _ = w.Write(append(append([]byte("data: "), event...), []byte("\n\ndata: [DONE]\n\n")...))
 	}))
 	defer server.Close()
-
-	client := newGeminiSummaryClient(AIConfig{
-		Provider:       "gemini",
-		APIKey:         "test-key",
-		Model:          "gemini-2.5-flash",
-		BaseURL:        server.URL + "/v1beta/openai",
-		RequestTimeout: 2 * time.Second,
-	})
-	if client == nil {
-		t.Fatal("newGeminiSummaryClient() = nil, want configured client")
-	}
-
-	req := contracts.PullRequestAnalysisRequest{
-		Repository: contracts.RepositoryContext{FullName: "octo/repo", PrimaryLanguage: "Go"},
-		PullRequest: contracts.PullRequestContext{
-			Number:       1,
-			Title:        "test: add regression coverage",
-			State:        "closed",
-			Merged:       true,
-			ChangedFiles: 1,
-			Files: []contracts.ChangedFile{
-				{Path: "service/api_test.go"},
-			},
-		},
-	}
-	baseline := contracts.PullRequestAnalysisResponse{
-		Category: "tests",
-		Signals:  []string{"category=tests"},
-	}
-
-	summary, err := client.Summarize(context.Background(), req, baseline)
+	generator := NewSummaryGenerator(AIConfig{Provider: "openai", APIKey: "test-key", Model: "gpt-4o-mini", BaseURL: server.URL + "/v1", RequestTimeout: time.Second})
+	response, err := generator.Generate(context.Background(), contracts.PullRequestAnalysisRequest{
+		Repository:  contracts.RepositoryContext{FullName: "octo/repo"},
+		PullRequest: contracts.PullRequestContext{Title: "Compatibility proposal", Body: "A proposal, not a release"},
+	}, contracts.PullRequestAnalysisResponse{Category: "feature"})
 	if err != nil {
-		t.Fatalf("Summarize() error = %v", err)
+		t.Fatal(err)
 	}
-	if summary != "Added regression tests for API handlers." {
-		t.Fatalf("summary = %q, want normalized model text", summary)
+	defer response.Body.Close()
+	body, err := io.ReadAll(response.Body)
+	if err != nil || !strings.Contains(string(body), narrative) {
+		t.Fatalf("long explanation was truncated: %s, %v", body, err)
 	}
 }
 
-func TestGeminiSummaryClientSummarizeRateLimitFallbackReason(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusTooManyRequests)
-		_, _ = w.Write([]byte(`{"error":{"message":"quota exceeded"}}`))
+func TestSummaryProviderFailureIsLocalToGeneration(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(429)
+		_, _ = w.Write([]byte(`{"error":{"code":"insufficient_quota","message":"private provider diagnostic"}}`))
 	}))
 	defer server.Close()
+	generator := NewSummaryGenerator(AIConfig{Provider: "openai", APIKey: "test-key", Model: "gpt-4o-mini", BaseURL: server.URL, RequestTimeout: time.Second})
+	_, err := generator.Generate(context.Background(), contracts.PullRequestAnalysisRequest{}, contracts.PullRequestAnalysisResponse{})
+	var failure *SummaryError
+	if !errors.As(err, &failure) || failure.Code != "ai_quota_exceeded" || failure.Status != 429 || strings.Contains(failure.Message, "private provider") {
+		t.Fatalf("unexpected safe failure: %v", err)
+	}
+}
 
-	client := newGeminiSummaryClient(AIConfig{
-		Provider:       "gemini",
-		APIKey:         "test-key",
-		Model:          "gemini-2.5-flash",
-		BaseURL:        server.URL,
-		RequestTimeout: 2 * time.Second,
-	})
-	if client == nil {
-		t.Fatal("newGeminiSummaryClient() = nil, want configured client")
+func TestSummaryGenerationRequiresConfiguration(t *testing.T) {
+	generator := NewSummaryGenerator(AIConfig{Provider: "openai", Model: "gpt-4o-mini", BaseURL: "https://api.openai.com/v1", RequestTimeout: time.Second})
+	if generator != nil {
+		t.Fatal("generator enabled without a key")
 	}
-
-	_, err := client.Summarize(context.Background(), contracts.PullRequestAnalysisRequest{
-		Repository: contracts.RepositoryContext{FullName: "octo/repo"},
-		PullRequest: contracts.PullRequestContext{
-			Number: 1,
-			Title:  "feat: patch",
-			Files:  []contracts.ChangedFile{{Path: "service/api.go"}},
-		},
-	}, contracts.PullRequestAnalysisResponse{
-		Category: "feature",
-		Signals:  []string{"category=feature"},
-	})
-	if err == nil {
-		t.Fatal("Summarize() error = nil, want rate-limit error")
-	}
-	var summaryErr *aiSummaryError
-	if !strings.Contains(err.Error(), "status 429") {
-		t.Fatalf("error = %v, want HTTP status context", err)
-	}
-	if !errors.As(err, &summaryErr) {
-		t.Fatalf("error = %T, want aiSummaryError wrapper", err)
-	}
-	if summaryErr.reason != "ai_rate_limited" {
-		t.Fatalf("reason = %q, want ai_rate_limited", summaryErr.reason)
+	_, err := generator.Generate(context.Background(), contracts.PullRequestAnalysisRequest{}, contracts.PullRequestAnalysisResponse{})
+	var failure *SummaryError
+	if !errors.As(err, &failure) || failure.Status != 503 {
+		t.Fatalf("missing configuration error=%v", err)
 	}
 }

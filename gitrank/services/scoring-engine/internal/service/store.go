@@ -24,12 +24,8 @@ type replayCandidate struct {
 	Repository        contracts.RepositoryContext
 	PullRequest       contracts.PullRequestContext
 	AnalyzerVersion   string
-	PromptVersion     string
-	ModelName         string
-	AnalysisSource    string
 	Classification    string
 	Confidence        float64
-	Summary           string
 	SignalHints       []string
 	AuthorLogin       string
 	MergedByLogin     string
@@ -184,12 +180,8 @@ func (s *Store) LoadReplayCandidatesFiltered(ctx context.Context, userID string,
 			pr.changed_files,
 			pr.commits,
 			COALESCE(ca.analyzer_version, ''),
-			COALESCE(ca.prompt_version, ''),
-			COALESCE(ca.model_name, ''),
-			COALESCE(ca.analysis_source, 'deterministic'),
 			COALESCE(ca.classification, 'feature'),
 			COALESCE(ca.confidence::float8, 0),
-			COALESCE(ca.summary, ''),
 			COALESCE(ca.signals_jsonb, '[]'::jsonb),
 			COALESCE(files.files_jsonb, '[]'::jsonb),
 			COALESCE(reviews.reviews_jsonb, '[]'::jsonb)
@@ -199,12 +191,8 @@ func (s *Store) LoadReplayCandidatesFiltered(ctx context.Context, userID string,
 			SELECT
 				id,
 				analyzer_version,
-				prompt_version,
-				model_name,
-				analysis_source,
 				classification,
 				confidence,
-				summary,
 				signals_jsonb,
 				created_at
 			FROM contribution_analyses
@@ -272,12 +260,8 @@ func (s *Store) LoadReplayCandidatesFiltered(ctx context.Context, userID string,
 			&candidate.PullRequest.ChangedFiles,
 			&candidate.PullRequest.Commits,
 			&candidate.AnalyzerVersion,
-			&candidate.PromptVersion,
-			&candidate.ModelName,
-			&candidate.AnalysisSource,
 			&candidate.Classification,
 			&candidate.Confidence,
-			&candidate.Summary,
 			&signalRaw,
 			&filesRaw,
 			&reviewsRaw,

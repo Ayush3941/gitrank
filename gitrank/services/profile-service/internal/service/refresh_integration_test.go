@@ -325,17 +325,13 @@ func TestRefreshProfileByUserIDBackfillsLegacyScoreEventEvidenceLinks(t *testing
 		INSERT INTO contribution_analyses (
 			pull_request_id,
 			analyzer_version,
-			analysis_source,
 			classification,
-			confidence,
-			summary
+			confidence
 		) VALUES (
 			$1::uuid,
 			'deterministic.v1',
-			'deterministic',
 			'feature',
-			0.87,
-			'Legacy score event linkage test analysis.'
+			0.87
 		)
 		RETURNING id::text
 	`, pullRequestID).Scan(&analysisID); err != nil {
