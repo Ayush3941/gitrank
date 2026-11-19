@@ -1545,6 +1545,8 @@ Current preview state:
 
 The repo now contains a tracked Next.js frontend with root-level frontend CI plus repo-wide secret and Trivy scanning. Public profile reads plus authenticated dashboard, badge, contribution, leaderboard, settings, sync, disconnect, account-deletion, quest recommendation, and PR battle-report flows are live. The frontend also has season/rank progression presentation, player-card public profiles, quest recommendation evidence, badge rarity styling, PR battle-report explanation panels, and an account-backed reduced-gamification display preference for signed-in users. Production app routes no longer include demo preview modes; remaining sample data is isolated to marketing, tests, or fixtures.
 
+The dashboard identity card presents identity, XP progress, activity, and top signals without a separate next-action panel.
+
 Must be defined or built:
 
 - [x] frontend technology choice

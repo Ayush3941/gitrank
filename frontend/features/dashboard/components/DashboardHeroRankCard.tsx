@@ -1,4 +1,4 @@
-import { ArrowRight, Sparkles, Star } from "lucide-react";
+import { ArrowRight, Star } from "lucide-react";
 import { CopyTextButton } from "@/components/shared/CopyTextButton";
 import { ContributionPulseStrip } from "@/components/shared/ContributionPulseStrip";
 import { ExpandableText } from "@/components/shared/ExpandableText";
@@ -19,35 +19,14 @@ export function DashboardHeroRankCard({
   archetype,
   identitySummary,
   aiMode,
-  effectiveSyncState,
 }: {
   user: UserProfile;
   archetype?: string;
   identitySummary?: string;
   aiMode?: AbraInsightSource;
-  effectiveSyncState?: UserProfile["syncStatus"]["state"];
 }) {
   const aiSourceLabel = formatAIInsightSourceLabel(aiMode);
   const strongestSignals = uniqueDisplayValues(user.strongestSignals, 4);
-  const syncState = effectiveSyncState ?? user.syncStatus.state;
-  const nextAction =
-    syncState !== "synced" || user.mergedPrCount === 0
-      ? {
-          description: "Sync recent PR evidence to unlock rank progression.",
-          href: "/dashboard/settings",
-          cta: "Open sync settings",
-        }
-      : user.quests.length > 0
-        ? {
-            description: "Quest completion is the fastest path to rank movement this cycle.",
-            href: "/dashboard/quests",
-            cta: "Open quests",
-          }
-        : {
-            description: "Review high-impact PR cards and keep evidence quality moving upward.",
-            href: "/dashboard/contributions",
-            cta: "Open contributions",
-          };
 
   return (
     <GlowCard strong className="player-card-shell cyber-hero-shell space-y-6 overflow-hidden">
@@ -103,28 +82,6 @@ export function DashboardHeroRankCard({
       </div>
       <XPProgress current={user.level.currentXp} next={user.level.nextLevelXp} />
       <ContributionPulseStrip contributions={user.contributions} label="14-day activity pulse" />
-      <div className="rounded-[var(--radius-universal)] border border-primary/18 bg-primary/8 p-4">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="space-y-1">
-            <p className="inline-flex items-center gap-2 text-sm font-semibold text-white">
-              <Sparkles className="h-4 w-4 text-emerald-200" aria-hidden="true" />
-              Next move
-            </p>
-            <p className="text-sm leading-6 text-muted">
-              {user.rankProgress.nextTier
-                ? `${formatXpLabel(user.rankProgress.xpToNextTier)} to ${user.rankProgress.nextTier}.`
-                : "Top tier reached for this season."}
-            </p>
-            <p className="text-sm leading-6 text-muted">{nextAction.description}</p>
-          </div>
-          <Button asChild variant="secondary" size="sm">
-            <IntentPrefetchLink href={nextAction.href}>
-              {nextAction.cta}
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </IntentPrefetchLink>
-          </Button>
-        </div>
-      </div>
       {identitySummary ? (
         <div className="rounded-[var(--radius-universal)] border border-cyan-300/20 bg-cyan-400/8 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">

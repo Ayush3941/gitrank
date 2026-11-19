@@ -192,7 +192,6 @@ export function DashboardPageClient() {
             abraInsights.data?.identitySummary ?? dashboardPage.fallbackIdentitySummary
           }
           aiMode={abraInsights.data?.generatedBy ?? "deterministic"}
-          effectiveSyncState={displaySyncState}
         />
       </section>
       <section
