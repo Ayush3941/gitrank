@@ -23,7 +23,7 @@ const (
 )
 
 const (
-	defaultLocalDatabaseURL      = "postgres://localhost:55432/gitrank?sslmode=disable"
+	defaultLocalDatabaseURL      = "postgres://postgres:postgres@localhost:55432/gitrank?sslmode=disable"
 	defaultLocalRedisURL         = "redis://localhost:6379/0"
 	defaultDevSessionSecret      = "dev-insecure-session-secret-change-me"
 	defaultDevJWTSigningKey      = "dev-insecure-jwt-signing-key-change-me"

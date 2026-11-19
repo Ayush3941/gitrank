@@ -548,6 +548,12 @@ Read these first:
 - `gitrank/docs/production-decision-register.md`
 - this file
 
+The local starter uses one GitHub App for sign-in and sync. Keep its
+`GITHUB_APP_CLIENT_ID` / `GITHUB_APP_CLIENT_SECRET` names and the local Docker
+database credentials aligned across `.env.example`, config defaults, and the
+[setup guide](README.md#local-run-recommended). Running services must restart
+after `.env` changes.
+
 Then understand the current reality:
 
 - the project already contains meaningful implementation, but several services are still partial

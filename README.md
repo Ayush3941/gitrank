@@ -109,18 +109,29 @@ cp -n gitrank/.env.example gitrank/.env
 
 ### 2) Configure required secrets in `gitrank/.env`
 
-- `GITHUB_CLIENT_ID`
-- `GITHUB_CLIENT_SECRET`
-- `GITHUB_OAUTH_REDIRECT_URL` (must match your GitHub OAuth app callback)
+- `GITHUB_APP_CLIENT_ID` (the GitHub App's Client ID, not its numeric App ID)
+- `GITHUB_APP_CLIENT_SECRET` (a client secret from that same GitHub App)
+- `GITHUB_OAUTH_REDIRECT_URL` (must match the GitHub App callback)
 - `GITRANK_SESSION_SECRET`
 - `GITRANK_JWT_SIGNING_KEY`
 - `GITHUB_TOKEN_ENCRYPTION_KEY`
+
+The starter uses one GitHub App for sign-in and contribution sync. Setting
+`GITHUB_APP_CLIENT_ID` selects GitHub App OAuth. The older `GITHUB_CLIENT_ID` /
+`GITHUB_CLIENT_SECRET` settings select a separate OAuth App for sign-in and do
+not satisfy the App sync configuration check.
 
 Contribution sync also requires `GITHUB_APP_ID` and
 `GITHUB_APP_PRIVATE_KEY_PEM_PATH`, with the App installed on repositories you
 want to sync. Set `GITHUB_APP_SLUG` for the install/recovery link. Set
 `GITHUB_WEBHOOK_SECRET` when accepting GitHub webhook deliveries; manual App
 sync validates its credentials separately.
+
+The bundled Docker database uses `postgres` as both its username and local
+password. Keep `DATABASE_URL` set to
+`postgres://postgres:postgres@localhost:55432/gitrank?sslmode=disable`.
+Restart services after changing `gitrank/.env`; running processes retain their
+startup environment.
 
 ChatGPT path:
 

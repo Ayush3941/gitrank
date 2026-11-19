@@ -6,6 +6,15 @@ values and credentials, and omit settings whose defaults are suitable. Advanced
 settings below go into the same file only when an environment needs an override.
 There is no second runtime env file.
 
+The starter uses a single GitHub App for OAuth and contribution sync. Set
+`GITHUB_APP_CLIENT_ID` and `GITHUB_APP_CLIENT_SECRET` to that App's OAuth
+credentials, with its numeric `GITHUB_APP_ID` and PEM path for installation
+authentication. The generic `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` pair is
+the separate OAuth App fallback; it does not populate the App-specific settings
+required by sync validation. Changing `.env` requires restarting the services.
+The local database URL includes the `postgres` / `postgres` credentials from
+the bundled Docker Compose configuration.
+
 ## Fixed Product Policy
 
 - [Scoring policy](../packages/config/scoring_policy.go) owns the `v1alpha1`
@@ -86,7 +95,7 @@ both sources.
 | `PROFILE_REPORT_BACKFILL_DEFAULT_LIMIT` | `50` |
 | `PROFILE_REPORT_BACKFILL_MAX_LIMIT` | `200` |
 | `PROFILE_ACCOUNT_EXPORT_AUDIT_LIMIT` | `200` |
-| `DATABASE_URL` | `postgres://localhost:55432/gitrank?sslmode=disable` |
+| `DATABASE_URL` | `postgres://postgres:postgres@localhost:55432/gitrank?sslmode=disable` |
 | `REDIS_URL` | `redis://localhost:6379/0` |
 | `ALLOW_LOCAL_SEED` | `0` |
 | `GITRANK_SESSION_SECRET` | `replace-with-a-long-random-secret` |
