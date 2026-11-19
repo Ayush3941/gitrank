@@ -41,10 +41,10 @@ func NewWithAI(cfg AIConfig) Service {
 }
 
 func (s Service) Analyze(req contracts.PullRequestAnalysisRequest) (contracts.PullRequestAnalysisResponse, error) {
-	return s.analyze(context.Background(), req)
+	return s.AnalyzeContext(context.Background(), req)
 }
 
-func (s Service) analyze(ctx context.Context, req contracts.PullRequestAnalysisRequest) (contracts.PullRequestAnalysisResponse, error) {
+func (s Service) AnalyzeContext(ctx context.Context, req contracts.PullRequestAnalysisRequest) (contracts.PullRequestAnalysisResponse, error) {
 	if err := req.Validate(); err != nil {
 		return contracts.PullRequestAnalysisResponse{}, err
 	}

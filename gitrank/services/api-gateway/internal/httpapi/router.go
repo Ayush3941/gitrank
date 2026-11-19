@@ -24,6 +24,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 	authBaseURL := strings.TrimRight(cfg.Services.AuthBaseURL, "/")
 	ingestorBaseURL := strings.TrimRight(cfg.Services.GitHubIngestorBaseURL, "/")
 	scoringBaseURL := strings.TrimRight(cfg.Services.ScoringBaseURL, "/")
+	analyzerBaseURL := strings.TrimRight(cfg.Services.PRAnalyzerBaseURL, "/")
 	client := &http.Client{Timeout: cfg.Services.RequestTimeout}
 	syncExecutionClient := &http.Client{Timeout: maxDuration(cfg.Services.RequestTimeout, 10*time.Minute)}
 	syncConfigError := cfg.ValidateGitHubAppSyncRuntime()
@@ -364,7 +365,7 @@ func NewRouter(cfg config.App, log *slog.Logger, version string) http.Handler {
 		if !allowRateLimit(w, r, writeLimiter, "sync_execute_pull_request") {
 			return
 		}
-		handleModeSyncExecution(w, r, syncExecutionClient, ingestorBaseURL, "pull_request", "/v1/sync/pull-request/execute", nil)
+		handlePullRequestSyncExecution(w, r, syncExecutionClient, ingestorBaseURL, analyzerBaseURL, scoringBaseURL, profileBaseURL)
 	}))))
 
 	mux.Handle("/v1/sync/review/execute", sessionAuth.Middleware(withSyncRuntimeGuard(syncConfigError, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

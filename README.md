@@ -33,6 +33,10 @@ This repo is optimized for:
 - If ChatGPT is missing/rate-limited/fails, the product degrades to deterministic
   fallback text and still remains usable.
 - Evidence state is shown instead of silently hiding degraded AI conditions.
+- **Retry AI summary** syncs the selected PR, runs and persists analyzer output,
+  then replays scores and refreshes profile/report evidence before responding.
+  Its result distinguishes saved AI text, deterministic fallback, and incomplete
+  processing. Dashboard account refresh still runs without AI analysis.
 
 ### PR XP award strategy (strict)
 

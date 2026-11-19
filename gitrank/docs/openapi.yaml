@@ -1273,6 +1273,23 @@ components:
       type: object
       required: [status, mode, started_at, finished_at]
       properties:
+        analysis:
+          type: object
+          description: Persisted analyzer envelope returned by PR execution after analysis succeeds; source and fallback reason distinguish AI text from deterministic output.
+          required: [analysis_id, pull_request_id, analysis_source]
+          additionalProperties: true
+          properties:
+            analysis_id:
+              type: string
+            pull_request_id:
+              type: string
+            analysis_source:
+              type: string
+              enum: [deterministic, ai_assisted, hybrid]
+            model_name:
+              type: string
+            fallback_reason:
+              type: string
         status:
           type: string
           example: completed

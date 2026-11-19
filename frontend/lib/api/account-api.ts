@@ -55,6 +55,13 @@ export type ApiAccountLinkStartResponse = {
 };
 
 export type ApiSyncExecutionResponse = {
+  analysis?: {
+    analysis_id: string;
+    pull_request_id: string;
+    analysis_source: string;
+    fallback_reason?: string;
+    model_name?: string;
+  };
   status: string;
   mode: string;
   user?: string;

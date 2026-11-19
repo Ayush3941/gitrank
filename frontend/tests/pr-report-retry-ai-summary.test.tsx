@@ -127,6 +127,12 @@ describe("pr report ai retry action", () => {
       finished_at: "2026-05-10T12:00:03Z",
       fetched: {},
       persisted: {},
+      analysis: {
+        analysis_id: "analysis-42",
+        pull_request_id: "pr-42",
+        analysis_source: "hybrid",
+        model_name: "gpt-4o-mini",
+      },
     });
 
     render(<PRBattleReportPageClient owner="octo" repo="gitrank" number={42} />);
@@ -139,7 +145,7 @@ describe("pr report ai retry action", () => {
         number: 42,
       }),
     );
-    expect(await screen.findByText(/Retry executed\./i)).toBeTruthy();
+    expect(await screen.findByText("AI summary saved. Report evidence refreshed.")).toBeTruthy();
     expect(mockRefetch).toHaveBeenCalled();
   }, 10_000);
 

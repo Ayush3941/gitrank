@@ -1249,6 +1249,14 @@ Must be implemented:
 - [x] sync trigger endpoints
 - [x] no admin-only endpoints in v1 by policy
 
+`POST /v1/sync/pull-request/execute` also runs persisted PR analysis before score
+replay and profile, quest, and report refresh. Its optional `analysis` response
+contains the saved artifact's IDs, source, model, and fallback reason. The PR
+report's retry notice must require a persisted AI artifact before claiming AI
+success; successful GitHub extraction alone is insufficient. Analyzer execution
+uses request cancellation and the same input/token/cost limits as direct analysis.
+Account user sync continues to skip analysis.
+
 Production-grade expectations:
 
 - [x] OpenAPI or equivalent contract doc exists.

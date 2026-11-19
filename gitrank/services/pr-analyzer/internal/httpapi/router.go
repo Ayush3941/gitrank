@@ -73,16 +73,11 @@ func NewRouterWithStore(cfg config.App, analysisStore *analyzer.Store, log *slog
 			httpkit.WriteError(w, http.StatusBadRequest, "invalid_request", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
-		if err := enforceAnalysisLimits(req, cfg.AI); err != nil {
-			limitErr, ok := err.(analysisLimitError)
-			if !ok {
-				limitErr = analysisLimitError{code: "analysis_limit_exceeded", message: err.Error()}
-			}
-			httpkit.WriteError(w, http.StatusRequestEntityTooLarge, limitErr.code, limitErr.message, httpkit.RequestIDFromContext(r.Context()))
+		if !allowAnalysis(w, r, req, cfg.AI) {
 			return
 		}
 		start := time.Now()
-		response, err := service.Analyze(req)
+		response, err := service.AnalyzeContext(r.Context(), req)
 		if err != nil {
 			httpkit.WriteError(w, http.StatusInternalServerError, "analysis_validation_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
@@ -129,7 +124,10 @@ func NewRouterWithStore(cfg config.App, analysisStore *analyzer.Store, log *slog
 			httpkit.WriteError(w, http.StatusInternalServerError, "analysis_load_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
 		}
-		response, err := service.Analyze(analysisRequest)
+		if !allowAnalysis(w, r, analysisRequest, cfg.AI) {
+			return
+		}
+		response, err := service.AnalyzeContext(r.Context(), analysisRequest)
 		if err != nil {
 			httpkit.WriteError(w, http.StatusInternalServerError, "analysis_validation_failed", err.Error(), httpkit.RequestIDFromContext(r.Context()))
 			return
@@ -146,6 +144,18 @@ func NewRouterWithStore(cfg config.App, analysisStore *analyzer.Store, log *slog
 	})))
 
 	return httpkit.Chain(mux, httpkit.RequestID, httpkit.Instrument(metrics), httpkit.AccessLog(log), httpkit.Recoverer(log))
+}
+
+func allowAnalysis(w http.ResponseWriter, r *http.Request, req contracts.PullRequestAnalysisRequest, cfg config.AI) bool {
+	if err := enforceAnalysisLimits(req, cfg); err != nil {
+		limitErr, ok := err.(analysisLimitError)
+		if !ok {
+			limitErr = analysisLimitError{code: "analysis_limit_exceeded", message: err.Error()}
+		}
+		httpkit.WriteError(w, http.StatusRequestEntityTooLarge, limitErr.code, limitErr.message, httpkit.RequestIDFromContext(r.Context()))
+		return false
+	}
+	return true
 }
 
 func dependencyStatus(configured bool) string {

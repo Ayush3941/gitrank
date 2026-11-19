@@ -77,24 +77,34 @@ export function buildRetryAiSummaryNotice(result: ApiSyncExecutionResponse): {
   message: string;
 } {
   const status = result.status.trim().toLowerCase();
-  if (status === "partial") {
+  const analysis = result.analysis;
+  if (!analysis?.analysis_id) {
     return {
       tone: "warning",
-      message:
-        "Retry executed with partial upstream data. Deterministic score stays active while AI enrichment retries.",
+      message: status === "queued"
+        ? "Sync was queued. No AI summary has been generated yet."
+        : "AI analysis did not complete. This report keeps its existing evidence.",
     };
   }
-  if (status === "queued") {
+  const hasAiSummary =
+    ["hybrid", "ai_assisted"].includes(analysis.analysis_source) &&
+    !analysis.fallback_reason;
+  if (hasAiSummary) {
     return {
-      tone: "success",
-      message:
-        "Retry queued. Keep this report open for a moment while enrichment catches up.",
+      tone: status === "completed" ? "success" : "warning",
+      message: status === "completed"
+        ? "AI summary saved. Report evidence refreshed."
+        : "AI summary saved, but sync or score refresh was incomplete.",
     };
   }
+  const reason = analysis.fallback_reason;
   return {
-    tone: "success",
-    message:
-      "Retry executed. This report will refresh with AI text after scoring and persistence settle.",
+    tone: "warning",
+    message: reason === "ai_not_enabled"
+      ? "AI is not configured on the analyzer. Deterministic analysis was saved."
+      : reason
+        ? `AI summary unavailable (${formatFallbackReason(reason)}). Deterministic analysis was saved.`
+        : "Deterministic analysis was saved. No AI summary was generated.",
   };
 }
 
@@ -284,7 +294,7 @@ function buildReportStateGuidance({
       tone: "info",
       label: "Deterministic mode",
       message:
-        "Only deterministic analysis is available right now. ChatGPT enrichment may appear after retries.",
+        "Only deterministic evidence is available. Retry AI summary to run analysis and refresh this report.",
       cta: "Open leaderboard",
       href: "/dashboard/leaderboard",
     };

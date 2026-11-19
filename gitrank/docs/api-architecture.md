@@ -105,17 +105,17 @@ Current contract:
 - event type header: `X-GitHub-Event`
 - duplicate deliveries are deduplicated by GitHub delivery ID
 
-### Gemini OpenAI-Compatible API
+### AI Chat Completions API
 
 Used by:
 
-- `pr-analyzer` as the future AI-enrichment boundary
+- `pr-analyzer` for optional summary enrichment before analysis persistence
 
 Config:
 
-- `GEMINI_BASE_URL`
-- `GEMINI_API_KEY`
-- `GEMINI_MODEL`
+- `AI_PROVIDER` (`openai` or `gemini`)
+- `OPENAI_API_KEY`, `OPENAI_MODEL`, `OPENAI_BASE_URL` for OpenAI
+- `GEMINI_API_KEY`, `GEMINI_MODEL`, `GEMINI_BASE_URL` for Gemini
 - `AI_REQUEST_TIMEOUT`
 - `AI_PR_MAX_CHANGED_FILES`
 - `AI_PR_MAX_FILE_RECORDS`
@@ -125,7 +125,9 @@ Config:
 - `AI_PR_MAX_ESTIMATED_COST_USD`
 - `AI_ESTIMATED_INPUT_TOKEN_COST_USD`
 
-The analyzer enforces these hard limits before analysis so deterministic and future AI-assisted paths cannot silently process oversized PR input or exceed configured token/cost budgets.
+Both analysis routes enforce these limits before invoking the provider. Provider
+errors persist deterministic analysis with a fallback reason instead of claiming
+AI success.
 
 ## Internal Service APIs
 
@@ -145,6 +147,7 @@ Implemented routes:
 - `POST /v1/sync`
 - `POST /v1/sync/installation/execute`
 - `POST /v1/sync/repository/execute`
+- `POST /v1/sync/pull-request/execute`
 - `GET /v1/me/profile`
 - `PATCH /v1/me/profile`
 - `PATCH /v1/me/profile/repositories/{owner}/{repo}`
@@ -165,6 +168,9 @@ Gateway behavior:
 - forwards downstream session-clearing `Set-Cookie` headers from `auth-service`
 - requires `X-CSRF-Token` on state-changing browser routes
 - returns `Cache-Control: private, no-store` for profiles, leaderboards, PR reports, sync, and account-action routes
+- runs persisted analysis after PR execution, then score replay and profile,
+  quest, and report refresh; returns saved analysis provenance for AI retry
+  feedback, or `partial` if analysis/refresh fails
 
 ### Auth Service
 

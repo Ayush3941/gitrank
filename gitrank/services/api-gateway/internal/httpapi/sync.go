@@ -117,7 +117,7 @@ func handleRepositorySyncExecution(w http.ResponseWriter, r *http.Request, clien
 }
 
 func handleUserSyncExecution(w http.ResponseWriter, r *http.Request, client *http.Client, ingestorBaseURL, scoringBaseURL, profileBaseURL string) {
-	handleModeSyncExecution(w, r, client, ingestorBaseURL, "user", "/v1/sync/user/execute", func(ctx context.Context, principal authkit.Principal, execution *contracts.GitHubSyncExecutionResponse) error {
+	handleModeSyncExecution(w, r, client, ingestorBaseURL, "user", "/v1/sync/user/execute", func(ctx context.Context, principal authkit.Principal, _ contracts.SyncRequest, execution *contracts.GitHubSyncExecutionResponse) error {
 		if err := refreshUserDashboardEvidence(ctx, client, principal.Subject, scoringBaseURL, profileBaseURL, execution); err != nil {
 			if execution.Fetched == nil {
 				execution.Fetched = map[string]int{}
@@ -141,7 +141,7 @@ func handleInstallationSyncExecution(w http.ResponseWriter, r *http.Request, cli
 	handleModeSyncExecution(w, r, client, ingestorBaseURL, "installation", "/v1/sync/installation/execute", nil)
 }
 
-type syncExecutionPostProcessor func(context.Context, authkit.Principal, *contracts.GitHubSyncExecutionResponse) error
+type syncExecutionPostProcessor func(context.Context, authkit.Principal, contracts.SyncRequest, *contracts.GitHubSyncExecutionResponse) error
 
 func handleModeSyncExecution(
 	w http.ResponseWriter,
@@ -202,13 +202,14 @@ func handleModeSyncExecution(
 				return 0, nil, nil, fmt.Errorf("invalid github-ingestor execution contract")
 			}
 			if postProcessor != nil {
-				if err := postProcessor(r.Context(), principal, &execution); err != nil {
+				if err := postProcessor(r.Context(), principal, req, &execution); err != nil {
 					if execution.Fetched == nil {
 						execution.Fetched = map[string]int{}
 					}
 					execution.Fetched["post_sync_refresh_failed"] = 1
 					execution.Status = "partial"
 				}
+				execution.FinishedAt = time.Now().UTC()
 			}
 			encoded, err := json.Marshal(execution)
 			if err != nil {
@@ -421,6 +422,7 @@ func postInternalJSON(
 		return nil, err
 	}
 	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("X-Request-ID", httpkit.RequestIDFromContext(ctx))
 	httpkit.InjectTraceContext(callCtx, request.Header)
 
 	response, err := client.Do(request)

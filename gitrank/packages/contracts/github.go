@@ -66,16 +66,17 @@ type GitHubSyncRunListResponse struct {
 }
 
 type GitHubSyncExecutionResponse struct {
-	Status        string         `json:"status"`
-	Mode          string         `json:"mode"`
-	User          string         `json:"user,omitempty"`
-	Repository    string         `json:"repository,omitempty"`
-	Installation  int64          `json:"installation,omitempty"`
-	Number        int            `json:"number,omitempty"`
-	SHA           string         `json:"sha,omitempty"`
-	CorrelationID string         `json:"correlation_id,omitempty"`
-	StartedAt     time.Time      `json:"started_at"`
-	FinishedAt    time.Time      `json:"finished_at"`
-	Fetched       map[string]int `json:"fetched,omitempty"`
-	Persisted     map[string]int `json:"persisted,omitempty"`
+	Analysis      *PullRequestAnalysisResponse `json:"analysis,omitempty"`
+	Status        string                       `json:"status"`
+	Mode          string                       `json:"mode"`
+	User          string                       `json:"user,omitempty"`
+	Repository    string                       `json:"repository,omitempty"`
+	Installation  int64                        `json:"installation,omitempty"`
+	Number        int                          `json:"number,omitempty"`
+	SHA           string                       `json:"sha,omitempty"`
+	CorrelationID string                       `json:"correlation_id,omitempty"`
+	StartedAt     time.Time                    `json:"started_at"`
+	FinishedAt    time.Time                    `json:"finished_at"`
+	Fetched       map[string]int               `json:"fetched,omitempty"`
+	Persisted     map[string]int               `json:"persisted,omitempty"`
 }

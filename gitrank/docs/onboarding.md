@@ -75,8 +75,8 @@ The dashboard auto-sync coordinator and account refresh action call
 1. The gateway replaces the requested user with the authenticated GitHub login.
 2. The ingestor resolves App credentials, acquires a user sync lease, discovers a
    bounded authored-PR window, and persists PR and file evidence.
-3. The gateway requests score replay, profile refresh, PR report backfill, and
-   quest backfill, recording diagnostics for each step.
+3. The gateway requests score replay, profile refresh, quest backfill, and
+   PR report backfill, recording diagnostics for each step.
 4. Frontend query invalidation and polling refresh the visible evidence state.
 
 This path does not invoke the PR analyzer. Its PR hydration explicitly skips
@@ -84,6 +84,19 @@ reviews and review comments. Replay can use existing analysis and review rows;
 when analysis is absent, it derives score inputs from stored PR/file evidence
 and defaults the category to `feature`. A completed extraction is therefore not
 proof that full analysis and review evidence exist.
+
+### PR Report AI Retry
+
+**Retry AI summary** calls `/api/sync/pull-request`, forwarding to the gateway's
+`/v1/sync/pull-request/execute`. After GitHub extraction, the gateway invokes
+`/v1/analyze/pull-request/execute`, waits for persisted analysis, then requests
+score replay and profile, quest, and report refresh. Follow the
+[PR execution handler](../services/api-gateway/internal/httpapi/pull_request_analysis.go).
+
+The response includes the saved analysis source and fallback reason. AI provider
+failures retain deterministic analysis; analyzer or refresh failures produce a
+partial result. The frontend reports these outcomes directly and refetches the
+report. This request does not schedule background AI retries.
 
 ### Full PR Grading
 

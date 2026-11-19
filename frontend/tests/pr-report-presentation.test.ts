@@ -4,6 +4,7 @@ import {
   buildRetryAiSummaryNotice,
 } from "@/features/pr-report/lib/pr-report-presentation";
 import { toPullRequestAnalysis } from "@/lib/api/pr-report-api";
+import type { ApiSyncExecutionResponse } from "@/lib/api/account-api";
 import { prReportFixture } from "@/tests/helpers/live-fixtures";
 
 describe("pr report presentation model", () => {
@@ -71,35 +72,60 @@ describe("pr report presentation model", () => {
     });
   });
 
-  it("maps retry execution outcomes into user-facing notices", () => {
-    expect(
-      buildRetryAiSummaryNotice({
-        status: "partial",
-        mode: "pull_request",
-        started_at: "2026-05-10T12:00:00Z",
-        finished_at: "2026-05-10T12:00:03Z",
-        fetched: {},
-        persisted: {},
-      }),
-    ).toMatchObject({
-      tone: "warning",
-      message:
-        "Retry executed with partial upstream data. Deterministic score stays active while AI enrichment retries.",
-    });
+  const execution: ApiSyncExecutionResponse = {
+    status: "completed",
+    mode: "pull_request",
+    started_at: "2026-05-10T12:00:00Z",
+    finished_at: "2026-05-10T12:00:03Z",
+    fetched: {},
+    persisted: {},
+  };
 
-    expect(
-      buildRetryAiSummaryNotice({
-        status: "queued",
-        mode: "pull_request",
-        started_at: "2026-05-10T12:00:00Z",
-        finished_at: "2026-05-10T12:00:03Z",
-        fetched: {},
-        persisted: {},
-      }),
-    ).toMatchObject({
+  it.each(["completed", "partial", "failed"])("does not claim AI success for %s extraction without persisted analysis", (status) => {
+    expect(buildRetryAiSummaryNotice({ ...execution, status })).toEqual({
+      tone: "warning",
+      message: "AI analysis did not complete. This report keeps its existing evidence.",
+    });
+  });
+
+  it("requires a saved AI artifact before reporting AI success", () => {
+    const analysis = {
+      analysis_id: "analysis-42",
+      pull_request_id: "pr-42",
+      analysis_source: "hybrid",
+    };
+    expect(buildRetryAiSummaryNotice({ ...execution, analysis })).toEqual({
       tone: "success",
-      message:
-        "Retry queued. Keep this report open for a moment while enrichment catches up.",
+      message: "AI summary saved. Report evidence refreshed.",
+    });
+    expect(buildRetryAiSummaryNotice({ ...execution, status: "partial", analysis })).toEqual({
+      tone: "warning",
+      message: "AI summary saved, but sync or score refresh was incomplete.",
+    });
+    expect(buildRetryAiSummaryNotice({ ...execution, analysis: { ...analysis, analysis_id: "" } }).tone).toBe("warning");
+  });
+
+  it.each([
+    ["ai_not_enabled", "AI is not configured on the analyzer. Deterministic analysis was saved."],
+    ["ai_auth_failed", "AI summary unavailable (auth failed). Deterministic analysis was saved."],
+    ["ai_rate_limited", "AI summary unavailable (rate limited). Deterministic analysis was saved."],
+    ["ai_quota_exceeded", "AI summary unavailable (quota exceeded). Deterministic analysis was saved."],
+  ])("reports a saved deterministic fallback for %s", (fallback_reason, message) => {
+    expect(buildRetryAiSummaryNotice({
+      ...execution,
+      analysis: {
+        analysis_id: "analysis-42",
+        pull_request_id: "pr-42",
+        analysis_source: "deterministic",
+        fallback_reason,
+      },
+    })).toEqual({ tone: "warning", message });
+  });
+
+  it("does not promise AI work for queued sync admission", () => {
+    expect(buildRetryAiSummaryNotice({ ...execution, status: "queued" })).toEqual({
+      tone: "warning",
+      message: "Sync was queued. No AI summary has been generated yet.",
     });
   });
 });
