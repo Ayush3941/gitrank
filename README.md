@@ -46,6 +46,11 @@ PR XP is computed from persisted evidence components such as:
 
 This keeps ranking reproducible, auditable, and harder to game.
 
+PR report XP details show every persisted `score_components` entry. Reports
+without those entries show an unavailable-details state. Legacy `/v1` bonus and
+penalty estimates remain in API responses for compatibility; the frontend does
+not use them to explain or award XP.
+
 ## Architecture
 
 ```text
@@ -65,6 +70,12 @@ auth-service -> github-ingestor -> pr-analyzer -> scoring-engine
                               v
                       frontend (Next.js)
 ```
+
+Services execute manual sync and scheduler grading jobs through explicit HTTP
+calls. Webhook and queued-sync admission still use an ingestor-owned in-memory
+queue, which does not forward jobs to the scheduler's durable queue. See
+[the execution paths](gitrank/docs/onboarding.md#trace-these-flows)
+before relying on queued admission for automatic grading.
 
 ## Repository Layout
 

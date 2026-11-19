@@ -1,12 +1,9 @@
 go 1.26.3
 
 use (
-	./packages/aiapi
 	./packages/authkit
 	./packages/config
 	./packages/contracts
-	./packages/errors
-	./packages/events
 	./packages/githubapi
 	./packages/httpkit
 	./packages/logger

@@ -1,144 +1,42 @@
+import { CompactEmptyState } from "@/components/shared/CompactEmptyState";
 import { GlowCard } from "@/components/shared/GlowCard";
-import { formatSignedXp } from "@/lib/formatters";
 import type { PullRequestAnalysis } from "@/types/gitrank";
 
-type XPBreakdownRow = {
-  id: string;
-  label: string;
-  value: string;
-  detail: string;
-};
-
 export function XPBreakdownCard({ report }: { report: PullRequestAnalysis }) {
-  const contribution = report.contribution;
-  const fallbackRows: XPBreakdownRow[] = [
-    {
-      id: "base-pr-value",
-      label: "Base PR value",
-      value: formatSignedXp(report.baseValue),
-      detail: `${contribution.difficultyScore}/100 difficulty and ${contribution.impactScore}/100 impact.`,
-    },
-    {
-      id: "merged-bonus",
-      label: "Merged bonus",
-      value: formatSignedXp(report.mergedBonus),
-      detail:
-        contribution.status === "merged"
-          ? "Merged work receives full verification weight."
-          : "Open work earns provisional value only.",
-    },
-    {
-      id: "review-depth-bonus",
-      label: "Review depth bonus",
-      value: formatSignedXp(report.reviewBonus),
-      detail: contribution.maintainerReviewed
-        ? "Maintainer review was detected."
-        : "No maintainer review detected yet.",
-    },
-    {
-      id: "test-impact-bonus",
-      label: "Test impact bonus",
-      value: formatSignedXp(report.testBonus),
-      detail: contribution.ciPassed
-        ? "CI passed and test signal contributed."
-        : "CI proof was missing or incomplete.",
-    },
-    {
-      id: "repo-weight-bonus",
-      label: "Repo weight bonus",
-      value: formatSignedXp(report.repoBonus),
-      detail: `Repository context multiplier ${contribution.repoWeight.toFixed(2)}x.`,
-    },
-  ];
-  const rows = report.scoreComponents.length
-    ? report.scoreComponents.map((component) => ({
-        id: component.key || `${component.label}:${component.source}`,
-        label: component.label,
-        value: component.displayValue,
-        detail: component.reason,
-      }))
-    : fallbackRows;
-  const prioritizedRows = prioritizeFinalXpRow(rows);
-  const visibleRows = prioritizedRows.slice(0, 3);
-  const remainingRows = Math.max(0, prioritizedRows.length - visibleRows.length);
-
   return (
     <GlowCard className="space-y-5">
       <div>
-        <p className="text-xs font-medium text-primary">
-          XP calculation
-        </p>
+        <p className="text-xs font-medium text-primary">XP calculation</p>
         <h2 className="mt-2 text-xl font-semibold text-white">
-          {report.scoreComponents.length
-            ? "Persisted scorer components"
-            : "Transparent formula"}
+          Persisted scorer components
         </h2>
       </div>
-      <ul role="list" className="space-y-3">
-        {visibleRows.map((row) => (
-          <li
-            key={row.id}
-            className="list-none neon-surface rounded-[var(--radius-universal)] px-4 py-4"
-          >
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-sm text-muted">{row.label}</p>
-              <p className="text-sm font-semibold text-white">{row.value}</p>
-            </div>
-            <p className="mt-2 text-xs leading-5 text-muted">{row.detail}</p>
-          </li>
-        ))}
-        {remainingRows > 0 ? (
-          <li className="list-none neon-surface rounded-[var(--radius-universal)] border-dashed px-4 py-3 text-xs text-muted">
-            +{remainingRows} more components available.
-          </li>
-        ) : null}
-        <li className="list-none rounded-[var(--radius-universal)] border border-amber-400/18 bg-amber-400/8 px-4 py-4">
-          <div className="flex items-center justify-between gap-4">
-            <p className="text-sm text-amber-50">Anti-spam multiplier</p>
-            <p className="text-sm font-semibold text-amber-100">
-              {contribution.antiSpamMultiplier.toFixed(2)}x
-            </p>
-          </div>
-          <p className="mt-2 text-xs leading-5 text-amber-100">
-            Repeated, shallow, or unreviewed work is capped so XP stays tied to
-            meaningful evidence.
-          </p>
-        </li>
-        {report.penalties.map((penalty) => (
-          <li
-            key={`${penalty.label}:${penalty.reason}`}
-            className="list-none rounded-[var(--radius-universal)] border border-rose-400/18 bg-rose-400/8 px-4 py-4"
-          >
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-sm text-rose-50">{penalty.label}</p>
-              <p className="text-sm font-semibold text-rose-100">
-                {formatSignedXp(penalty.deltaXp)}
+      {report.scoreComponents.length ? (
+        <ul role="list" className="space-y-3">
+          {report.scoreComponents.map((component) => (
+            <li
+              key={component.key || `${component.label}:${component.source}`}
+              className="list-none neon-surface rounded-[var(--radius-universal)] px-4 py-4"
+            >
+              <div className="flex items-center justify-between gap-4">
+                <p className="text-sm text-muted">{component.label}</p>
+                <p className="shrink-0 text-sm font-semibold text-white">
+                  {component.displayValue}
+                </p>
+              </div>
+              <p className="break-anywhere mt-2 text-xs leading-5 text-muted">
+                {component.reason}
               </p>
-            </div>
-            <p className="mt-2 text-xs leading-5 text-rose-100">
-              {penalty.reason}
-            </p>
-          </li>
-        ))}
-      </ul>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <CompactEmptyState
+          eyebrow="Scoring evidence"
+          title="Score details unavailable"
+          description="No persisted scoring components are attached to this report."
+        />
+      )}
     </GlowCard>
   );
-}
-
-function prioritizeFinalXpRow(
-  rows: XPBreakdownRow[],
-): XPBreakdownRow[] {
-  if (rows.length <= 3) {
-    return rows;
-  }
-  const finalXpIndex = rows.findIndex((row) => {
-    const label = row.label.toLowerCase();
-    const detail = row.detail.toLowerCase();
-    return label.includes("final xp") || detail.includes("final deterministic xp");
-  });
-  if (finalXpIndex <= 0) {
-    return rows;
-  }
-  const finalXpRow = rows[finalXpIndex];
-  return [finalXpRow, ...rows.slice(0, finalXpIndex), ...rows.slice(finalXpIndex + 1)];
 }

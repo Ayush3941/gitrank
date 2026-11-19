@@ -6,6 +6,13 @@ This document is intentionally detailed.
 
 ## Session Notes (November 19, 2026)
 
+- Removed three shared packages with no production callers: the unused AI Responses request builder, event-bus interfaces/payloads, and typed error wrapper. Removed their Go workspace entries, unused ingestor replacement, Dependabot jobs, and checklist claims. Active AI calls stay in the analyzer and frontend; shared HTTP error responses stay in `packages/contracts`.
+- Removed the PR XP card's synthetic bonus/penalty fallback and unconditional anti-spam multiplier. The card renders all persisted scoring components, including rows previously hidden behind an inaccessible "+ more" message, or the shared unavailable-details state. Legacy `/v1` estimated bonus/penalty fields remain on the wire for compatibility but are excluded from the frontend report model. They are not the deterministic scorer's calculation.
+- The ingestor's webhook/queued-sync queue still has no automatic handoff to the durable scheduler. This is an integration gap; unused event interfaces did not implement that connection. Local setup placeholders and deterministic AI fallback behavior remain as documented in README and the configuration reference.
+- Corrected the GitHub integration policy's stale "future scaffolding" description: App installation tokens are already required for extraction; OAuth remains the sign-in/linking path and GraphQL is not wired into extraction.
+- Verification: 14 focused frontend tests passed, including the PR-report page smoke test and new coverage for missing components, zero XP, persisted penalties, and components beyond the first three rows. The production build, typecheck, touched-file lint, production-mock/orphan/copy guards, documentation guards, and 53 local Markdown link targets/anchors passed. An isolated browser harness verified loaded, missing, and loading states at 1280px, 390px, and 320px without horizontal overflow; its assets remain under ignored `ai_test/`.
+- All eight remaining shared Go packages and six service suites passed. Ingestor tests retain the same eight strict-App runtime setup failures recorded below; its app/HTTP suites passed. Database integration was not exercised. The full repo-sync runner remains blocked by the pre-existing root PDF, which was left in place.
+
 - Expanded [contributor onboarding](gitrank/docs/onboarding.md) with the product aim, intended audiences, service ownership, evidence authority, and implementation paths for browser auth, dashboard sync, and full PR grading.
 - Recorded current boundaries for bounded discovery, review hydration, analyzer invocation, queue handoff, scoring eligibility, heuristic report meters, quest XP, and leaderboard season semantics. These are code-review observations; live readiness and empirical scoring quality still require separate evidence.
 - Verification: 85 selected frontend tests passed across 10 files. The backend workspace run passed except for eight existing ingestor fetch-helper tests whose executor setup does not enable the strict GitHub App runtime. Service-specific integration database URLs were unset, so database integration tests were not exercised. The full repo-sync check stopped at the pre-existing untracked root PDF; that reference was left in place.
@@ -499,15 +506,14 @@ The backend workspace lives under `gitrank/`. The frontend lives under `frontend
     ├── docs/
     ├── go.work
     ├── packages/
-    │   ├── aiapi/
     │   ├── authkit/
     │   ├── config/
     │   ├── contracts/
-    │   ├── errors/
-    │   ├── events/
     │   ├── githubapi/
     │   ├── httpkit/
-    │   └── logger/
+    │   ├── logger/
+    │   ├── store/
+    │   └── tracekit/
     ├── scripts/
     └── services/
         ├── api-gateway/
@@ -1478,7 +1484,6 @@ Current preview state:
 ### `gitrank/packages/contracts`
 
 - [x] define request and response DTOs
-- [x] define event payloads
 - [x] define versioning policy
 - [x] avoid circular dependency traps
 
@@ -1496,19 +1501,6 @@ Current preview state:
 - [x] config validation
 - [x] sane defaults
 - [x] fail-fast on invalid config
-
-### `gitrank/packages/errors`
-
-- [x] typed domain errors
-- [x] transport-safe mapping
-- [x] internal versus external error distinction
-
-### `gitrank/packages/events`
-
-- [x] event schemas
-- [x] publisher interface
-- [x] subscriber interface
-- [x] versioning rules
 
 ### `gitrank/packages/authkit`
 

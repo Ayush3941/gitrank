@@ -98,7 +98,7 @@ has its own durable queue and explicit admission routes. These are separate
 objects in separate processes; the current ingestor route does not forward its
 queue to the scheduler. Trace [ingestor admission](../services/github-ingestor/internal/httpapi/router.go)
 before claiming an accepted queued request will execute through the durable
-scheduler. Domain event contracts alone do not provide that connection.
+scheduler. Use scheduler job admission explicitly when durable execution is required.
 
 ## Evidence Authority
 

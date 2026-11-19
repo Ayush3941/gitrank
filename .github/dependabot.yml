@@ -65,14 +65,6 @@ updates:
         patterns:
           - "*"
   - package-ecosystem: "gomod"
-    directory: "/gitrank/packages/aiapi"
-    schedule:
-      interval: weekly
-    groups:
-      go-deps:
-        patterns:
-          - "*"
-  - package-ecosystem: "gomod"
     directory: "/gitrank/packages/config"
     schedule:
       interval: weekly
@@ -82,22 +74,6 @@ updates:
           - "*"
   - package-ecosystem: "gomod"
     directory: "/gitrank/packages/contracts"
-    schedule:
-      interval: weekly
-    groups:
-      go-deps:
-        patterns:
-          - "*"
-  - package-ecosystem: "gomod"
-    directory: "/gitrank/packages/errors"
-    schedule:
-      interval: weekly
-    groups:
-      go-deps:
-        patterns:
-          - "*"
-  - package-ecosystem: "gomod"
-    directory: "/gitrank/packages/events"
     schedule:
       interval: weekly
     groups:

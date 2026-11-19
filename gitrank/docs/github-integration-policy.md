@@ -1,14 +1,16 @@
 # GitHub Integration Policy
 
-Last reviewed: May 5, 2026
+Last reviewed: November 19, 2026
 
 This document freezes the v1 GitHub integration baseline.
 
 ## Auth Model
 
 - GitHub OAuth is the v1 sign-in and account-linking path
-- GitHub App installation is not required for v1 production
-- existing GitHub App code paths remain optional future-upgrade scaffolding
+- GitHub App installation tokens are required for contribution sync extraction
+- extraction fails closed when installation auth is unavailable; OAuth user tokens are not a fallback
+
+This follows the frozen [GitHub auth decision](./production-decision-register.md#4-github-auth-model).
 
 ## Minimum OAuth Scope Baseline
 
@@ -36,13 +38,10 @@ Use GitHub REST when:
 - bounded user sync needs a public authored-PR discovery pass through issue/PR search before hydrating concrete PRs
 - conditional requests or ETag support are useful
 
-Use GitHub GraphQL when:
-
-- a single request can replace many REST round-trips
-- review, repository, and user relationships are expensive to hydrate piecemeal
-- the data shape is naturally graph-oriented
-
-Avoid mixing both within the same hot path unless there is a measured reason.
+Current extraction paths use REST. GraphQL clients remain available for future
+bounded read optimizations, but are not wired into sync extraction. Any new
+GraphQL path must demonstrate a measured benefit and preserve installation-token
+auth, bounded reads, and evidence persistence.
 
 ## Rate-Limit Policy
 
@@ -59,11 +58,8 @@ Avoid mixing both within the same hot path unless there is a measured reason.
 - duplicate webhook deliveries must not create duplicate evidence or scores
 - user-history sync may discover concrete `owner/repo#number` targets through GitHub issue/PR search, but hydration and scoring evidence still flow through the normal PR persistence path
 
-## Future Upgrade Boundary
+## Configuration
 
-If GitHub App support becomes a production requirement later, add:
-
-- a new decision record
-- explicit permission and event lists
-- webhook public endpoint hardening review
-- updated retention and threat-model notes
+See the [runtime configuration reference](./configuration.md) for App credentials,
+webhook validation, and optional operating limits. Webhook-delivery verification
+is a separate boundary from manual sync extraction auth.

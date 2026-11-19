@@ -30,6 +30,4 @@ replace github.com/gitrank/gitrank/packages/httpkit => ../../packages/httpkit
 
 replace github.com/gitrank/gitrank/packages/githubapi => ../../packages/githubapi
 
-replace github.com/gitrank/gitrank/packages/events => ../../packages/events
-
 replace github.com/gitrank/gitrank/packages/store => ../../packages/store

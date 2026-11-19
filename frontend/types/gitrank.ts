@@ -171,13 +171,7 @@ export interface Contribution {
 
 export interface PullRequestAnalysis {
   contribution: Contribution;
-  baseValue: number;
-  mergedBonus: number;
-  reviewBonus: number;
-  testBonus: number;
-  repoBonus: number;
   aiConfidence: number;
-  penalties: ScoreBreakdown[];
   scoreComponents: ScoreComponent[];
   badgeUnlocks: PRBadgeUnlock[];
   suggestedQuestId: string;

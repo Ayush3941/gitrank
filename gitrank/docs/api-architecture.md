@@ -244,7 +244,7 @@ Current state:
 - manual sync requests persist queued sync-run records and can be queried through `GET /v1/sync/runs` with user, repository, subject, requester, correlation, and delivery filters
 - sync-run `metrics_jsonb` now carries both legacy persisted counters and explicit prefixed telemetry (`persisted_*`, `fetched_*`) so clients can distinguish what was fetched versus what was actually persisted
 - failed sync runs now attach classified fetched telemetry (`failed`, `timeout_errors`, `rate_limited`, `auth_errors`, `upstream_errors`, `request_errors`) so UI and operators can see error categories without parsing raw error text
-- sync requests still enqueue scheduler runtime-state jobs rather than a dedicated normalized job table
+- webhook and queued-sync admission enqueue into the ingestor's in-memory queue; that queue does not forward jobs to the scheduler's separate durable queue
 - bounded user-mode historical orchestration now covers score history, badge evidence, quests, PR reports, and leaderboard seasons through explicit scheduler modes
 
 ### PR Analyzer
@@ -335,6 +335,14 @@ Read-model behavior:
 - exposes explicit staleness metadata
 - applies privacy settings and per-repository visibility redaction
 - caches public and private profile responses in Redis when configured
+
+PR report `score_components` come from persisted score-event metadata and the
+stored final XP. The frontend displays all supplied components, or an explicit
+unavailable-details state when they are absent. The `/v1` response still includes
+legacy `base_value`, `merged_bonus`, `review_bonus`, `test_bonus`, `repo_bonus`,
+and `penalties` estimates for compatibility. These estimates are not the scorer's
+formula or an additional XP award, and are excluded from the frontend report
+model.
 
 ### Scheduler Worker
 
@@ -502,8 +510,10 @@ The current compatibility bar for public routes is:
 - `packages/httpkit`: shared HTTP middleware, JSON helpers, CORS, metrics, request IDs, recovery, access logs, and server runner
 - `packages/githubapi`: GitHub OAuth URL construction, webhook verification, REST and GraphQL clients, installation tokens, and OAuth token helpers
 - `packages/authkit`: opaque tokens, OAuth state tokens, CSRF helpers, cookie helpers, bearer middleware, and permission checks
-- `packages/contracts`: request and response DTOs, event payloads, manifests, and versioning notes
-- `packages/events`: event envelopes plus publisher and subscriber interfaces
+- `packages/contracts`: request and response DTOs, manifests, and HTTP versioning notes
+
+Runtime orchestration uses explicit HTTP calls and scheduler job contracts.
+There is no shared event-bus transport or implicit queue handoff.
 
 ## Debugging Strategy
 

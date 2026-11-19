@@ -3,7 +3,6 @@ import type {
   PRBadgeUnlock,
   PREvidenceState,
   PullRequestAnalysis,
-  ScoreBreakdown,
   ScoreComponent,
 } from "@/types/gitrank";
 import { normalizePRCategory } from "@/lib/runtime/pr-category-policy";
@@ -86,6 +85,7 @@ type ApiPRReportEvidenceState = {
 
 export type ApiPRReportResponse = {
   contribution: ApiPRReportContribution;
+  // Legacy v1 estimates are accepted on the wire but excluded from the view model.
   base_value: number;
   merged_bonus: number;
   review_bonus: number;
@@ -139,13 +139,7 @@ export function toPullRequestAnalysis(
 ): PullRequestAnalysis {
   return {
     contribution: toContribution(report.contribution),
-    baseValue: report.base_value,
-    mergedBonus: report.merged_bonus,
-    reviewBonus: report.review_bonus,
-    testBonus: report.test_bonus,
-    repoBonus: report.repo_bonus,
     aiConfidence: report.ai_confidence,
-    penalties: (report.penalties ?? []).map(toScoreBreakdown),
     scoreComponents: (report.score_components ?? []).map(toScoreComponent),
     badgeUnlocks: (report.badge_unlocks ?? []).map(toBadgeUnlock),
     suggestedQuestId: report.suggested_quest_id,
@@ -233,15 +227,6 @@ function toScoreComponent(source: ApiScoreComponent): ScoreComponent {
     value: source.value,
     displayValue: source.display_value,
     source: source.source,
-    reason: source.reason,
-  };
-}
-
-function toScoreBreakdown(source: ApiScoreBreakdown): ScoreBreakdown {
-  return {
-    label: source.label,
-    deltaXp: source.delta_xp,
-    type: source.type === "penalty" ? "penalty" : "gain",
     reason: source.reason,
   };
 }

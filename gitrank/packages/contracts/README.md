@@ -12,11 +12,10 @@ HTTP contract changes follow these rules:
 - Removing fields, changing field meaning, or changing required fields requires a new major API path version.
 - Error envelope shape is stable within a major API version.
 
-Event contract changes follow these rules:
-
-- `packages/events` owns the event envelope schema version.
-- New event types may be added without changing the envelope version.
-- Breaking envelope changes require incrementing the event schema version.
+Services currently communicate through HTTP contracts and explicit scheduler job
+admission. There is no shared event-bus transport. Ingestor webhook admission and
+the scheduler's durable queue are separate execution paths; see
+[onboarding](../../docs/onboarding.md#trace-these-flows).
 
 Repository rule:
 
