@@ -186,6 +186,9 @@ AI and incomplete evidence remain part of the product contract.
 5. Dashboard + Contributions + PR reports render evidence-backed results.
 6. ChatGPT enriches explanations when configured and available.
 
+Settings contains account actions, sync activity, and data controls. Saved
+publication, repository-visibility, and display preferences remain applied.
+
 ## Evidence and Sync Notes
 
 - User sync limits are runtime-configurable (`GITHUB_AUTHORED_PR_SYNC_LIMIT`, `GITHUB_AUTHORED_PR_SEARCH_LIMIT`, page-size and timeout policy env vars).

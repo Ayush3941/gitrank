@@ -27,6 +27,6 @@ describe("sanitizeUserFacingError", () => {
   it("keeps already clear user-facing errors unchanged", () => {
     const message =
       "GitHub rate limits are active right now. Wait briefly, then retry.";
-    expect(sanitizeUserFacingError(message, "settings-privacy")).toBe(message);
+    expect(sanitizeUserFacingError(message, "settings-account-actions")).toBe(message);
   });
 });

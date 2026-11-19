@@ -1043,9 +1043,7 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
 }
 
 .sync-runs-panel-shell,
-.repository-visibility-panel-shell,
-.sync-runs-results-viewport,
-.repository-visibility-results-viewport {
+.sync-runs-results-viewport {
   overflow-anchor: none;
 }
 
@@ -1056,20 +1054,9 @@ html[data-text-scale="large"] [class*="text-[11px]"] {
   scrollbar-gutter: stable both-edges;
 }
 
-.repository-visibility-results-viewport {
-  min-height: 12rem;
-  max-height: min(24rem, 60dvh);
-  overscroll-behavior: contain;
-  scrollbar-gutter: stable both-edges;
-}
-
 @media (width >= 64rem) {
   .sync-runs-results-viewport {
     max-height: min(24rem, 60dvh);
-  }
-
-  .repository-visibility-results-viewport {
-    max-height: min(26rem, 64dvh);
   }
 }
 

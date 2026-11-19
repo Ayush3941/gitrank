@@ -46,7 +46,7 @@ describe("onboarding entry model", () => {
       "Private repository code content in v1.",
     );
     expect(CONNECT_PRIVACY_CONTROLS.map((item) => item.text)).toContain(
-      "Repository visibility can be hidden without deleting the account.",
+      "Saved repository visibility is respected on public profiles.",
     );
 
     expectStableIds(LOGIN_SCORE_RULES, "login score rules");

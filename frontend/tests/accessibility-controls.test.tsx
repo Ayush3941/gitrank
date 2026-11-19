@@ -4,7 +4,6 @@ import { computeAccessibleName } from "dom-accessibility-api";
 import { describe, expect, it, vi } from "vitest";
 import { DashboardRouteNav } from "@/components/shared/DashboardRouteNav";
 import { ContributionFilters } from "@/features/contributions/components/ContributionFilters";
-import { PrivacyRepositoryToggleList } from "@/features/settings/components/PrivacyRepositoryToggleList";
 
 vi.mock("next/link", () => ({
   default: ({ href, children }: { href: string; children: ReactNode }) => (
@@ -28,22 +27,6 @@ describe("accessibility control naming", () => {
           onSearchChange={() => undefined}
           sort="Newest"
           onSortChange={() => undefined}
-        />
-        <PrivacyRepositoryToggleList
-          repositories={[
-            {
-              name: "octo/gitrank",
-              tracked: true,
-              visibility: "Public",
-              reason: "Public by default",
-            },
-            {
-              name: "octo/private-lab",
-              tracked: true,
-              visibility: "Hidden",
-              reason: "Hidden by owner preference",
-            },
-          ]}
         />
       </div>,
     );
@@ -71,46 +54,5 @@ describe("accessibility control naming", () => {
     }
 
     expect(rendered.getAllByText("Dashboard").length).toBeGreaterThan(0);
-    expect(rendered.getAllByText("2 of 2 repositories").length).toBeGreaterThan(0);
-    expect(
-      rendered.getByRole("switch", {
-        name: "Hide octo/gitrank from public profile",
-      }),
-    ).toBeTruthy();
-    expect(
-      rendered.getByRole("switch", {
-        name: "Show octo/private-lab on public profile",
-      }),
-    ).toBeTruthy();
   }, 15_000);
-
-  it("exposes actionable controls when repository privacy list is empty", () => {
-    const rendered = render(
-      <PrivacyRepositoryToggleList repositories={[]} />
-    );
-
-    const syncAction = rendered.getByRole("link", { name: "Go to account sync" });
-    const search = rendered.getByRole("searchbox", { name: "Search repositories" });
-
-    expect(rendered.queryByRole("button", { name: "Reset filters" })).toBeNull();
-    expect(rendered.getByText("Repository visibility needs synced repo evidence")).toBeTruthy();
-    expect(
-      rendered.getByText(
-        "Start a profile refresh from the GitHub account card; synced repositories will appear here with public and hidden controls.",
-      ),
-    ).toBeTruthy();
-    expect(syncAction).toBeTruthy();
-    expect(syncAction.getAttribute("href")).toBe("#settings-account");
-    expect(rendered.queryByText("Open dashboard to let auto-sync refresh repository privacy controls.")).toBeNull();
-    const describedById = search.getAttribute("aria-describedby");
-    expect(describedById).toBeTruthy();
-    const escapedId = describedById
-      ? describedById.replace(/([ !"#$%&'()*+,./:;<=>?@[\\\]^`{|}~])/g, "\\$1")
-      : "";
-    const statusNode = describedById
-      ? rendered.container.querySelector(`#${escapedId}`)
-      : null;
-    expect(statusNode).toBeTruthy();
-    expect(statusNode?.getAttribute("role")).toBe("status");
-  });
 });

@@ -299,10 +299,10 @@ describe("live fixture frontend smoke coverage", () => {
     expect(
       await screen.findByRole("heading", { name: "@live-maintainer" }),
     ).toBeTruthy();
-    expect(await screen.findByText("octo/gitrank")).toBeTruthy();
-    await waitFor(() =>
-      expect(localStorage.getItem("gitrank:reduced-gamification")).toBe("true"),
-    );
+    expect(screen.queryByRole("heading", { name: "Public profile" })).toBeNull();
+    expect(screen.queryByRole("heading", { name: "Repository visibility" })).toBeNull();
+    expect(screen.queryByText("Reduced gamification")).toBeNull();
+    expect(screen.queryByText("Display tuning")).toBeNull();
     fireEvent.click(await screen.findByText("Export data"));
     expect(
       await screen.findByText(

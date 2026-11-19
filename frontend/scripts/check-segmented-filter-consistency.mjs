@@ -9,7 +9,6 @@ const filterFiles = [
   "features/quests/components/QuestsCadenceControls.tsx",
   "features/badges/components/BadgesShelfControls.tsx",
   "features/settings/components/SyncRunActivityFilters.tsx",
-  "features/settings/components/PrivacyRepositoryToggleList.tsx",
 ];
 
 const staleNameFiles = [

@@ -139,7 +139,7 @@ The gamified UI adds season metadata, rank-progress cards, player-card profile p
 
 The marketing landing page avoids synthetic contributor identities and does not import authenticated profile data or any mock app route dataset.
 
-The settings page includes an account-backed reduced-gamification display preference. Authenticated dashboard and reveal flows apply the value from the live profile response, mirror it into browser `localStorage` for immediate rendering, respect OS reduced-motion intent in animated components, and do not change score, badge, or leaderboard state.
+Settings contains account actions, sync activity, and data controls. Stored reduced-gamification preferences still apply in authenticated dashboard and reveal flows: they mirror the live profile value into browser `localStorage` for immediate rendering and respect OS reduced-motion intent. Existing publication and repository-visibility settings continue to govern public data.
 
 Authenticated dashboard routes now use background auto-sync instead of manual sync buttons:
 

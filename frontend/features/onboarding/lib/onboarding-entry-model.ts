@@ -55,14 +55,14 @@ export const CONNECT_DATA_NOT_READ_ROWS: readonly OnboardingCopyLine[] = [
 ];
 
 export const CONNECT_PRIVACY_CONTROLS: readonly OnboardingCopyLine[] = [
-  { id: "public-profile-toggle", text: "Public profile can be disabled at any time." },
+  { id: "public-profile-toggle", text: "Public profile visibility follows saved publication settings." },
   {
     id: "privacy-toggles",
-    text: "Exact PRs, AI summaries, and leaderboard participation are individually controlled.",
+    text: "Saved settings govern exact PRs, AI summaries, and leaderboard participation.",
   },
   {
     id: "repository-visibility",
-    text: "Repository visibility can be hidden without deleting the account.",
+    text: "Saved repository visibility is respected on public profiles.",
   },
 ];
 

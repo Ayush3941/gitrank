@@ -674,7 +674,7 @@ Recent no-slop refinement (May 30, 2026):
 
 Recent no-slowdown refinement (May 28, 2026):
 
-- Settings now shows only real end-user controls (account, sync activity, privacy, display, repository visibility, data controls).
+- Settings contains account actions, sync activity, and data controls. Public-profile switches, repository-visibility lists, and display-tuning cards are removed; stored visibility and display preferences remain enforced.
 - Debug/operator-only panels (manual execute/queue controls, backend capability manifests, schema probes) were removed from the product settings surface to reduce UI noise and avoid dead admin-style UX in normal contributor flow.
 
 Recent sync-state integrity refinement (May 27, 2026):

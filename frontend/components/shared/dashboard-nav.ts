@@ -11,7 +11,7 @@ export const dashboardNavItems: DashboardNavItem[] = [
   {
     href: "/dashboard",
     label: "Dashboard",
-    description: "Identity snapshot, rank movement, and recent battle reports.",
+    description: "Identity snapshot, contribution signals, and league progression.",
     metaDescription:
       "Contribution analytics, score explanation, rank progression, and profile health in one dashboard view.",
     icon: "dashboard",
@@ -44,9 +44,9 @@ export const dashboardNavItems: DashboardNavItem[] = [
   {
     href: "/dashboard/settings",
     label: "Settings",
-    description: "Privacy, sync controls, and display preferences.",
+    description: "Account, sync activity, and data controls.",
     metaDescription:
-      "Manage profile visibility, repository privacy, account controls, and data-export actions.",
+      "Manage GitHub account access, review sync activity, and export or delete account data.",
     icon: "settings",
   },
 ];
