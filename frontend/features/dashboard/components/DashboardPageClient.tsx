@@ -17,7 +17,6 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { DeferUntilVisible } from "@/components/shared/DeferUntilVisible";
 import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlockNotice";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
-import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { PanelLoadingPlaceholder } from "@/components/shared/PanelLoadingPlaceholder";
@@ -64,13 +63,6 @@ const RecentBattleReports = dynamic(
     loading: () => <LazyLanePlaceholder label="Loading reports" />,
   },
 );
-
-const DASHBOARD_SECTION_LINKS = [
-  { id: "dashboard-identity", label: "Identity" },
-  { id: "dashboard-signals", label: "Signals" },
-  { id: "dashboard-progression", label: "Progression" },
-  { id: "dashboard-reports", label: "Reports" },
-];
 
 export function DashboardPageClient() {
   const constrainedNetwork = useNetworkConstraintPreference();
@@ -213,7 +205,6 @@ export function DashboardPageClient() {
           analyticsTarget="dashboard:stale"
         />
       ) : null}
-      <InPageSectionNav sections={DASHBOARD_SECTION_LINKS} className="render-opt-section" />
       <section id="dashboard-identity" data-scroll-target="true">
         <DashboardHeroRankCard
           user={user}

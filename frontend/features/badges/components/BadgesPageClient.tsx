@@ -2,7 +2,6 @@
 
 import { startTransition, useDeferredValue, useEffect, useId, useMemo, useRef, useState } from "react";
 import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlockNotice";
-import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -37,12 +36,6 @@ import {
   selectLatestActionableSyncRunOutcome,
 } from "@/lib/presentation/sync-run-diagnostics";
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
-
-const BADGES_SECTION_LINKS = [
-  { id: "badges-overview", label: "Overview" },
-  { id: "badges-shelf", label: "Shelf" },
-  { id: "badges-locked", label: "Locked paths" },
-];
 
 export function BadgesPageClient() {
   const { data, isLoading, isError, refetch } = useBadges();
@@ -221,7 +214,6 @@ export function BadgesPageClient() {
           </div>
         )}
       />
-      <InPageSectionNav sections={BADGES_SECTION_LINKS} className="render-opt-section" />
       <section
         id="badges-overview"
         data-scroll-target="true"

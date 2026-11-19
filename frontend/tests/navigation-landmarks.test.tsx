@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { DashboardRouteNav } from "@/components/shared/DashboardRouteNav";
-import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { MarketingLayout } from "@/components/shared/MarketingLayout";
 import { OnboardingStepper } from "@/features/onboarding/components/OnboardingStepper";
 
@@ -27,18 +26,12 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("navigation landmarks", () => {
-  it("names the shared dashboard, marketing, onboarding, and in-page nav regions", () => {
+  it("names the shared dashboard, marketing, and onboarding nav regions", () => {
     render(
       <div>
         <DashboardRouteNav />
         <MarketingLayout>
           <OnboardingStepper currentStep="connect" />
-          <InPageSectionNav
-            sections={[
-              { id: "overview", label: "Overview" },
-              { id: "evidence", label: "Evidence" },
-            ]}
-          />
         </MarketingLayout>
       </div>,
     );
@@ -46,6 +39,5 @@ describe("navigation landmarks", () => {
     expect(screen.getByRole("navigation", { name: "Dashboard routes" })).toBeTruthy();
     expect(screen.getByRole("navigation", { name: "Marketing routes" })).toBeTruthy();
     expect(screen.getByRole("navigation", { name: "Onboarding progress" })).toBeTruthy();
-    expect(screen.getByRole("navigation", { name: "On this page" })).toBeTruthy();
   });
 });

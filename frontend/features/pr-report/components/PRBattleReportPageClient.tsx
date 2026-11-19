@@ -6,7 +6,6 @@ import { useState } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
-import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { NewTabHint } from "@/components/shared/NewTabHint";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { RouteLoadingState } from "@/components/shared/RouteLoadingState";
@@ -30,13 +29,6 @@ import {
   buildPRReportPresentation,
   buildRetryAiSummaryNotice,
 } from "@/features/pr-report/lib/pr-report-presentation";
-
-const PR_REPORT_SECTION_LINKS = [
-  { id: "pr-report-overview", label: "Overview" },
-  { id: "pr-report-ledger", label: "Ledger" },
-  { id: "pr-report-summary", label: "Summary" },
-  { id: "pr-report-technical", label: "Technical" },
-];
 
 export function PRBattleReportPageClient({
   owner,
@@ -165,10 +157,6 @@ export function PRBattleReportPageClient({
             </Button>
           </div>
         )}
-      />
-      <InPageSectionNav
-        sections={PR_REPORT_SECTION_LINKS.filter((section) => data.aiSummaryVisible !== false || section.id !== "pr-report-summary")}
-        className="render-opt-section"
       />
       <section id="pr-report-overview" data-scroll-target="true" className="render-opt-section">
         <PRReportOverviewCard

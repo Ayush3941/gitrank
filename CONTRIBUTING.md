@@ -352,9 +352,7 @@ This document is intentionally detailed.
 - Settings sync-activity disclosure now keeps expanded diagnostic context stable across polling refreshes (auto-open on attention, no implicit auto-collapse), reducing perceived scroll jumps while preserving manual user control.
 - Shared inline status notices now keep `role="status"` on message text only (dismiss controls remain outside the live region), improving screen-reader announcement hygiene while preserving the same compact visual style.
 - Stale-sync and GitHub-App-block banners now scope live-region announcements to message text nodes instead of whole cards with action buttons, aligning advisory announcements with ARIA live-region guidance while preserving current CTAs and layout.
-- Dashboard, Contributions, and Settings now share one in-page section-navigation pattern (`InPageSectionNav`) with stable anchor IDs + `data-scroll-target`, so dense pages stay scannable, deep-linkable, and visually consistent without adding sticky chrome or extra motion.
-- The same in-page section-navigation pattern now extends across Quests, Badges, Leaderboard, Public Profile, and PR Report so long-form surfaces keep consistent scan/jump behavior on desktop and mobile.
-- Shared in-page navigation now normalizes section IDs and marks the active hash target with `aria-current="location"` plus a clearer chip state; hash tracking uses `useSyncExternalStore` and a single `hashchange` subscription instead of scroll listeners.
+- Dashboard, Contributions, Settings, Quests, Badges, Leaderboard, Public Profile, and PR Report use the shared route navigation without duplicate section-shortcut rails.
 - Header summary-chip rails now reuse `ScrollableRegion`, exposing a labeled keyboard-focus target when narrow screens overflow while preserving the existing larger-screen wrapped layout.
 - Dashboard, Settings, Public Profile, and PR Report client-side first loads now use route-shaped `RouteLoadingState` skeletons instead of generic single cards, reducing visual reflow when live data resolves.
 - `RouteLoadingState` now scopes its polite live announcement to one screen-reader-only status node while leaving decorative skeleton markup outside the live region.
@@ -2317,7 +2315,7 @@ ABRA implementation checklist:
 - [x] Settings sync activity now auto-opens details when failed/partial runs appear and keeps the panel open across refresh transitions so troubleshooting context is not lost when state moves from failed to healthy.
 - [x] Marketing shell anti-spam and first-load copy now use direct product language instead of exaggerated arena/power phrasing, while preserving the established neon visual treatment and report/quest vocabulary.
 - [x] Marketing header navigation now uses a separate horizontally scrollable route rail on narrow screens with the same 44px target baseline as dashboard navigation, preventing brand/nav wrapping from degrading scan order or touch usability.
-- [x] Shared in-page section rails now use 40px chips and the established touch-scroll rail treatment across Dashboard, Contributions, Badges, Quests, Leaderboard, Settings, public profiles, and PR reports.
+- [x] Remove duplicate section-shortcut rails from dashboard tabs, public profiles, and PR reports.
 - [x] Shared inline status notices now expose a 32px dismiss target across contribution, badge, PR-report, onboarding, and settings feedback lanes, improving touch usability without expanding the surrounding notice shell.
 - [x] Shared progressive-disclosure toggles now use 40px targets and decorative chevrons, improving repeated touch interactions and screen-reader output across filters, settings, reports, badges, and chart detail panels.
 - [x] Removable search-filter chips now share one 40px control primitive across contribution and repository-privacy filters, eliminating duplicated markup while keeping compact filter summaries touch-friendly.

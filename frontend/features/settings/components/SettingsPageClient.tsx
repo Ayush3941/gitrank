@@ -3,7 +3,6 @@
 import { useMemo } from "react";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
-import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ProfileEvidenceStateChip } from "@/components/shared/ProfileEvidenceStateChip";
@@ -46,15 +45,6 @@ import { SettingsSyncActivitySection } from "@/features/settings/components/Sett
 import { useSettingsAccountActions } from "@/features/settings/lib/use-settings-account-actions";
 
 type BackedPrivacyKey = SettingsPublicProfilePrivacyKey | "reducedGamification";
-
-const SETTINGS_SECTION_LINKS = [
-  { id: "settings-account", label: "Account" },
-  { id: "settings-sync-activity-panel", label: "Sync log" },
-  { id: "settings-public-profile", label: "Privacy" },
-  { id: "settings-display-preferences", label: "Display" },
-  { id: "settings-repositories", label: "Repositories" },
-  { id: "settings-data-controls", label: "Data" },
-];
 
 export function SettingsPageClient() {
   const { data, isLoading, isError, isFetching, refetch } = useMyProfile();
@@ -170,7 +160,6 @@ export function SettingsPageClient() {
           </div>
         )}
       />
-      <InPageSectionNav sections={SETTINGS_SECTION_LINKS} className="render-opt-section" />
       <section id="settings-account" data-scroll-target="true">
         <SettingsAccountCard
           username={data.user.username}

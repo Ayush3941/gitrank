@@ -7,7 +7,6 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
 import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlockNotice";
 import { GlowCard } from "@/components/shared/GlowCard";
-import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { LoadingState } from "@/components/shared/LoadingState";
@@ -50,11 +49,6 @@ const LeaderboardArena = dynamic(
     loading: () => <LeaderboardPanelPlaceholder label="Loading leaderboard rows" />,
   },
 );
-
-const LEADERBOARD_SECTION_LINKS = [
-  { id: "leaderboard-controls", label: "Controls" },
-  { id: "leaderboard-arena", label: "Arena" },
-];
 
 export function LeaderboardPageClient() {
   const leaderboardRowsRegionId = useId();
@@ -214,7 +208,6 @@ export function LeaderboardPageClient() {
           analyticsTarget="leaderboard:stale"
         />
       ) : null}
-      <InPageSectionNav sections={LEADERBOARD_SECTION_LINKS} className="render-opt-section" />
       <LeaderboardControls
         rowsCount={leaderboardModel.rows.length}
         tab={tab}

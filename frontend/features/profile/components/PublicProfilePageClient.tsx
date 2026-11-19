@@ -3,7 +3,6 @@
 import { useMemo } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ErrorState } from "@/components/shared/ErrorState";
-import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { RouteLoadingState } from "@/components/shared/RouteLoadingState";
 import { RelativeTime } from "@/components/shared/RelativeTime";
 import { SnapshotFreshnessPill } from "@/components/shared/SnapshotFreshnessPill";
@@ -26,13 +25,6 @@ import { normalizeDateTime } from "@/lib/formatters";
 import { summarizeContributionStreak } from "@/lib/metrics/contribution-metrics";
 import { deduplicateBadgesByName } from "@/lib/presentation/badge-dedup";
 import { deduplicateSkillNodes } from "@/lib/presentation/skill-normalization";
-
-const PUBLIC_PROFILE_SECTION_LINKS = [
-  { id: "public-profile-overview", label: "Overview" },
-  { id: "public-profile-badges-skills", label: "Badges & Skills" },
-  { id: "public-profile-best-prs", label: "Best PRs" },
-  { id: "public-profile-timeline-repos", label: "Timeline & Repos" },
-];
 
 export function PublicProfilePageClient({
   username,
@@ -168,7 +160,6 @@ export function PublicProfilePageClient({
           {data.partialProfileAvailable ? "Partial evidence mode" : "Fresh snapshot"}
         </span>
       </div>
-      <InPageSectionNav sections={PUBLIC_PROFILE_SECTION_LINKS} className="render-opt-section" />
       <section
         id="public-profile-overview"
         data-scroll-target="true"

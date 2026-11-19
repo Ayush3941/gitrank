@@ -5,7 +5,6 @@ import { ErrorState } from "@/components/shared/ErrorState";
 import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlockNotice";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { InlineNotice } from "@/components/shared/InlineNotice";
-import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { RouteLoadingState } from "@/components/shared/RouteLoadingState";
 import { StaleState } from "@/components/shared/StaleState";
@@ -44,10 +43,6 @@ import {
 } from "@/lib/runtime/contribution-filter-policy";
 
 const CONTRIBUTION_SEARCH_DEBOUNCE_MS = 220;
-const CONTRIBUTIONS_SECTION_LINKS = [
-  { id: "contributions-filters", label: "Filters" },
-  { id: "contributions-cards", label: "Cards" },
-];
 
 export function ContributionsPageClient() {
   const contributionCardsRegionId = useId();
@@ -305,7 +300,6 @@ export function ContributionsPageClient() {
           analyticsTarget="contributions:stale"
         />
       ) : null}
-      <InPageSectionNav sections={CONTRIBUTIONS_SECTION_LINKS} className="render-opt-section" />
       <section
         id="contributions-filters"
         data-scroll-target="true"

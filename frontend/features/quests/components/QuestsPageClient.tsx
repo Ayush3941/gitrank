@@ -8,7 +8,6 @@ import {
 import { startTransition, useDeferredValue, useId, useMemo, useState } from "react";
 import { GitHubAppSyncBlockNotice } from "@/components/shared/GitHubAppSyncBlockNotice";
 import { GlowCard } from "@/components/shared/GlowCard";
-import { InPageSectionNav } from "@/components/shared/InPageSectionNav";
 import { HeaderMetaChips } from "@/components/shared/HeaderMetaChips";
 import { IntentPrefetchLink } from "@/components/shared/IntentPrefetchLink";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -40,12 +39,6 @@ import {
 import { formatSyncStateLabel, toneForSyncState } from "@/lib/presentation/status-tone";
 import type { Quest } from "@/types/gitrank";
 
-const QUESTS_SECTION_LINKS = [
-  { id: "quests-filters", label: "Filters" },
-  { id: "quests-journey", label: "Journey" },
-  { id: "quests-spotlight", label: "Spotlight" },
-  { id: "quests-missions", label: "Missions" },
-];
 const EMPTY_QUESTS: Quest[] = [];
 
 export function QuestsPageClient() {
@@ -154,7 +147,6 @@ export function QuestsPageClient() {
       {appInstallationBlocked ? (
         <GitHubAppSyncBlockNotice message={latestSyncOutcome?.message} />
       ) : null}
-      <InPageSectionNav sections={QUESTS_SECTION_LINKS} className="render-opt-section" />
       <section id="quests-filters" data-scroll-target="true" className="render-opt-section">
         {!isLoading && !isError ? (
           <QuestsCadenceControls
