@@ -71,12 +71,12 @@ describe("live fixture frontend smoke coverage", () => {
     vi.stubGlobal("fetch", vi.fn(liveFixtureFetch));
   });
 
-  it("renders dashboard from profile and quest BFF fixtures", async () => {
+  it("renders dashboard from profile and leaderboard BFF fixtures", async () => {
     renderWithClient(<DashboardPageClient />);
 
     await waitFor(() =>
       expect(requestedPaths).toEqual(
-        expect.arrayContaining(["/api/profile/me", "/api/profile/me/quests"]),
+        expect.arrayContaining(["/api/profile/me", "/api/leaderboard"]),
       ),
     );
     expect(
@@ -85,8 +85,9 @@ describe("live fixture frontend smoke coverage", () => {
       }),
     ).toBeTruthy();
     expect(await screen.findByText("0 days")).toBeTruthy();
-    expect(await screen.findByText("Live Skill Sprint")).toBeTruthy();
-    expect(await screen.findByText("Live PR fixture report")).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "Quests" })).toBeNull();
+    expect(screen.queryByRole("heading", { name: "Battle reports" })).toBeNull();
+    expect(requestedPaths).not.toContain("/api/profile/me/quests");
   }, 15_000);
 
   it("renders quest board from the live quest fixture route", async () => {

@@ -1,26 +1,12 @@
-import type { ReactNode } from "react";
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { CurrentLeagueCard } from "@/features/dashboard/components/CurrentLeagueCard";
-import { QuestPanel } from "@/features/dashboard/components/QuestPanel";
-import { RecentBattleReports } from "@/features/dashboard/components/RecentBattleReports";
-import { buildQuest } from "@/tests/helpers/quest-fixture";
-import type { PullRequestAnalysis, UserProfile } from "@/types/gitrank";
-
-vi.mock("next/link", () => ({
-  default: ({ href, children }: { href: string; children: ReactNode }) => (
-    <a href={href}>{children}</a>
-  ),
-}));
+import type { UserProfile } from "@/types/gitrank";
 
 describe("dashboard card icon semantics", () => {
-  it("keeps league, quest, and report icons decorative", () => {
+  it("keeps league icons decorative", () => {
     const rendered = render(
-      <div>
-        <CurrentLeagueCard user={buildLeagueUser()} />
-        <QuestPanel quests={[buildQuest()]} />
-        <RecentBattleReports reports={[buildReport()]} />
-      </div>,
+      <CurrentLeagueCard user={buildLeagueUser()} />,
     );
 
     const icons = rendered.container.querySelectorAll("svg");
@@ -71,24 +57,4 @@ function buildLeagueUser(
       },
     },
   } as unknown as UserProfile;
-}
-
-function buildReport(): PullRequestAnalysis {
-  return {
-    contribution: {
-      id: "pr-1",
-      owner: "octo",
-      repo: "gitrank",
-      number: 42,
-      title: "Add deterministic scoring evidence",
-      category: "Backend",
-      xpEarned: 320,
-      aiSummary: "Persisted report summary.",
-    },
-    aiConfidence: 0.8,
-    evidenceState: {
-      status: "complete",
-      analysisSource: "openai",
-    },
-  } as unknown as PullRequestAnalysis;
 }

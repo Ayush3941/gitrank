@@ -5,7 +5,7 @@ export default function DashboardLoading() {
     <RouteLoadingState
       eyebrow="Dashboard loading"
       title="Preparing your dashboard"
-      description="GitRank is loading contribution signals, scores, quests, and leaderboard context for this view."
+      description="Loading identity, contribution signals, and rank progress."
       cardCount={6}
       variant="dashboard"
     />

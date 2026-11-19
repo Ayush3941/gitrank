@@ -2,7 +2,6 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getMyProfile } from "@/lib/api/profile-api";
-import { getMyQuests } from "@/lib/api/quest-api";
 import { getLeaderboard } from "@/lib/api/leaderboard-api";
 import { useNetworkConstraintPreference } from "@/hooks/use-gamification-preference";
 import { myProfileQueryKey } from "@/hooks/use-profile";
@@ -23,20 +22,13 @@ export function useDashboard() {
         queryFn: getMyProfile,
         staleTime: constrainedNetwork ? 120_000 : 60_000,
       });
-      const [questsResult, leaderboardResult] = await Promise.allSettled([
-        getMyQuests(),
-        getLeaderboard("Global"),
-      ]);
-      const quests = questsResult.status === "fulfilled" ? questsResult.value : [];
-      const leaderboard =
-        leaderboardResult.status === "fulfilled" ? leaderboardResult.value : null;
+      const leaderboard = await getLeaderboard("Global").catch(() => null);
       const current = leaderboard?.rows.find(
         (row) => row.username.toLowerCase() === profile.user.username.toLowerCase(),
       );
 
       const user = {
         ...profile.user,
-        quests,
         rankProgress: {
           ...profile.user.rankProgress,
           season: leaderboard?.season ?? profile.user.rankProgress.season,
@@ -49,7 +41,6 @@ export function useDashboard() {
 
       return {
         user,
-        recentReports: profile.recentReports,
         trendWindowLabel: profile.trendWindowLabel,
         refreshedAt: profile.refreshedAt,
         isStale: profile.isStale,

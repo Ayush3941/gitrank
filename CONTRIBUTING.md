@@ -353,6 +353,7 @@ This document is intentionally detailed.
 - Shared inline status notices now keep `role="status"` on message text only (dismiss controls remain outside the live region), improving screen-reader announcement hygiene while preserving the same compact visual style.
 - Stale-sync and GitHub-App-block banners now scope live-region announcements to message text nodes instead of whole cards with action buttons, aligning advisory announcements with ARIA live-region guidance while preserving current CTAs and layout.
 - Dashboard, Contributions, Settings, Quests, Badges, Leaderboard, Public Profile, and PR Report use the shared route navigation without duplicate section-shortcut rails.
+- Dashboard shows identity, contribution signals, and league progression. Quest and battle-report lists belong on their dedicated pages; dashboard loading does not fetch quests.
 - Header summary-chip rails now reuse `ScrollableRegion`, exposing a labeled keyboard-focus target when narrow screens overflow while preserving the existing larger-screen wrapped layout.
 - Dashboard, Settings, Public Profile, and PR Report client-side first loads now use route-shaped `RouteLoadingState` skeletons instead of generic single cards, reducing visual reflow when live data resolves.
 - `RouteLoadingState` now scopes its polite live announcement to one screen-reader-only status node while leaving decorative skeleton markup outside the live region.

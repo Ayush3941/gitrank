@@ -44,26 +44,6 @@ const CurrentLeagueCard = dynamic(
   },
 );
 
-const QuestPanel = dynamic(
-  () =>
-    import("@/features/dashboard/components/QuestPanel").then(
-      (mod) => mod.QuestPanel,
-    ),
-  {
-    loading: () => <LazyLanePlaceholder label="Loading quests" />,
-  },
-);
-
-const RecentBattleReports = dynamic(
-  () =>
-    import("@/features/dashboard/components/RecentBattleReports").then(
-      (mod) => mod.RecentBattleReports,
-    ),
-  {
-    loading: () => <LazyLanePlaceholder label="Loading reports" />,
-  },
-);
-
 export function DashboardPageClient() {
   const constrainedNetwork = useNetworkConstraintPreference();
   const { data, isLoading, isError, refetch } = useDashboard();
@@ -71,7 +51,6 @@ export function DashboardPageClient() {
   const syncRunsQuery = useProfileSyncRuns();
   const scoreExplanationEventSent = useRef(false);
   const user = data?.user;
-  const recentReports = data?.recentReports ?? [];
   const { syncStateForDisplay, showRefreshPill } = useProfileSyncState(
     user,
     syncRunsQuery.data?.runs,
@@ -130,7 +109,7 @@ export function DashboardPageClient() {
       <RouteLoadingState
         eyebrow="Dashboard"
         title="Dashboard"
-        description="Loading rank, contribution signals, and recent reports."
+        description="Loading identity, contribution signals, and rank progress."
         cardCount={4}
         variant="dashboard"
       />
@@ -157,7 +136,7 @@ export function DashboardPageClient() {
       <PageHeader
         eyebrow="Dashboard"
         title="Dashboard"
-        description="Identity, rank progress, and recent reports."
+        description="Identity, contribution signals, and rank progress."
         meta={(
           <HeaderMetaChips
             items={[
@@ -252,35 +231,15 @@ export function DashboardPageClient() {
           icon={<Activity className="h-5 w-5 text-primary" aria-hidden="true" />}
         />
       </section>
-      <div className="grid gap-6 xl:grid-cols-[0.86fr,1.14fr]">
-        <div className="space-y-6">
-          <section
-            id="dashboard-progression"
-            data-scroll-target="true"
-            className="render-opt-section"
-          >
-            <DeferUntilVisible fallback={<LazyLanePlaceholder label="Loading league" />}>
-              <CurrentLeagueCard user={user} />
-            </DeferUntilVisible>
-          </section>
-          <section className="render-opt-section">
-            <DeferUntilVisible fallback={<LazyLanePlaceholder label="Loading quests" />}>
-              <QuestPanel quests={user.quests} />
-            </DeferUntilVisible>
-          </section>
-        </div>
-        <div className="space-y-6">
-          <section
-            id="dashboard-reports"
-            data-scroll-target="true"
-            className="render-opt-section"
-          >
-            <DeferUntilVisible fallback={<LazyLanePlaceholder label="Loading reports" />}>
-              <RecentBattleReports reports={recentReports} />
-            </DeferUntilVisible>
-          </section>
-        </div>
-      </div>
+      <section
+        id="dashboard-progression"
+        data-scroll-target="true"
+        className="render-opt-section"
+      >
+        <DeferUntilVisible fallback={<LazyLanePlaceholder label="Loading league" />}>
+          <CurrentLeagueCard user={user} />
+        </DeferUntilVisible>
+      </section>
     </div>
   );
 }
