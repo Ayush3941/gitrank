@@ -200,6 +200,7 @@ AI and incomplete evidence remain part of the product contract.
 - User sync now includes a broad authored-PR fallback query when recent-window discovery returns empty, reducing false-empty sync outcomes caused by cursor/window edge cases.
 - Authored-PR discovery queries now use `is:pull-request` qualifiers for both bounded windows and broad fallback discovery.
 - Dashboard stale-state UI now surfaces the latest sync diagnostic reason (when available) so partial/empty evidence states are explicit instead of generic.
+- A newer completed App-authenticated sync, or a partial sync that fetched data with installation credentials, clears older installation-block warnings. Other partial-sync diagnostics remain visible.
 - Sync failures now classify unsupported GitHub API-version responses and surface a direct `GITHUB_API_VERSION` remediation message in sync diagnostics.
 - User sync now enforces GitHub App credentials for PR extraction. Installation bootstrap/discovery also runs through GitHub App credentials (`/app/installations`), while OAuth remains login/session-only.
 - When strict App sync cannot find any active installation for the authenticated GitHub login, user-sync errors now include a direct GitHub App install URL so Settings/Dashboard recovery actions are explicit instead of opaque.

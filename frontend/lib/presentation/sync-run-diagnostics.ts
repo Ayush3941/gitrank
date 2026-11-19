@@ -1,5 +1,6 @@
 import type { ApiSyncRunRecord } from "@/lib/api/account-api";
 import { metricCount } from "@/lib/sync/sync-run-metrics-policy";
+import { canonicalizeSyncRunStatus } from "@/lib/sync/sync-run-status-policy";
 import {
   appSyncFailureMessage,
   deriveAppSyncFailureCodeFromLastError,
@@ -404,8 +405,15 @@ export function selectLatestActionableSyncRunOutcome(
     return null;
   }
   let fallbackActionable: SyncRunDiagnostic | null = null;
+  let appSyncRecovered = false;
   for (const run of runs) {
     const outcome = describeSyncRunOutcome(run);
+    if (APP_INSTALLATION_BLOCK_CODES.has(outcome.code) && appSyncRecovered) {
+      continue;
+    }
+    if (!APP_INSTALLATION_BLOCK_CODES.has(outcome.code) && provesAppSyncRecovery(run)) {
+      appSyncRecovered = true;
+    }
     if (outcome.code === "none") {
       continue;
     }
@@ -419,6 +427,21 @@ export function selectLatestActionableSyncRunOutcome(
     }
   }
   return fallbackActionable;
+}
+
+function provesAppSyncRecovery(run: ApiSyncRunRecord): boolean {
+  const status = canonicalizeSyncRunStatus(run.status);
+  const metrics = run.metrics;
+  if (!metrics || (status !== "completed" && status !== "partial")) {
+    return false;
+  }
+  if (metricCount(metrics, "auth_installation_client", "fetched_auth_installation_client") === 0) {
+    return false;
+  }
+  return status === "completed" || metricCount(
+    metrics,
+    "fetched_pull_requests", "fetched_repositories", "fetched_reviews", "fetched_issues", "fetched_commits",
+  ) > 0;
 }
 
 export { metricCount };

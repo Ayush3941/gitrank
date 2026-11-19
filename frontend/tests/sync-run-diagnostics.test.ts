@@ -438,4 +438,40 @@ describe("describeSyncRunOutcome", () => {
     const selected = selectLatestActionableSyncRunOutcome(runs);
     expect(selected).toBeNull();
   });
+
+  it("clears an older installation failure after a completed App-authenticated sync", () => {
+    const selected = selectLatestActionableSyncRunOutcome([
+      runFor("pull_request", "completed", { fetched_auth_installation_client: 1, fetched_pull_requests: 1 }),
+      runFor("user", "failed", { app_installation_required: 1 }),
+    ]);
+    expect(selected).toBeNull();
+  });
+
+  it("keeps a newer partial-sync reason after App reads recover installation access", () => {
+    const selected = selectLatestActionableSyncRunOutcome([
+      runFor("user", "partial", {
+        auth_installation_client: 1,
+        fetched_pull_requests: 12,
+        authored_pull_request_search_incomplete: 1,
+      }),
+      runFor("user", "failed", { app_installation_required: 1 }),
+    ]);
+    expect(selected?.code).toBe("search_limited");
+  });
+
+  it("preserves a newer installation failure even when older syncs succeeded", () => {
+    const selected = selectLatestActionableSyncRunOutcome([
+      runFor("user", "failed", { app_installation_unavailable: 1 }),
+      runFor("user", "completed", { auth_installation_client: 1, fetched_pull_requests: 2 }),
+    ]);
+    expect(selected?.code).toBe("app_installation_unavailable");
+  });
+
+  it.each(["running", "failed", "partial"])("does not infer recovery from a %s run without successful App reads", (status) => {
+    const selected = selectLatestActionableSyncRunOutcome([
+      runFor("user", status, { auth_installation_client: 1 }),
+      runFor("user", "failed", { app_installation_required: 1 }),
+    ]);
+    expect(selected?.code).toBe("app_installation_required");
+  });
 });

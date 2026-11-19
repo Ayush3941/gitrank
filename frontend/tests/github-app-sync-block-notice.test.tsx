@@ -10,6 +10,7 @@ describe("GitHubAppSyncBlockNotice", () => {
     expect(screen.getByText("GitHub App installation is required for this account.")).toBeTruthy();
     expect(screen.getByRole("link", { name: "Install GitHub App" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Open sync settings" })).toBeTruthy();
+    expect(screen.queryByText(/no active installation is mapped/i)).toBeNull();
   });
 
   it("can hide settings shortcut when already rendered inside settings flows", () => {
