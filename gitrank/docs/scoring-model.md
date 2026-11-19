@@ -117,10 +117,17 @@ ContributionScore =
   * max(0.35, 1 - SpamPenalty)
 ```
 
-Runtime policy note:
+Policy ownership:
 
-- In production code, deterministic formula constants are configured via `SCORING_*` environment variables (score version, category weights, repository/outcome modifiers, diminishing rules, spam penalties, and level thresholds).
-- This keeps formula changes deploy-time configurable without hardcoding new constants into service logic.
+- [The compiled scoring policy](../packages/config/scoring_policy.go) defines
+  `v1alpha1`, including weights, penalties, rank labels, badge thresholds, and
+  level progression. These values match the former default formula.
+- Formula changes require a policy-version change and replay regression review.
+  Startup rejects retired formula environment overrides instead of silently
+  changing the meaning of a score version.
+- History/read limits and backfill bounds remain operating overrides; see the
+  [configuration reference](./configuration.md). Existing events retain their
+  persisted versions and components. Replay still supports the compiled version.
 
 ## Explainability Requirement
 

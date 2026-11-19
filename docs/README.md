@@ -8,6 +8,7 @@ This top-level map keeps navigation simple without changing service runtime path
 - Local setup and run: [`README.md`](../README.md)
 - Backend workspace guide: [`gitrank/README.md`](../gitrank/README.md)
 - Frontend guide: [`frontend/README.md`](../frontend/README.md)
+- Runtime settings and fixed policy: [`configuration`](../gitrank/docs/configuration.md)
 
 ## Code Areas
 
@@ -43,7 +44,7 @@ This top-level map keeps navigation simple without changing service runtime path
   - markdown `go test/run/build/vet` path references against current repo paths
   - machine-specific absolute path leakage in primary docs (for example user-home absolute paths on Linux/macOS/Windows)
   - runtime identity hygiene (no personal/demo identity literals in production frontend/backend code paths)
-  - markdown env-variable references aligned with supported env examples/script-level variables
+  - markdown env-variable references aligned with supported env examples, the configuration reference, and script-level variables
   - `gitrank/Makefile` script-target references aligned with tracked executable `gitrank/scripts/*.sh`
   - tracked `gitrank/scripts/*.sh` remain discoverable from real entrypoints (`gitrank/Makefile`, workflows, startup, docker, and script-to-script calls)
   - workflow `run` script references in `.github/workflows/*` aligned with tracked executable scripts

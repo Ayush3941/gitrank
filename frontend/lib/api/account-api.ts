@@ -17,34 +17,14 @@ import {
 const DEFAULT_CSRF_COOKIE_NAME = frontendPolicy.csrfCookieName;
 const USER_SYNC_EXECUTION_TIMEOUT_MS = parseBoundedPositiveMs(
   process.env.NEXT_PUBLIC_GITRANK_USER_SYNC_EXECUTION_TIMEOUT_MS,
-  120_000,
+  180_000,
   90_000,
   600_000,
 );
-const USER_SYNC_RETRY_MAX_ATTEMPTS = parseBoundedPositiveInt(
-  process.env.NEXT_PUBLIC_GITRANK_USER_SYNC_RETRY_MAX_ATTEMPTS,
-  2,
-  1,
-  4,
-);
-const USER_SYNC_RETRY_BASE_DELAY_MS = parseBoundedPositiveMs(
-  process.env.NEXT_PUBLIC_GITRANK_USER_SYNC_RETRY_BASE_DELAY_MS,
-  700,
-  100,
-  10_000,
-);
-const USER_SYNC_RETRY_JITTER_MS = parseBoundedPositiveMs(
-  process.env.NEXT_PUBLIC_GITRANK_USER_SYNC_RETRY_JITTER_MS,
-  250,
-  0,
-  2_000,
-);
-const USER_SYNC_RETRY_MAX_DELAY_MS = parseBoundedPositiveMs(
-  process.env.NEXT_PUBLIC_GITRANK_USER_SYNC_RETRY_MAX_DELAY_MS,
-  8_000,
-  500,
-  60_000,
-);
+const USER_SYNC_RETRY_MAX_ATTEMPTS = 2;
+const USER_SYNC_RETRY_BASE_DELAY_MS = 700;
+const USER_SYNC_RETRY_JITTER_MS = 250;
+const USER_SYNC_RETRY_MAX_DELAY_MS = 8_000;
 const SYNC_RUN_ACTIVE_WINDOW_MS = Math.max(120_000, USER_SYNC_EXECUTION_TIMEOUT_MS + 30_000);
 const SYNC_RUN_QUEUED_WINDOW_MS = Math.max(180_000, SYNC_RUN_ACTIVE_WINDOW_MS * 2);
 const USER_SYNC_SELF_KEY = "__self__";
@@ -863,32 +843,6 @@ function parsePositiveMs(value: string | undefined, fallback: number): number {
   return parsed;
 }
 
-function parsePositiveInt(value: string | undefined, fallback: number): number {
-  if (!value) {
-    return fallback;
-  }
-  const parsed = Number.parseInt(value.trim(), 10);
-  if (!Number.isFinite(parsed) || parsed <= 0) {
-    return fallback;
-  }
-  return parsed;
-}
-
-function parseBoundedPositiveInt(
-  value: string | undefined,
-  fallback: number,
-  min: number,
-  max: number,
-): number {
-  const parsed = parsePositiveInt(value, fallback);
-  if (parsed < min) {
-    return min;
-  }
-  if (parsed > max) {
-    return max;
-  }
-  return parsed;
-}
 
 function parseBoundedPositiveMs(
   value: string | undefined,

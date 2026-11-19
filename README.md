@@ -23,6 +23,9 @@ This repo is optimized for:
 - XP/rank/badge scoring is deterministic and rule-based.
 - Every score claim must be traceable to persisted evidence.
 - AI output never writes final score values.
+- Formula weights, rank thresholds, badge rules, and level progression are fixed
+  in the versioned scoring policy in `gitrank/packages/config/scoring_policy.go`.
+  Formula changes require a version change and replay verification.
 
 ### AI role (ChatGPT)
 
@@ -96,6 +99,12 @@ cp -n gitrank/.env.example gitrank/.env
 - `GITRANK_JWT_SIGNING_KEY`
 - `GITHUB_TOKEN_ENCRYPTION_KEY`
 
+Contribution sync also requires `GITHUB_APP_ID` and
+`GITHUB_APP_PRIVATE_KEY_PEM_PATH`, with the App installed on repositories you
+want to sync. Set `GITHUB_APP_SLUG` for the install/recovery link. Set
+`GITHUB_WEBHOOK_SECRET` when accepting GitHub webhook deliveries; manual App
+sync validates its credentials separately.
+
 ChatGPT path:
 
 - `AI_PROVIDER=openai`
@@ -106,6 +115,19 @@ Frontend runtime also reads its server env from this same `gitrank/.env` export 
 There is no separate runtime `.env` for `frontend/`; keep all runtime vars in `gitrank/.env`.
 `start.sh` exports `GITRANK_ENV_FILE=<repo>/gitrank/.env`, and frontend runtime honors that path first.
 If `GITRANK_ENV_FILE` is unset, frontend runtime falls back to `../gitrank/.env`.
+
+The starter template contains 20 runtime settings. Most optional operating
+settings use defaults and only need an entry when a deployment overrides them.
+See [configuration](gitrank/docs/configuration.md) for the complete reference.
+Credentials, endpoints, security settings, capacity controls, and cost limits
+remain configurable. UI labels, display limits, polling/retry presets, analyzer
+rules, and scoring rules are shared code policies. Retired scoring environment
+overrides cause an explicit startup error; remove them before upgrading.
+
+Local insecure development secret defaults, setup credential placeholders, and
+provider-neutral Kubernetes example hosts remain documented setup aids. Replace
+them before deployment. The existing bounded deterministic fallbacks for missing
+AI and incomplete evidence remain part of the product contract.
 
 ### 3) Start stack
 

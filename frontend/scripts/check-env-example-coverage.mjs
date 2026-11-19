@@ -3,6 +3,7 @@ import path from "node:path";
 
 const root = process.cwd();
 const envExamplePath = path.resolve(root, process.argv[2] ?? "../gitrank/.env.example");
+const configurationReferencePath = path.join(path.dirname(envExamplePath), "docs/configuration.md");
 const scanTargets = ["app", "components", "features", "hooks", "lib", "next.config.ts", "proxy.ts"];
 const ignoredKeys = new Set(["NODE_ENV"]);
 const usedEnvKeys = new Set();
@@ -12,12 +13,15 @@ for (const target of scanTargets) {
 }
 
 const declaredKeys = parseEnvExample(envExamplePath);
+for (const match of readFileSync(configurationReferencePath, "utf8").matchAll(/^\| `([A-Z][A-Z0-9_]*)` \|/gm)) {
+  declaredKeys.add(match[1]);
+}
 const missingKeys = [...usedEnvKeys].filter((key) => !declaredKeys.has(key) && !ignoredKeys.has(key)).sort();
 
 if (missingKeys.length > 0) {
   console.error("frontend env coverage check failed.");
-  console.error(`Source of truth: ${envExamplePath}`);
-  console.error("Missing keys in source-of-truth env file:");
+  console.error(`Configuration sources: ${envExamplePath}, ${configurationReferencePath}`);
+  console.error("Undocumented frontend environment keys:");
   for (const key of missingKeys) {
     console.error(`- ${key}`);
   }

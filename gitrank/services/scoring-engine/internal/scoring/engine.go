@@ -9,14 +9,14 @@ import (
 	"github.com/gitrank/gitrank/packages/contracts"
 )
 
-const DefaultScoreVersion = "v1alpha1"
+const DefaultScoreVersion = config.DefaultScoreVersion
 
 type Engine struct {
 	policy config.Scoring
 }
 
 func New() Engine {
-	return Engine{policy: defaultPolicy()}
+	return Engine{policy: config.DefaultScoringPolicy()}
 }
 
 func NewWithPolicy(policy config.Scoring) Engine {
@@ -254,69 +254,4 @@ func min(a, b int) int {
 
 func itoa(value int) string {
 	return strconv.Itoa(value)
-}
-
-func defaultPolicy() config.Scoring {
-	return config.Scoring{
-		ScoreVersion: DefaultScoreVersion,
-		BaseXP:       100,
-		MinXP:        10,
-
-		CategoryWeightDefault:          1.0,
-		CategoryWeightDocumentation:    0.8,
-		CategoryWeightTests:            1.1,
-		CategoryWeightBugFix:           1.3,
-		CategoryWeightFeature:          1.5,
-		CategoryWeightRefactor:         1.2,
-		CategoryWeightPerformance:      1.6,
-		CategoryWeightInfrastructure:   1.2,
-		CategoryWeightSecurity:         1.7,
-		CategoryWeightMaintainerDesign: 1.8,
-
-		RepositoryMaintainersThreshold:  3,
-		RepositoryMaintainersBonus:      0.1,
-		RepositoryStarsTierOneThreshold: 100,
-		RepositoryStarsTierOneBonus:     0.05,
-		RepositoryStarsTierTwoThreshold: 1000,
-		RepositoryStarsTierTwoBonus:     0.05,
-		RepositoryArchivedPenalty:       0.2,
-		RepositoryWeightMin:             0.75,
-		RepositoryWeightMax:             1.35,
-
-		OutcomeWeightMerged: 1.4,
-		OutcomeWeightDraft:  0.35,
-		OutcomeWeightClosed: 0.5,
-		OutcomeWeightOpen:   0.9,
-
-		ConsistencyActiveWeeksCap:        12,
-		ConsistencyActiveWeekBonus:       0.02,
-		ConsistencyMeaningfulRatioBonus:  0.1,
-		ConsistencyRecentMergedThreshold: 5,
-		ConsistencyRecentMergedBonus:     0.05,
-		ConsistencyModifierMax:           1.4,
-
-		DiminishingSimilarCap:          5,
-		DiminishingSimilarStep:         0.08,
-		DiminishingCategoryCap:         8,
-		DiminishingCategoryStep:        0.025,
-		DiminishingRepositoryThreshold: 6,
-		DiminishingRepositoryPenalty:   0.1,
-		DiminishingModifierMin:         0.6,
-
-		SpamDocsSmallChangeSizeLimit: 20,
-		SpamDocsSmallChangePenalty:   0.2,
-		SpamTinyChangedFilesLimit:    2,
-		SpamTinyChangeSizeLimit:      15,
-		SpamTinyChangePenalty:        0.1,
-		SpamDocsOnlyPenalty:          0.05,
-		SpamPenaltyMax:               0.35,
-		SpamMultiplierFloor:          0.35,
-		SuspiciousPenaltyThreshold:   0.2,
-
-		LevelContributorMinXP: 60,
-		LevelBuilderMinXP:     100,
-		LevelSpecialistMinXP:  140,
-		LevelMaintainerMinXP:  180,
-		LevelArchitectMinXP:   250,
-	}
 }

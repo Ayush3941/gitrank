@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func loadBackendEnvExample(t *testing.T) map[string]string {
+func loadDocumentedEnvDefaults(t *testing.T) map[string]string {
 	t.Helper()
 
 	raw, err := os.ReadFile("../../.env.example")
@@ -18,6 +18,21 @@ func loadBackendEnvExample(t *testing.T) map[string]string {
 	}
 
 	out := make(map[string]string)
+	reference, err := os.ReadFile("../../docs/configuration.md")
+	if err != nil {
+		t.Fatalf("read configuration reference: %v", err)
+	}
+	for _, line := range strings.Split(string(reference), "\n") {
+		columns := strings.Split(line, "|")
+		if len(columns) != 4 {
+			continue
+		}
+		key := strings.Trim(strings.TrimSpace(columns[1]), "`")
+		if !strings.Contains(key, "_") || !strings.HasPrefix(strings.TrimSpace(columns[1]), "`") {
+			continue
+		}
+		out[key] = strings.Trim(strings.TrimSpace(columns[2]), "`")
+	}
 	for _, line := range strings.Split(string(raw), "\n") {
 		trimmed := strings.TrimSpace(line)
 		if trimmed == "" || strings.HasPrefix(trimmed, "#") {
@@ -36,10 +51,10 @@ func requireEnvString(t *testing.T, env map[string]string, key, got string) {
 	t.Helper()
 	want, ok := env[key]
 	if !ok {
-		t.Fatalf("%s missing from .env.example", key)
+		t.Fatalf("%s missing from configuration reference", key)
 	}
 	if got != want {
-		t.Fatalf("%s = %q, want %q from .env.example", key, got, want)
+		t.Fatalf("%s = %q, want %q from configuration reference", key, got, want)
 	}
 }
 
@@ -47,14 +62,14 @@ func requireEnvDuration(t *testing.T, env map[string]string, key string, got tim
 	t.Helper()
 	wantRaw, ok := env[key]
 	if !ok {
-		t.Fatalf("%s missing from .env.example", key)
+		t.Fatalf("%s missing from configuration reference", key)
 	}
 	want, err := time.ParseDuration(wantRaw)
 	if err != nil {
-		t.Fatalf("%s invalid duration %q in .env.example: %v", key, wantRaw, err)
+		t.Fatalf("%s invalid duration %q in configuration reference: %v", key, wantRaw, err)
 	}
 	if got != want {
-		t.Fatalf("%s = %v, want %v from .env.example", key, got, want)
+		t.Fatalf("%s = %v, want %v from configuration reference", key, got, want)
 	}
 }
 
@@ -62,14 +77,14 @@ func requireEnvInt(t *testing.T, env map[string]string, key string, got int) {
 	t.Helper()
 	wantRaw, ok := env[key]
 	if !ok {
-		t.Fatalf("%s missing from .env.example", key)
+		t.Fatalf("%s missing from configuration reference", key)
 	}
 	want, err := strconv.Atoi(wantRaw)
 	if err != nil {
-		t.Fatalf("%s invalid integer %q in .env.example: %v", key, wantRaw, err)
+		t.Fatalf("%s invalid integer %q in configuration reference: %v", key, wantRaw, err)
 	}
 	if got != want {
-		t.Fatalf("%s = %d, want %d from .env.example", key, got, want)
+		t.Fatalf("%s = %d, want %d from configuration reference", key, got, want)
 	}
 }
 
@@ -77,12 +92,12 @@ func requireEnvBool(t *testing.T, env map[string]string, key string, got bool) {
 	t.Helper()
 	wantRaw, ok := env[key]
 	if !ok {
-		t.Fatalf("%s missing from .env.example", key)
+		t.Fatalf("%s missing from configuration reference", key)
 	}
 	wantRaw = strings.ToLower(strings.TrimSpace(wantRaw))
 	want := wantRaw == "1" || wantRaw == "true" || wantRaw == "yes" || wantRaw == "on"
 	if got != want {
-		t.Fatalf("%s = %t, want %t from .env.example", key, got, want)
+		t.Fatalf("%s = %t, want %t from configuration reference", key, got, want)
 	}
 }
 
@@ -94,18 +109,12 @@ func clearAIProviderEnv(t *testing.T) {
 		"AI_API_KEY",
 		"AI_MODEL",
 		"AI_BASE_URL",
-		"AI_MODERATION_MODEL",
-		"AI_EMBEDDING_MODEL",
 		"OPENAI_API_KEY",
 		"OPENAI_MODEL",
 		"OPENAI_BASE_URL",
-		"OPENAI_MODERATION_MODEL",
-		"OPENAI_EMBEDDING_MODEL",
 		"GEMINI_API_KEY",
 		"GEMINI_MODEL",
 		"GEMINI_BASE_URL",
-		"GEMINI_MODERATION_MODEL",
-		"GEMINI_EMBEDDING_MODEL",
 	} {
 		t.Setenv(key, "")
 	}
@@ -209,12 +218,6 @@ func TestLoadDefaults(t *testing.T) {
 	}
 	if cfg.AI.PRMaxChangedFiles != 100 || cfg.AI.PRMaxFileRecords != 100 || cfg.AI.PRMaxEstimatedTokens != 30000 {
 		t.Fatalf("AI PR limits = changed_files %d file_records %d tokens %d, want defaults", cfg.AI.PRMaxChangedFiles, cfg.AI.PRMaxFileRecords, cfg.AI.PRMaxEstimatedTokens)
-	}
-	if cfg.AI.SummaryMaxRunes != 320 || cfg.AI.SummaryPromptFilePathLimit != 12 {
-		t.Fatalf("AI summary limits = runes %d prompt_paths %d, want 320/12", cfg.AI.SummaryMaxRunes, cfg.AI.SummaryPromptFilePathLimit)
-	}
-	if cfg.AI.AnalyzerPolicyJSON != "" {
-		t.Fatalf("AI.AnalyzerPolicyJSON = %q, want empty default", cfg.AI.AnalyzerPolicyJSON)
 	}
 	if cfg.Scoring.ScoreVersion != "v1alpha1" {
 		t.Fatalf("Scoring.ScoreVersion = %q, want v1alpha1", cfg.Scoring.ScoreVersion)
@@ -338,7 +341,7 @@ func TestLoadAIProviderDefaultsToOpenAIWhenBothKeysExist(t *testing.T) {
 }
 
 func TestLoadDefaultsMatchBackendEnvExample(t *testing.T) {
-	env := loadBackendEnvExample(t)
+	env := loadDocumentedEnvDefaults(t)
 	cfg, err := Load("api-gateway", "API_GATEWAY_ADDR")
 	if err != nil {
 		t.Fatalf("Load() error = %v", err)
@@ -377,7 +380,6 @@ func TestLoadDefaultsMatchBackendEnvExample(t *testing.T) {
 
 	requireEnvString(t, env, "GITHUB_OAUTH_AUTHORIZE_URL", cfg.GitHub.AuthorizeURL)
 	requireEnvString(t, env, "GITHUB_OAUTH_EXCHANGE_URL", cfg.GitHub.TokenURL)
-	requireEnvString(t, env, "GITHUB_OAUTH_DEVICE_URL", cfg.GitHub.DeviceURL)
 	requireEnvString(t, env, "GITHUB_OAUTH_REDIRECT_URL", cfg.GitHub.OAuthRedirectURL)
 	requireEnvString(t, env, "GITHUB_API_BASE_URL", cfg.GitHub.APIBaseURL)
 	requireEnvString(t, env, "GITHUB_GRAPHQL_URL", cfg.GitHub.GraphQLURL)
@@ -401,7 +403,6 @@ func TestLoadDefaultsMatchBackendEnvExample(t *testing.T) {
 	requireEnvDuration(t, env, "GITHUB_USER_PR_SYNC_TIMEOUT_MAX", cfg.GitHub.UserPRSyncTimeoutMax)
 	requireEnvInt(t, env, "GITHUB_WEBHOOK_MAX_BODY_BYTES", cfg.GitHub.MaxBodyBytes)
 	requireEnvDuration(t, env, "GITHUB_WEBHOOK_DEDUPE_TTL", cfg.GitHub.DedupeTTL)
-	requireEnvDuration(t, env, "GITHUB_FAILED_DELIVERY_LOOKBACK", cfg.GitHub.FailedLookback)
 	requireEnvDuration(t, env, "GITHUB_INSTALLATION_REFRESH_SKEW", cfg.GitHub.RefreshSkew)
 	requireEnvDuration(t, env, "GITHUB_SECONDARY_RATE_LIMIT_BACKOFF", cfg.GitHub.SecondaryBackoff)
 	requireEnvDuration(t, env, "GITHUB_REPOSITORY_CACHE_TTL", cfg.GitHub.RepositoryCacheTTL)
@@ -414,8 +415,6 @@ func TestLoadDefaultsMatchBackendEnvExample(t *testing.T) {
 	requireEnvString(t, env, "OPENAI_MODEL", cfg.AI.Model)
 	requireEnvString(t, env, "OPENAI_BASE_URL", cfg.AI.BaseURL)
 	requireEnvDuration(t, env, "AI_REQUEST_TIMEOUT", cfg.AI.RequestTimeout)
-	requireEnvInt(t, env, "AI_SUMMARY_MAX_RUNES", cfg.AI.SummaryMaxRunes)
-	requireEnvInt(t, env, "AI_SUMMARY_PROMPT_FILE_PATH_LIMIT", cfg.AI.SummaryPromptFilePathLimit)
 	requireEnvInt(t, env, "AI_PR_MAX_CHANGED_FILES", cfg.AI.PRMaxChangedFiles)
 	requireEnvInt(t, env, "AI_PR_MAX_FILE_RECORDS", cfg.AI.PRMaxFileRecords)
 	requireEnvInt(t, env, "AI_PR_MAX_DIFF_LINES", cfg.AI.PRMaxDiffLines)
@@ -532,32 +531,10 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	t.Setenv("AI_PR_MAX_CHANGED_FILES", "24")
 	t.Setenv("AI_PR_MAX_FILE_RECORDS", "30")
 	t.Setenv("AI_PR_MAX_DIFF_LINES", "900")
-	t.Setenv("AI_SUMMARY_MAX_RUNES", "500")
-	t.Setenv("AI_SUMMARY_PROMPT_FILE_PATH_LIMIT", "18")
-	t.Setenv("AI_ANALYZER_POLICY_JSON", `{"small_change_max_files":4}`)
 	t.Setenv("AI_PR_MAX_INPUT_CHARS", "16000")
 	t.Setenv("AI_PR_MAX_ESTIMATED_TOKENS", "4000")
 	t.Setenv("AI_PR_MAX_ESTIMATED_COST_USD", "0.08")
 	t.Setenv("AI_ESTIMATED_INPUT_TOKEN_COST_USD", "0.00001")
-	t.Setenv("SCORING_SCORE_VERSION", "v1beta2")
-	t.Setenv("SCORING_BASE_XP", "130")
-	t.Setenv("SCORING_MIN_XP", "15")
-	t.Setenv("SCORING_RANK_TIER_SILVER_MIN_XP", "1200")
-	t.Setenv("SCORING_RANK_TIER_GOLD_MIN_XP", "3200")
-	t.Setenv("SCORING_RANK_TIER_PLATINUM_MIN_XP", "7600")
-	t.Setenv("SCORING_RANK_TIER_DIAMOND_MIN_XP", "12000")
-	t.Setenv("SCORING_RANK_TIER_BRONZE_LABEL", "Bronze I")
-	t.Setenv("SCORING_RANK_TIER_SILVER_LABEL", "Silver II")
-	t.Setenv("SCORING_RANK_TIER_GOLD_LABEL", "Gold III")
-	t.Setenv("SCORING_RANK_TIER_PLATINUM_LABEL", "Platinum I")
-	t.Setenv("SCORING_RANK_TIER_DIAMOND_LABEL", "Diamond")
-	t.Setenv("SCORING_LEADERBOARD_PROMOTION_RULE", "Top 20 move toward promotion review.")
-	t.Setenv("SCORING_LEADERBOARD_RESET_RULE", "Weekly XP resets; total XP remains.")
-	t.Setenv("SCORING_LEADERBOARD_PROMOTION_CUTOFF_RANK", "20")
-	t.Setenv("SCORING_LEADERBOARD_SAFETY_CUTOFF_RANK", "70")
-	t.Setenv("SCORING_CATEGORY_WEIGHT_FEATURE", "1.65")
-	t.Setenv("SCORING_REPOSITORY_WEIGHT_MAX", "1.5")
-	t.Setenv("SCORING_LEVEL_ARCHITECT_MIN_XP", "300")
 	t.Setenv("JOB_WORKER_CONCURRENCY", "9")
 	t.Setenv("SCHEDULER_RUN_MODE", "worker")
 	t.Setenv("JOB_DEAD_LETTER_QUEUE", "custom-dead-letter")
@@ -656,49 +633,11 @@ func TestLoadHonorsOverrides(t *testing.T) {
 	if cfg.AI.PRMaxChangedFiles != 24 || cfg.AI.PRMaxFileRecords != 30 {
 		t.Fatalf("AI file limits = changed %d files %d, want 24/30", cfg.AI.PRMaxChangedFiles, cfg.AI.PRMaxFileRecords)
 	}
-	if cfg.AI.SummaryMaxRunes != 500 || cfg.AI.SummaryPromptFilePathLimit != 18 {
-		t.Fatalf("AI summary limits = runes %d prompt_paths %d, want 500/18", cfg.AI.SummaryMaxRunes, cfg.AI.SummaryPromptFilePathLimit)
-	}
-	if cfg.AI.AnalyzerPolicyJSON != `{"small_change_max_files":4}` {
-		t.Fatalf("AI.AnalyzerPolicyJSON = %q, want override payload", cfg.AI.AnalyzerPolicyJSON)
-	}
 	if cfg.AI.Provider != "gemini" || cfg.AI.Model != "gemini-2.5-pro" {
 		t.Fatalf("AI provider/model = %s/%s, want gemini/gemini-2.5-pro", cfg.AI.Provider, cfg.AI.Model)
 	}
 	if cfg.AI.PRMaxEstimatedCostUSD != 0.08 || cfg.AI.EstimatedInputTokenCostUSD != 0.00001 {
 		t.Fatalf("AI cost limits = max %.5f token %.5f, want 0.08/0.00001", cfg.AI.PRMaxEstimatedCostUSD, cfg.AI.EstimatedInputTokenCostUSD)
-	}
-	if cfg.Scoring.ScoreVersion != "v1beta2" {
-		t.Fatalf("Scoring.ScoreVersion = %q, want v1beta2", cfg.Scoring.ScoreVersion)
-	}
-	if cfg.Scoring.BaseXP != 130 || cfg.Scoring.MinXP != 15 {
-		t.Fatalf("Scoring base/min = %.2f/%d, want 130/15", cfg.Scoring.BaseXP, cfg.Scoring.MinXP)
-	}
-	if cfg.Scoring.RankTierSilverMinXP != 1200 || cfg.Scoring.RankTierGoldMinXP != 3200 ||
-		cfg.Scoring.RankTierPlatinumMinXP != 7600 || cfg.Scoring.RankTierDiamondMinXP != 12000 {
-		t.Fatalf(
-			"Scoring rank tier thresholds = %d/%d/%d/%d, want 1200/3200/7600/12000",
-			cfg.Scoring.RankTierSilverMinXP,
-			cfg.Scoring.RankTierGoldMinXP,
-			cfg.Scoring.RankTierPlatinumMinXP,
-			cfg.Scoring.RankTierDiamondMinXP,
-		)
-	}
-	if cfg.Scoring.LeaderboardPromotionRule != "Top 20 move toward promotion review." ||
-		cfg.Scoring.LeaderboardResetRule != "Weekly XP resets; total XP remains." {
-		t.Fatalf("Scoring leaderboard rules override mismatch: %+v / %+v", cfg.Scoring.LeaderboardPromotionRule, cfg.Scoring.LeaderboardResetRule)
-	}
-	if cfg.Scoring.LeaderboardPromotionCutoffRank != 20 || cfg.Scoring.LeaderboardSafetyCutoffRank != 70 {
-		t.Fatalf("Scoring leaderboard cutoffs override mismatch: %d/%d", cfg.Scoring.LeaderboardPromotionCutoffRank, cfg.Scoring.LeaderboardSafetyCutoffRank)
-	}
-	if cfg.Scoring.CategoryWeightFeature != 1.65 {
-		t.Fatalf("Scoring.CategoryWeightFeature = %.2f, want 1.65", cfg.Scoring.CategoryWeightFeature)
-	}
-	if cfg.Scoring.RepositoryWeightMax != 1.5 {
-		t.Fatalf("Scoring.RepositoryWeightMax = %.2f, want 1.5", cfg.Scoring.RepositoryWeightMax)
-	}
-	if cfg.Scoring.LevelArchitectMinXP != 300 {
-		t.Fatalf("Scoring.LevelArchitectMinXP = %d, want 300", cfg.Scoring.LevelArchitectMinXP)
 	}
 	if cfg.Scheduler.WorkerConcurrency != 9 {
 		t.Fatalf("Scheduler.WorkerConcurrency = %d, want 9", cfg.Scheduler.WorkerConcurrency)
@@ -898,5 +837,48 @@ func TestScoringRankTierForXPUsesConfiguredThresholds(t *testing.T) {
 		if got := policy.RankTierForXP(tc.xp); got != tc.want {
 			t.Fatalf("RankTierForXP(%d) = %q, want %q", tc.xp, got, tc.want)
 		}
+	}
+}
+
+func TestLoadRejectsScoringRuleOverrides(t *testing.T) {
+	for _, key := range []string{"SCORING_BASE_XP", "SCORING_SCORE_VERSION", "SCORING_CATEGORY_WEIGHT_FEATURE", "SCORING_RANK_TIER_SILVER_LABEL"} {
+		t.Run(key, func(t *testing.T) {
+			t.Setenv(key, "override")
+			if _, err := Load("scoring-engine", "SCORING_ENGINE_ADDR"); err == nil || !strings.Contains(err.Error(), key) || !strings.Contains(err.Error(), DefaultScoreVersion) {
+				t.Fatalf("Load() error = %v, want explicit retired-policy override rejection", err)
+			}
+		})
+	}
+}
+
+func TestLoadRejectsAnalyzerRuleOverrides(t *testing.T) {
+	t.Setenv("AI_ANALYZER_POLICY_JSON", `{"small_change_max_files":4}`)
+	if _, err := Load("pr-analyzer", "PR_ANALYZER_ADDR"); err == nil || !strings.Contains(err.Error(), "AI_ANALYZER_POLICY_JSON") {
+		t.Fatalf("Load() error = %v, want explicit retired analyzer override rejection", err)
+	}
+}
+
+func TestLoadScoringOperatingLimitsPreserveFormula(t *testing.T) {
+	t.Setenv("SCORING_PROFILE_SCORE_HISTORY_LIMIT", "75")
+	t.Setenv("SCORING_LEADERBOARD_DEFAULT_LIMIT", "20")
+	t.Setenv("SCORING_LEADERBOARD_MAX_LIMIT", "60")
+	t.Setenv("SCORING_LEADERBOARD_BACKFILL_DEFAULT_WEEKS", "12")
+	t.Setenv("SCORING_LEADERBOARD_BACKFILL_MAX_WEEKS", "52")
+	cfg, err := Load("scoring-engine", "SCORING_ENGINE_ADDR")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.Scoring.ProfileScoreHistoryLimit != 75 || cfg.Scoring.LeaderboardDefaultLimit != 20 || cfg.Scoring.LeaderboardMaxLimit != 60 || cfg.Scoring.LeaderboardBackfillDefaultWeeks != 12 || cfg.Scoring.LeaderboardBackfillMaxWeeks != 52 {
+		t.Fatal("operating limits did not honor overrides")
+	}
+	policy := cfg.Scoring
+	defaults := DefaultScoringPolicy()
+	policy.ProfileScoreHistoryLimit = defaults.ProfileScoreHistoryLimit
+	policy.LeaderboardDefaultLimit = defaults.LeaderboardDefaultLimit
+	policy.LeaderboardMaxLimit = defaults.LeaderboardMaxLimit
+	policy.LeaderboardBackfillDefaultWeeks = defaults.LeaderboardBackfillDefaultWeeks
+	policy.LeaderboardBackfillMaxWeeks = defaults.LeaderboardBackfillMaxWeeks
+	if policy != defaults {
+		t.Fatal("operating overrides changed the versioned formula")
 	}
 }

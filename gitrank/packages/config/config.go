@@ -108,7 +108,6 @@ type GitHub struct {
 	ClientSecret                   string
 	AuthorizeURL                   string
 	TokenURL                       string
-	DeviceURL                      string
 	OAuthRedirectURL               string
 	AppID                          string
 	AppSlug                        string
@@ -140,7 +139,6 @@ type GitHub struct {
 	UserPRSyncTimeoutMax           time.Duration
 	MaxBodyBytes                   int
 	DedupeTTL                      time.Duration
-	FailedLookback                 time.Duration
 	RefreshSkew                    time.Duration
 	SecondaryBackoff               time.Duration
 	RepositoryCacheTTL             time.Duration
@@ -156,11 +154,6 @@ type AI struct {
 	Model                      string
 	BaseURL                    string
 	RequestTimeout             time.Duration
-	SummaryMaxRunes            int
-	SummaryPromptFilePathLimit int
-	AnalyzerPolicyJSON         string
-	ModerationModel            string
-	EmbeddingModel             string
 	PRMaxChangedFiles          int
 	PRMaxFileRecords           int
 	PRMaxDiffLines             int
@@ -168,109 +161,6 @@ type AI struct {
 	PRMaxEstimatedTokens       int
 	PRMaxEstimatedCostUSD      float64
 	EstimatedInputTokenCostUSD float64
-}
-
-type Scoring struct {
-	ScoreVersion                    string
-	BaseXP                          float64
-	MinXP                           int
-	LevelStepXP                     int
-	ProfileScoreHistoryLimit        int
-	RankTierBronzeLabel             string
-	RankTierSilverLabel             string
-	RankTierGoldLabel               string
-	RankTierPlatinumLabel           string
-	RankTierDiamondLabel            string
-	RankTierSilverMinXP             int
-	RankTierGoldMinXP               int
-	RankTierPlatinumMinXP           int
-	RankTierDiamondMinXP            int
-	LeaderboardPromotionRule        string
-	LeaderboardResetRule            string
-	LeaderboardPromotionCutoffRank  int
-	LeaderboardSafetyCutoffRank     int
-	LeaderboardDefaultLimit         int
-	LeaderboardMaxLimit             int
-	LeaderboardBackfillDefaultWeeks int
-	LeaderboardBackfillMaxWeeks     int
-	HighXPThreshold                 int
-
-	CategoryWeightDefault            float64
-	CategoryWeightDocumentation      float64
-	CategoryWeightTests              float64
-	CategoryWeightBugFix             float64
-	CategoryWeightFeature            float64
-	CategoryWeightRefactor           float64
-	CategoryWeightPerformance        float64
-	CategoryWeightInfrastructure     float64
-	CategoryWeightSecurity           float64
-	CategoryWeightMaintainerDesign   float64
-	RepositoryMaintainersThreshold   int
-	RepositoryMaintainersBonus       float64
-	RepositoryStarsTierOneThreshold  int
-	RepositoryStarsTierOneBonus      float64
-	RepositoryStarsTierTwoThreshold  int
-	RepositoryStarsTierTwoBonus      float64
-	RepositoryArchivedPenalty        float64
-	RepositoryWeightMin              float64
-	RepositoryWeightMax              float64
-	OutcomeWeightMerged              float64
-	OutcomeWeightDraft               float64
-	OutcomeWeightClosed              float64
-	OutcomeWeightOpen                float64
-	ConsistencyActiveWeeksCap        int
-	ConsistencyActiveWeekBonus       float64
-	ConsistencyMeaningfulRatioBonus  float64
-	ConsistencyRecentMergedThreshold int
-	ConsistencyRecentMergedBonus     float64
-	ConsistencyModifierMax           float64
-	ReviewStrengthBase               float64
-	ReviewStrengthCommentedBonus     float64
-	ReviewStrengthApprovedBonus      float64
-	ReviewStrengthApprovedCap        int
-	ReviewStrengthChangesBonus       float64
-	ReviewStrengthChangesCap         int
-	ReviewStrengthDenseThreshold     int
-	ReviewStrengthDenseBonus         float64
-	ReviewStrengthMax                float64
-	TechnicalDepthBase               float64
-	TechnicalDepthSourceBonus        float64
-	TechnicalDepthTestsBonus         float64
-	TechnicalDepthInfraConfigBonus   float64
-	TechnicalDepthCrossSurfaceBonus  float64
-	TechnicalDepthChangedFilesMin    int
-	TechnicalDepthChangedFilesBonus  float64
-	TechnicalDepthChangeVolumeMin    int
-	TechnicalDepthChangeVolumeBonus  float64
-	TechnicalDepthCriticalityCap     int
-	TechnicalDepthCriticalityBonus   float64
-	TechnicalDepthMax                float64
-	BadgeMultiRepoRepositoryMin      int
-	BadgeSecurityXPMin               int
-	BadgeTestingXPMin                int
-	BadgeConsistencyWeeksMin         int
-	BadgeEvidencePRLimit             int
-	DiminishingSimilarCap            int
-	DiminishingSimilarStep           float64
-	DiminishingCategoryCap           int
-	DiminishingCategoryStep          float64
-	DiminishingRepositoryThreshold   int
-	DiminishingRepositoryPenalty     float64
-	DiminishingModifierMin           float64
-	SpamDocsSmallChangeSizeLimit     int
-	SpamDocsSmallChangePenalty       float64
-	SpamTinyChangedFilesLimit        int
-	SpamTinyChangeSizeLimit          int
-	SpamTinyChangePenalty            float64
-	SpamDocsOnlyPenalty              float64
-	SpamPenaltyMax                   float64
-	SpamMultiplierFloor              float64
-	SuspiciousPenaltyThreshold       float64
-	LevelContributorMinXP            int
-	LevelBuilderMinXP                int
-	LevelSpecialistMinXP             int
-	LevelMaintainerMinXP             int
-	LevelArchitectMinXP              int
 }
 
 type Profile struct {
@@ -308,14 +198,18 @@ type Scheduler struct {
 }
 
 func Load(serviceName, addrEnvKey string) (App, error) {
+	if err := validateScoringEnvironment(); err != nil {
+		return App{}, err
+	}
+	if strings.TrimSpace(os.Getenv("AI_ANALYZER_POLICY_JSON")) != "" {
+		return App{}, errors.New("analyzer rules are compiled in the analyzer policy; remove AI_ANALYZER_POLICY_JSON")
+	}
 	rawAIProvider, aiProviderExplicit := lookupTrimmedEnv("AI_PROVIDER")
 	aiProvider := resolveAIProvider(rawAIProvider, aiProviderExplicit)
 	allowSecondaryAIEnv := !aiProviderExplicit
 	aiAPIKey := resolveAIEnv(aiProvider, "API_KEY", "", allowSecondaryAIEnv)
 	aiModel := resolveAIEnv(aiProvider, "MODEL", defaultAIModel(aiProvider), allowSecondaryAIEnv)
 	aiBaseURL := resolveAIEnv(aiProvider, "BASE_URL", defaultAIBaseURL(aiProvider), allowSecondaryAIEnv)
-	aiModerationModel := resolveAIEnv(aiProvider, "MODERATION_MODEL", defaultAIModerationModel(aiProvider), allowSecondaryAIEnv)
-	aiEmbeddingModel := resolveAIEnv(aiProvider, "EMBEDDING_MODEL", defaultAIEmbeddingModel(aiProvider), allowSecondaryAIEnv)
 
 	cfg := App{
 		Env:             Environment(getEnv("GITRANK_ENV", string(Development))),
@@ -368,7 +262,6 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			ClientSecret:                   getEnv("GITHUB_CLIENT_SECRET", defaultDevGitHubClientSecret),
 			AuthorizeURL:                   getEnv("GITHUB_OAUTH_AUTHORIZE_URL", "https://github.com/login/oauth/authorize"),
 			TokenURL:                       getEnv("GITHUB_OAUTH_EXCHANGE_URL", getEnv("GITHUB_OAUTH_TOKEN_URL", "https://github.com/login/oauth/access_token")),
-			DeviceURL:                      getEnv("GITHUB_OAUTH_DEVICE_URL", "https://github.com/login/device/code"),
 			OAuthRedirectURL:               getEnv("GITHUB_OAUTH_REDIRECT_URL", defaultLocalOAuthRedirectURL),
 			AppID:                          getEnv("GITHUB_APP_ID", defaultGitHubAppID),
 			AppSlug:                        getEnv("GITHUB_APP_SLUG", defaultGitHubAppSlug),
@@ -400,7 +293,6 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			UserPRSyncTimeoutMax:           getDuration("GITHUB_USER_PR_SYNC_TIMEOUT_MAX", 90*time.Second),
 			MaxBodyBytes:                   getInt("GITHUB_WEBHOOK_MAX_BODY_BYTES", 1<<20),
 			DedupeTTL:                      getDuration("GITHUB_WEBHOOK_DEDUPE_TTL", 7*24*time.Hour),
-			FailedLookback:                 getDuration("GITHUB_FAILED_DELIVERY_LOOKBACK", 72*time.Hour),
 			RefreshSkew:                    getDuration("GITHUB_INSTALLATION_REFRESH_SKEW", getDuration("GITHUB_INSTALLATION_TOKEN_REFRESH_SKEW", 5*time.Minute)),
 			SecondaryBackoff:               getDuration("GITHUB_SECONDARY_RATE_LIMIT_BACKOFF", time.Minute),
 			RepositoryCacheTTL:             getDuration("GITHUB_REPOSITORY_CACHE_TTL", 10*time.Minute),
@@ -415,11 +307,6 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			Model:                      aiModel,
 			BaseURL:                    aiBaseURL,
 			RequestTimeout:             getDuration("AI_REQUEST_TIMEOUT", 20*time.Second),
-			SummaryMaxRunes:            getInt("AI_SUMMARY_MAX_RUNES", 320),
-			SummaryPromptFilePathLimit: getInt("AI_SUMMARY_PROMPT_FILE_PATH_LIMIT", 12),
-			AnalyzerPolicyJSON:         getEnv("AI_ANALYZER_POLICY_JSON", ""),
-			ModerationModel:            aiModerationModel,
-			EmbeddingModel:             aiEmbeddingModel,
 			PRMaxChangedFiles:          getInt("AI_PR_MAX_CHANGED_FILES", 100),
 			PRMaxFileRecords:           getInt("AI_PR_MAX_FILE_RECORDS", 100),
 			PRMaxDiffLines:             getInt("AI_PR_MAX_DIFF_LINES", 5000),
@@ -428,114 +315,7 @@ func Load(serviceName, addrEnvKey string) (App, error) {
 			PRMaxEstimatedCostUSD:      getFloat("AI_PR_MAX_ESTIMATED_COST_USD", 0.25),
 			EstimatedInputTokenCostUSD: getFloat("AI_ESTIMATED_INPUT_TOKEN_COST_USD", 0.000005),
 		},
-		Scoring: Scoring{
-			ScoreVersion:                    strings.TrimSpace(getEnv("SCORING_SCORE_VERSION", "v1alpha1")),
-			BaseXP:                          getFloat("SCORING_BASE_XP", 100),
-			MinXP:                           getInt("SCORING_MIN_XP", 10),
-			LevelStepXP:                     getInt("SCORING_LEVEL_STEP_XP", 300),
-			ProfileScoreHistoryLimit:        getInt("SCORING_PROFILE_SCORE_HISTORY_LIMIT", 100),
-			RankTierBronzeLabel:             strings.TrimSpace(getEnv("SCORING_RANK_TIER_BRONZE_LABEL", "Bronze I")),
-			RankTierSilverLabel:             strings.TrimSpace(getEnv("SCORING_RANK_TIER_SILVER_LABEL", "Silver II")),
-			RankTierGoldLabel:               strings.TrimSpace(getEnv("SCORING_RANK_TIER_GOLD_LABEL", "Gold III")),
-			RankTierPlatinumLabel:           strings.TrimSpace(getEnv("SCORING_RANK_TIER_PLATINUM_LABEL", "Platinum I")),
-			RankTierDiamondLabel:            strings.TrimSpace(getEnv("SCORING_RANK_TIER_DIAMOND_LABEL", "Diamond")),
-			RankTierSilverMinXP:             getInt("SCORING_RANK_TIER_SILVER_MIN_XP", 1500),
-			RankTierGoldMinXP:               getInt("SCORING_RANK_TIER_GOLD_MIN_XP", 4000),
-			RankTierPlatinumMinXP:           getInt("SCORING_RANK_TIER_PLATINUM_MIN_XP", 9000),
-			RankTierDiamondMinXP:            getInt("SCORING_RANK_TIER_DIAMOND_MIN_XP", 15000),
-			LeaderboardPromotionRule:        strings.TrimSpace(getEnv("SCORING_LEADERBOARD_PROMOTION_RULE", "Top 25 move toward the next rank tier when the season locks.")),
-			LeaderboardResetRule:            strings.TrimSpace(getEnv("SCORING_LEADERBOARD_RESET_RULE", "Weekly XP resets after the window; total XP and score evidence are retained.")),
-			LeaderboardPromotionCutoffRank:  getInt("SCORING_LEADERBOARD_PROMOTION_CUTOFF_RANK", 25),
-			LeaderboardSafetyCutoffRank:     getInt("SCORING_LEADERBOARD_SAFETY_CUTOFF_RANK", 75),
-			LeaderboardDefaultLimit:         getInt("SCORING_LEADERBOARD_DEFAULT_LIMIT", 50),
-			LeaderboardMaxLimit:             getInt("SCORING_LEADERBOARD_MAX_LIMIT", 100),
-			LeaderboardBackfillDefaultWeeks: getInt("SCORING_LEADERBOARD_BACKFILL_DEFAULT_WEEKS", 26),
-			LeaderboardBackfillMaxWeeks:     getInt("SCORING_LEADERBOARD_BACKFILL_MAX_WEEKS", 156),
-			HighXPThreshold:                 getInt("SCORING_HIGH_XP_THRESHOLD", 200),
-
-			CategoryWeightDefault:          getFloat("SCORING_CATEGORY_WEIGHT_DEFAULT", 1.0),
-			CategoryWeightDocumentation:    getFloat("SCORING_CATEGORY_WEIGHT_DOCUMENTATION", 0.8),
-			CategoryWeightTests:            getFloat("SCORING_CATEGORY_WEIGHT_TESTS", 1.1),
-			CategoryWeightBugFix:           getFloat("SCORING_CATEGORY_WEIGHT_BUG_FIX", 1.3),
-			CategoryWeightFeature:          getFloat("SCORING_CATEGORY_WEIGHT_FEATURE", 1.5),
-			CategoryWeightRefactor:         getFloat("SCORING_CATEGORY_WEIGHT_REFACTOR", 1.2),
-			CategoryWeightPerformance:      getFloat("SCORING_CATEGORY_WEIGHT_PERFORMANCE", 1.6),
-			CategoryWeightInfrastructure:   getFloat("SCORING_CATEGORY_WEIGHT_INFRASTRUCTURE", 1.2),
-			CategoryWeightSecurity:         getFloat("SCORING_CATEGORY_WEIGHT_SECURITY", 1.7),
-			CategoryWeightMaintainerDesign: getFloat("SCORING_CATEGORY_WEIGHT_MAINTAINER_DESIGN", 1.8),
-
-			RepositoryMaintainersThreshold:  getInt("SCORING_REPOSITORY_MAINTAINERS_THRESHOLD", 3),
-			RepositoryMaintainersBonus:      getFloat("SCORING_REPOSITORY_MAINTAINERS_BONUS", 0.1),
-			RepositoryStarsTierOneThreshold: getInt("SCORING_REPOSITORY_STARS_TIER_ONE_THRESHOLD", 100),
-			RepositoryStarsTierOneBonus:     getFloat("SCORING_REPOSITORY_STARS_TIER_ONE_BONUS", 0.05),
-			RepositoryStarsTierTwoThreshold: getInt("SCORING_REPOSITORY_STARS_TIER_TWO_THRESHOLD", 1000),
-			RepositoryStarsTierTwoBonus:     getFloat("SCORING_REPOSITORY_STARS_TIER_TWO_BONUS", 0.05),
-			RepositoryArchivedPenalty:       getFloat("SCORING_REPOSITORY_ARCHIVED_PENALTY", 0.2),
-			RepositoryWeightMin:             getFloat("SCORING_REPOSITORY_WEIGHT_MIN", 0.75),
-			RepositoryWeightMax:             getFloat("SCORING_REPOSITORY_WEIGHT_MAX", 1.35),
-
-			OutcomeWeightMerged: getFloat("SCORING_OUTCOME_WEIGHT_MERGED", 1.4),
-			OutcomeWeightDraft:  getFloat("SCORING_OUTCOME_WEIGHT_DRAFT", 0.35),
-			OutcomeWeightClosed: getFloat("SCORING_OUTCOME_WEIGHT_CLOSED", 0.5),
-			OutcomeWeightOpen:   getFloat("SCORING_OUTCOME_WEIGHT_OPEN", 0.9),
-
-			ConsistencyActiveWeeksCap:        getInt("SCORING_CONSISTENCY_ACTIVE_WEEKS_CAP", 12),
-			ConsistencyActiveWeekBonus:       getFloat("SCORING_CONSISTENCY_ACTIVE_WEEK_BONUS", 0.02),
-			ConsistencyMeaningfulRatioBonus:  getFloat("SCORING_CONSISTENCY_MEANINGFUL_RATIO_BONUS", 0.1),
-			ConsistencyRecentMergedThreshold: getInt("SCORING_CONSISTENCY_RECENT_MERGED_THRESHOLD", 5),
-			ConsistencyRecentMergedBonus:     getFloat("SCORING_CONSISTENCY_RECENT_MERGED_BONUS", 0.05),
-			ConsistencyModifierMax:           getFloat("SCORING_CONSISTENCY_MODIFIER_MAX", 1.4),
-			ReviewStrengthBase:               getFloat("SCORING_REVIEW_STRENGTH_BASE", 0.8),
-			ReviewStrengthCommentedBonus:     getFloat("SCORING_REVIEW_STRENGTH_COMMENTED_BONUS", 0.05),
-			ReviewStrengthApprovedBonus:      getFloat("SCORING_REVIEW_STRENGTH_APPROVED_BONUS", 0.12),
-			ReviewStrengthApprovedCap:        getInt("SCORING_REVIEW_STRENGTH_APPROVED_CAP", 3),
-			ReviewStrengthChangesBonus:       getFloat("SCORING_REVIEW_STRENGTH_CHANGES_REQUESTED_BONUS", 0.18),
-			ReviewStrengthChangesCap:         getInt("SCORING_REVIEW_STRENGTH_CHANGES_REQUESTED_CAP", 2),
-			ReviewStrengthDenseThreshold:     getInt("SCORING_REVIEW_STRENGTH_DENSE_THRESHOLD", 4),
-			ReviewStrengthDenseBonus:         getFloat("SCORING_REVIEW_STRENGTH_DENSE_BONUS", 0.1),
-			ReviewStrengthMax:                getFloat("SCORING_REVIEW_STRENGTH_MAX", 2.1),
-			TechnicalDepthBase:               getFloat("SCORING_TECHNICAL_DEPTH_BASE", 0.75),
-			TechnicalDepthSourceBonus:        getFloat("SCORING_TECHNICAL_DEPTH_SOURCE_BONUS", 0.2),
-			TechnicalDepthTestsBonus:         getFloat("SCORING_TECHNICAL_DEPTH_TESTS_BONUS", 0.12),
-			TechnicalDepthInfraConfigBonus:   getFloat("SCORING_TECHNICAL_DEPTH_INFRA_CONFIG_BONUS", 0.08),
-			TechnicalDepthCrossSurfaceBonus:  getFloat("SCORING_TECHNICAL_DEPTH_CROSS_SURFACE_BONUS", 0.12),
-			TechnicalDepthChangedFilesMin:    getInt("SCORING_TECHNICAL_DEPTH_CHANGED_FILES_MIN", 5),
-			TechnicalDepthChangedFilesBonus:  getFloat("SCORING_TECHNICAL_DEPTH_CHANGED_FILES_BONUS", 0.12),
-			TechnicalDepthChangeVolumeMin:    getInt("SCORING_TECHNICAL_DEPTH_CHANGE_VOLUME_MIN", 200),
-			TechnicalDepthChangeVolumeBonus:  getFloat("SCORING_TECHNICAL_DEPTH_CHANGE_VOLUME_BONUS", 0.15),
-			TechnicalDepthCriticalityCap:     getInt("SCORING_TECHNICAL_DEPTH_CRITICALITY_CAP", 3),
-			TechnicalDepthCriticalityBonus:   getFloat("SCORING_TECHNICAL_DEPTH_CRITICALITY_BONUS", 0.08),
-			TechnicalDepthMax:                getFloat("SCORING_TECHNICAL_DEPTH_MAX", 2.4),
-			BadgeMultiRepoRepositoryMin:      getInt("SCORING_BADGE_MULTI_REPO_REPOSITORY_MIN", 3),
-			BadgeSecurityXPMin:               getInt("SCORING_BADGE_SECURITY_XP_MIN", 120),
-			BadgeTestingXPMin:                getInt("SCORING_BADGE_TESTING_XP_MIN", 100),
-			BadgeConsistencyWeeksMin:         getInt("SCORING_BADGE_CONSISTENCY_WEEKS_MIN", 4),
-			BadgeEvidencePRLimit:             getInt("SCORING_BADGE_EVIDENCE_PR_LIMIT", 5),
-
-			DiminishingSimilarCap:          getInt("SCORING_DIMINISHING_SIMILAR_CAP", 5),
-			DiminishingSimilarStep:         getFloat("SCORING_DIMINISHING_SIMILAR_STEP", 0.08),
-			DiminishingCategoryCap:         getInt("SCORING_DIMINISHING_CATEGORY_CAP", 8),
-			DiminishingCategoryStep:        getFloat("SCORING_DIMINISHING_CATEGORY_STEP", 0.025),
-			DiminishingRepositoryThreshold: getInt("SCORING_DIMINISHING_REPOSITORY_THRESHOLD", 6),
-			DiminishingRepositoryPenalty:   getFloat("SCORING_DIMINISHING_REPOSITORY_PENALTY", 0.1),
-			DiminishingModifierMin:         getFloat("SCORING_DIMINISHING_MODIFIER_MIN", 0.6),
-
-			SpamDocsSmallChangeSizeLimit: getInt("SCORING_SPAM_DOCS_SMALL_CHANGE_SIZE_LIMIT", 20),
-			SpamDocsSmallChangePenalty:   getFloat("SCORING_SPAM_DOCS_SMALL_CHANGE_PENALTY", 0.2),
-			SpamTinyChangedFilesLimit:    getInt("SCORING_SPAM_TINY_CHANGED_FILES_LIMIT", 2),
-			SpamTinyChangeSizeLimit:      getInt("SCORING_SPAM_TINY_CHANGE_SIZE_LIMIT", 15),
-			SpamTinyChangePenalty:        getFloat("SCORING_SPAM_TINY_CHANGE_PENALTY", 0.1),
-			SpamDocsOnlyPenalty:          getFloat("SCORING_SPAM_DOCS_ONLY_PENALTY", 0.05),
-			SpamPenaltyMax:               getFloat("SCORING_SPAM_PENALTY_MAX", 0.35),
-			SpamMultiplierFloor:          getFloat("SCORING_SPAM_MULTIPLIER_FLOOR", 0.35),
-			SuspiciousPenaltyThreshold:   getFloat("SCORING_SUSPICIOUS_PENALTY_THRESHOLD", 0.2),
-
-			LevelContributorMinXP: getInt("SCORING_LEVEL_CONTRIBUTOR_MIN_XP", 60),
-			LevelBuilderMinXP:     getInt("SCORING_LEVEL_BUILDER_MIN_XP", 100),
-			LevelSpecialistMinXP:  getInt("SCORING_LEVEL_SPECIALIST_MIN_XP", 140),
-			LevelMaintainerMinXP:  getInt("SCORING_LEVEL_MAINTAINER_MIN_XP", 180),
-			LevelArchitectMinXP:   getInt("SCORING_LEVEL_ARCHITECT_MIN_XP", 250),
-		},
+		Scoring: loadScoringPolicy(),
 		Profile: Profile{
 			PublicCacheTTL:             getDuration("PROFILE_PUBLIC_CACHE_TTL", 5*time.Minute),
 			PrivateCacheTTL:            getDuration("PROFILE_PRIVATE_CACHE_TTL", 2*time.Minute),
@@ -605,7 +385,6 @@ func (a App) ValidateBase() error {
 		"SCHEDULER_WORKER_BASE_URL":  a.Services.SchedulerBaseURL,
 		"GITHUB_OAUTH_AUTHORIZE_URL": a.GitHub.AuthorizeURL,
 		"GITHUB_OAUTH_EXCHANGE_URL":  a.GitHub.TokenURL,
-		"GITHUB_OAUTH_DEVICE_URL":    a.GitHub.DeviceURL,
 	}
 	for name, value := range internalURLs {
 		if err := validateURL(value); err != nil {
@@ -714,9 +493,6 @@ func (a App) ValidateBase() error {
 	if a.GitHub.DedupeTTL <= 0 {
 		problems = append(problems, "GITHUB_WEBHOOK_DEDUPE_TTL must be positive")
 	}
-	if a.GitHub.FailedLookback <= 0 {
-		problems = append(problems, "GITHUB_FAILED_DELIVERY_LOOKBACK must be positive")
-	}
 	if a.GitHub.RefreshSkew <= 0 {
 		problems = append(problems, "GITHUB_INSTALLATION_REFRESH_SKEW must be positive")
 	}
@@ -743,15 +519,6 @@ func (a App) ValidateBase() error {
 	if a.AI.RequestTimeout <= 0 {
 		problems = append(problems, "AI_REQUEST_TIMEOUT must be positive")
 	}
-	if a.AI.SummaryMaxRunes <= 0 || a.AI.SummaryMaxRunes > 2048 {
-		problems = append(problems, "AI_SUMMARY_MAX_RUNES must be between 1 and 2048")
-	}
-	if a.AI.SummaryPromptFilePathLimit <= 0 || a.AI.SummaryPromptFilePathLimit > 200 {
-		problems = append(problems, "AI_SUMMARY_PROMPT_FILE_PATH_LIMIT must be between 1 and 200")
-	}
-	if len(strings.TrimSpace(a.AI.AnalyzerPolicyJSON)) > 128*1024 {
-		problems = append(problems, "AI_ANALYZER_POLICY_JSON must be <= 128KB")
-	}
 	if a.AI.PRMaxChangedFiles <= 0 {
 		problems = append(problems, "AI_PR_MAX_CHANGED_FILES must be positive")
 	}
@@ -774,16 +541,16 @@ func (a App) ValidateBase() error {
 		problems = append(problems, "AI_ESTIMATED_INPUT_TOKEN_COST_USD must be positive")
 	}
 	if strings.TrimSpace(a.Scoring.ScoreVersion) == "" {
-		problems = append(problems, "SCORING_SCORE_VERSION is required")
+		problems = append(problems, "scoring policy score version is required")
 	}
 	if a.Scoring.BaseXP <= 0 {
-		problems = append(problems, "SCORING_BASE_XP must be positive")
+		problems = append(problems, "scoring policy base xp must be positive")
 	}
 	if a.Scoring.MinXP <= 0 {
-		problems = append(problems, "SCORING_MIN_XP must be positive")
+		problems = append(problems, "scoring policy min xp must be positive")
 	}
 	if a.Scoring.LevelStepXP <= 0 {
-		problems = append(problems, "SCORING_LEVEL_STEP_XP must be positive")
+		problems = append(problems, "scoring policy level step xp must be positive")
 	}
 	if a.Scoring.ProfileScoreHistoryLimit <= 0 {
 		problems = append(problems, "SCORING_PROFILE_SCORE_HISTORY_LIMIT must be positive")
@@ -793,27 +560,27 @@ func (a App) ValidateBase() error {
 		strings.TrimSpace(a.Scoring.RankTierGoldLabel) == "" ||
 		strings.TrimSpace(a.Scoring.RankTierPlatinumLabel) == "" ||
 		strings.TrimSpace(a.Scoring.RankTierDiamondLabel) == "" {
-		problems = append(problems, "SCORING_RANK_TIER_*_LABEL values are required")
+		problems = append(problems, "scoring policy rank tier * label values are required")
 	}
 	if a.Scoring.RankTierSilverMinXP <= 0 ||
 		a.Scoring.RankTierGoldMinXP <= 0 ||
 		a.Scoring.RankTierPlatinumMinXP <= 0 ||
 		a.Scoring.RankTierDiamondMinXP <= 0 {
-		problems = append(problems, "SCORING_RANK_TIER_*_MIN_XP values must be positive")
+		problems = append(problems, "scoring policy rank tier * min xp values must be positive")
 	}
 	if !(a.Scoring.RankTierSilverMinXP < a.Scoring.RankTierGoldMinXP &&
 		a.Scoring.RankTierGoldMinXP < a.Scoring.RankTierPlatinumMinXP &&
 		a.Scoring.RankTierPlatinumMinXP < a.Scoring.RankTierDiamondMinXP) {
-		problems = append(problems, "SCORING_RANK_TIER_*_MIN_XP values must be strictly increasing")
+		problems = append(problems, "scoring policy rank tier * min xp values must be strictly increasing")
 	}
 	if strings.TrimSpace(a.Scoring.LeaderboardPromotionRule) == "" || strings.TrimSpace(a.Scoring.LeaderboardResetRule) == "" {
-		problems = append(problems, "SCORING_LEADERBOARD_PROMOTION_RULE and SCORING_LEADERBOARD_RESET_RULE are required")
+		problems = append(problems, "scoring policy leaderboard promotion rule and scoring policy leaderboard reset rule are required")
 	}
 	if a.Scoring.LeaderboardPromotionCutoffRank <= 0 || a.Scoring.LeaderboardSafetyCutoffRank <= 0 {
-		problems = append(problems, "SCORING_LEADERBOARD_PROMOTION_CUTOFF_RANK and SCORING_LEADERBOARD_SAFETY_CUTOFF_RANK must be positive")
+		problems = append(problems, "scoring policy leaderboard promotion cutoff rank and scoring policy leaderboard safety cutoff rank must be positive")
 	}
 	if a.Scoring.LeaderboardSafetyCutoffRank < a.Scoring.LeaderboardPromotionCutoffRank {
-		problems = append(problems, "SCORING_LEADERBOARD_SAFETY_CUTOFF_RANK must be >= SCORING_LEADERBOARD_PROMOTION_CUTOFF_RANK")
+		problems = append(problems, "scoring policy leaderboard safety cutoff rank must be >= scoring policy leaderboard promotion cutoff rank")
 	}
 	if a.Scoring.LeaderboardDefaultLimit <= 0 || a.Scoring.LeaderboardMaxLimit <= 0 {
 		problems = append(problems, "SCORING_LEADERBOARD_DEFAULT_LIMIT and SCORING_LEADERBOARD_MAX_LIMIT must be positive")
@@ -828,108 +595,108 @@ func (a App) ValidateBase() error {
 		problems = append(problems, "SCORING_LEADERBOARD_BACKFILL_MAX_WEEKS must be >= SCORING_LEADERBOARD_BACKFILL_DEFAULT_WEEKS")
 	}
 	if a.Scoring.HighXPThreshold <= 0 {
-		problems = append(problems, "SCORING_HIGH_XP_THRESHOLD must be positive")
+		problems = append(problems, "scoring policy high xp threshold must be positive")
 	}
 	if a.Scoring.CategoryWeightDefault <= 0 {
-		problems = append(problems, "SCORING_CATEGORY_WEIGHT_DEFAULT must be positive")
+		problems = append(problems, "scoring policy category weight default must be positive")
 	}
 	if a.Scoring.CategoryWeightDocumentation <= 0 || a.Scoring.CategoryWeightTests <= 0 || a.Scoring.CategoryWeightBugFix <= 0 ||
 		a.Scoring.CategoryWeightFeature <= 0 || a.Scoring.CategoryWeightRefactor <= 0 || a.Scoring.CategoryWeightPerformance <= 0 ||
 		a.Scoring.CategoryWeightInfrastructure <= 0 || a.Scoring.CategoryWeightSecurity <= 0 || a.Scoring.CategoryWeightMaintainerDesign <= 0 {
-		problems = append(problems, "all SCORING_CATEGORY_WEIGHT_* values must be positive")
+		problems = append(problems, "all scoring policy category weight * values must be positive")
 	}
 	if a.Scoring.RepositoryMaintainersThreshold <= 0 {
-		problems = append(problems, "SCORING_REPOSITORY_MAINTAINERS_THRESHOLD must be positive")
+		problems = append(problems, "scoring policy repository maintainers threshold must be positive")
 	}
 	if a.Scoring.RepositoryMaintainersBonus < 0 || a.Scoring.RepositoryStarsTierOneBonus < 0 || a.Scoring.RepositoryStarsTierTwoBonus < 0 {
-		problems = append(problems, "SCORING_REPOSITORY_*_BONUS values must be non-negative")
+		problems = append(problems, "scoring policy repository * bonus values must be non-negative")
 	}
 	if a.Scoring.RepositoryStarsTierOneThreshold <= 0 || a.Scoring.RepositoryStarsTierTwoThreshold <= 0 {
-		problems = append(problems, "SCORING_REPOSITORY_STARS_*_THRESHOLD values must be positive")
+		problems = append(problems, "scoring policy repository stars * threshold values must be positive")
 	}
 	if a.Scoring.RepositoryStarsTierTwoThreshold < a.Scoring.RepositoryStarsTierOneThreshold {
-		problems = append(problems, "SCORING_REPOSITORY_STARS_TIER_TWO_THRESHOLD must be >= SCORING_REPOSITORY_STARS_TIER_ONE_THRESHOLD")
+		problems = append(problems, "scoring policy repository stars tier two threshold must be >= scoring policy repository stars tier one threshold")
 	}
 	if a.Scoring.RepositoryArchivedPenalty < 0 {
-		problems = append(problems, "SCORING_REPOSITORY_ARCHIVED_PENALTY must be non-negative")
+		problems = append(problems, "scoring policy repository archived penalty must be non-negative")
 	}
 	if a.Scoring.RepositoryWeightMin <= 0 || a.Scoring.RepositoryWeightMax <= 0 || a.Scoring.RepositoryWeightMax < a.Scoring.RepositoryWeightMin {
-		problems = append(problems, "SCORING_REPOSITORY_WEIGHT_MIN/MAX must be positive and MAX >= MIN")
+		problems = append(problems, "scoring policy repository weight min/max must be positive and MAX >= MIN")
 	}
 	if a.Scoring.OutcomeWeightMerged <= 0 || a.Scoring.OutcomeWeightDraft <= 0 || a.Scoring.OutcomeWeightClosed <= 0 || a.Scoring.OutcomeWeightOpen <= 0 {
-		problems = append(problems, "SCORING_OUTCOME_WEIGHT_* values must be positive")
+		problems = append(problems, "scoring policy outcome weight * values must be positive")
 	}
 	if a.Scoring.ConsistencyActiveWeeksCap <= 0 {
-		problems = append(problems, "SCORING_CONSISTENCY_ACTIVE_WEEKS_CAP must be positive")
+		problems = append(problems, "scoring policy consistency active weeks cap must be positive")
 	}
 	if a.Scoring.ConsistencyActiveWeekBonus < 0 || a.Scoring.ConsistencyMeaningfulRatioBonus < 0 || a.Scoring.ConsistencyRecentMergedBonus < 0 {
-		problems = append(problems, "SCORING_CONSISTENCY_*_BONUS values must be non-negative")
+		problems = append(problems, "scoring policy consistency * bonus values must be non-negative")
 	}
 	if a.Scoring.ConsistencyRecentMergedThreshold <= 0 {
-		problems = append(problems, "SCORING_CONSISTENCY_RECENT_MERGED_THRESHOLD must be positive")
+		problems = append(problems, "scoring policy consistency recent merged threshold must be positive")
 	}
 	if a.Scoring.ConsistencyModifierMax <= 0 {
-		problems = append(problems, "SCORING_CONSISTENCY_MODIFIER_MAX must be positive")
+		problems = append(problems, "scoring policy consistency modifier max must be positive")
 	}
 	if a.Scoring.ReviewStrengthBase <= 0 || a.Scoring.ReviewStrengthCommentedBonus < 0 || a.Scoring.ReviewStrengthApprovedBonus < 0 ||
 		a.Scoring.ReviewStrengthChangesBonus < 0 || a.Scoring.ReviewStrengthDenseBonus < 0 || a.Scoring.ReviewStrengthMax <= 0 {
-		problems = append(problems, "SCORING_REVIEW_STRENGTH_* values must be positive, and *_BONUS values must be non-negative")
+		problems = append(problems, "scoring policy review strength * values must be positive, and *_BONUS values must be non-negative")
 	}
 	if a.Scoring.ReviewStrengthApprovedCap <= 0 || a.Scoring.ReviewStrengthChangesCap <= 0 || a.Scoring.ReviewStrengthDenseThreshold <= 0 {
-		problems = append(problems, "SCORING_REVIEW_STRENGTH_*_CAP/THRESHOLD values must be positive")
+		problems = append(problems, "scoring policy review strength * cap/threshold values must be positive")
 	}
 	if a.Scoring.ReviewStrengthMax < a.Scoring.ReviewStrengthBase {
-		problems = append(problems, "SCORING_REVIEW_STRENGTH_MAX must be >= SCORING_REVIEW_STRENGTH_BASE")
+		problems = append(problems, "scoring policy review strength max must be >= scoring policy review strength base")
 	}
 	if a.Scoring.TechnicalDepthBase <= 0 || a.Scoring.TechnicalDepthSourceBonus < 0 || a.Scoring.TechnicalDepthTestsBonus < 0 ||
 		a.Scoring.TechnicalDepthInfraConfigBonus < 0 || a.Scoring.TechnicalDepthCrossSurfaceBonus < 0 ||
 		a.Scoring.TechnicalDepthChangedFilesBonus < 0 || a.Scoring.TechnicalDepthChangeVolumeBonus < 0 ||
 		a.Scoring.TechnicalDepthCriticalityBonus < 0 || a.Scoring.TechnicalDepthMax <= 0 {
-		problems = append(problems, "SCORING_TECHNICAL_DEPTH_* values must be positive, and *_BONUS values must be non-negative")
+		problems = append(problems, "scoring policy technical depth * values must be positive, and *_BONUS values must be non-negative")
 	}
 	if a.Scoring.TechnicalDepthChangedFilesMin <= 0 || a.Scoring.TechnicalDepthChangeVolumeMin <= 0 || a.Scoring.TechnicalDepthCriticalityCap <= 0 {
-		problems = append(problems, "SCORING_TECHNICAL_DEPTH_*_MIN/CAP values must be positive")
+		problems = append(problems, "scoring policy technical depth * min/cap values must be positive")
 	}
 	if a.Scoring.TechnicalDepthMax < a.Scoring.TechnicalDepthBase {
-		problems = append(problems, "SCORING_TECHNICAL_DEPTH_MAX must be >= SCORING_TECHNICAL_DEPTH_BASE")
+		problems = append(problems, "scoring policy technical depth max must be >= scoring policy technical depth base")
 	}
 	if a.Scoring.BadgeMultiRepoRepositoryMin <= 0 || a.Scoring.BadgeSecurityXPMin <= 0 || a.Scoring.BadgeTestingXPMin <= 0 ||
 		a.Scoring.BadgeConsistencyWeeksMin <= 0 || a.Scoring.BadgeEvidencePRLimit <= 0 {
-		problems = append(problems, "SCORING_BADGE_* threshold values must be positive")
+		problems = append(problems, "scoring policy badge * threshold values must be positive")
 	}
 	if a.Scoring.DiminishingSimilarCap < 0 || a.Scoring.DiminishingCategoryCap < 0 || a.Scoring.DiminishingRepositoryThreshold < 0 {
-		problems = append(problems, "SCORING_DIMINISHING_*_CAP/THRESHOLD values must be non-negative")
+		problems = append(problems, "scoring policy diminishing * cap/threshold values must be non-negative")
 	}
 	if a.Scoring.DiminishingSimilarStep < 0 || a.Scoring.DiminishingCategoryStep < 0 || a.Scoring.DiminishingRepositoryPenalty < 0 {
-		problems = append(problems, "SCORING_DIMINISHING_*_STEP/PENALTY values must be non-negative")
+		problems = append(problems, "scoring policy diminishing * step/penalty values must be non-negative")
 	}
 	if a.Scoring.DiminishingModifierMin <= 0 || a.Scoring.DiminishingModifierMin > 1 {
-		problems = append(problems, "SCORING_DIMINISHING_MODIFIER_MIN must be in (0, 1]")
+		problems = append(problems, "scoring policy diminishing modifier min must be in (0, 1]")
 	}
 	if a.Scoring.SpamDocsSmallChangeSizeLimit <= 0 || a.Scoring.SpamTinyChangedFilesLimit <= 0 || a.Scoring.SpamTinyChangeSizeLimit <= 0 {
-		problems = append(problems, "SCORING_SPAM_*_LIMIT values must be positive")
+		problems = append(problems, "scoring policy spam * limit values must be positive")
 	}
 	if a.Scoring.SpamDocsSmallChangePenalty < 0 || a.Scoring.SpamTinyChangePenalty < 0 || a.Scoring.SpamDocsOnlyPenalty < 0 {
-		problems = append(problems, "SCORING_SPAM_*_PENALTY values must be non-negative")
+		problems = append(problems, "scoring policy spam * penalty values must be non-negative")
 	}
 	if a.Scoring.SpamPenaltyMax < 0 || a.Scoring.SpamPenaltyMax > 1 {
-		problems = append(problems, "SCORING_SPAM_PENALTY_MAX must be between 0 and 1")
+		problems = append(problems, "scoring policy spam penalty max must be between 0 and 1")
 	}
 	if a.Scoring.SpamMultiplierFloor <= 0 || a.Scoring.SpamMultiplierFloor > 1 {
-		problems = append(problems, "SCORING_SPAM_MULTIPLIER_FLOOR must be in (0, 1]")
+		problems = append(problems, "scoring policy spam multiplier floor must be in (0, 1]")
 	}
 	if a.Scoring.SuspiciousPenaltyThreshold < 0 || a.Scoring.SuspiciousPenaltyThreshold > 1 {
-		problems = append(problems, "SCORING_SUSPICIOUS_PENALTY_THRESHOLD must be between 0 and 1")
+		problems = append(problems, "scoring policy suspicious penalty threshold must be between 0 and 1")
 	}
 	if a.Scoring.LevelContributorMinXP <= 0 || a.Scoring.LevelBuilderMinXP <= 0 || a.Scoring.LevelSpecialistMinXP <= 0 ||
 		a.Scoring.LevelMaintainerMinXP <= 0 || a.Scoring.LevelArchitectMinXP <= 0 {
-		problems = append(problems, "SCORING_LEVEL_*_MIN_XP values must be positive")
+		problems = append(problems, "scoring policy level * min xp values must be positive")
 	}
 	if !(a.Scoring.LevelContributorMinXP < a.Scoring.LevelBuilderMinXP &&
 		a.Scoring.LevelBuilderMinXP < a.Scoring.LevelSpecialistMinXP &&
 		a.Scoring.LevelSpecialistMinXP < a.Scoring.LevelMaintainerMinXP &&
 		a.Scoring.LevelMaintainerMinXP < a.Scoring.LevelArchitectMinXP) {
-		problems = append(problems, "SCORING_LEVEL_*_MIN_XP values must be strictly increasing")
+		problems = append(problems, "scoring policy level * min xp values must be strictly increasing")
 	}
 	if a.Scheduler.WorkerConcurrency <= 0 {
 		problems = append(problems, "JOB_WORKER_CONCURRENCY must be positive")
@@ -1322,42 +1089,43 @@ func (s Scoring) OrderedRankTiers() []string {
 }
 
 func (s Scoring) normalizedRankTierPolicy() (bronze, silver, gold, platinum, diamond string, silverMin, goldMin, platinumMin, diamondMin int) {
+	defaults := DefaultScoringPolicy()
 	bronze = strings.TrimSpace(s.RankTierBronzeLabel)
 	if bronze == "" {
-		bronze = "Bronze I"
+		bronze = defaults.RankTierBronzeLabel
 	}
 	silver = strings.TrimSpace(s.RankTierSilverLabel)
 	if silver == "" {
-		silver = "Silver II"
+		silver = defaults.RankTierSilverLabel
 	}
 	gold = strings.TrimSpace(s.RankTierGoldLabel)
 	if gold == "" {
-		gold = "Gold III"
+		gold = defaults.RankTierGoldLabel
 	}
 	platinum = strings.TrimSpace(s.RankTierPlatinumLabel)
 	if platinum == "" {
-		platinum = "Platinum I"
+		platinum = defaults.RankTierPlatinumLabel
 	}
 	diamond = strings.TrimSpace(s.RankTierDiamondLabel)
 	if diamond == "" {
-		diamond = "Diamond"
+		diamond = defaults.RankTierDiamondLabel
 	}
 
 	silverMin = s.RankTierSilverMinXP
 	if silverMin <= 0 {
-		silverMin = 1500
+		silverMin = defaults.RankTierSilverMinXP
 	}
 	goldMin = s.RankTierGoldMinXP
 	if goldMin <= silverMin {
-		goldMin = maxInt(4000, silverMin+1)
+		goldMin = maxInt(defaults.RankTierGoldMinXP, silverMin+1)
 	}
 	platinumMin = s.RankTierPlatinumMinXP
 	if platinumMin <= goldMin {
-		platinumMin = maxInt(9000, goldMin+1)
+		platinumMin = maxInt(defaults.RankTierPlatinumMinXP, goldMin+1)
 	}
 	diamondMin = s.RankTierDiamondMinXP
 	if diamondMin <= platinumMin {
-		diamondMin = maxInt(15000, platinumMin+1)
+		diamondMin = maxInt(defaults.RankTierDiamondMinXP, platinumMin+1)
 	}
 	return bronze, silver, gold, platinum, diamond, silverMin, goldMin, platinumMin, diamondMin
 }
@@ -1458,24 +1226,6 @@ func defaultAIBaseURL(provider string) string {
 		return "https://generativelanguage.googleapis.com/v1beta/openai"
 	default:
 		return "https://api.openai.com/v1"
-	}
-}
-
-func defaultAIModerationModel(provider string) string {
-	switch normalizeAIProvider(provider) {
-	case "gemini":
-		return ""
-	default:
-		return "omni-moderation-latest"
-	}
-}
-
-func defaultAIEmbeddingModel(provider string) string {
-	switch normalizeAIProvider(provider) {
-	case "gemini":
-		return "text-embedding-004"
-	default:
-		return "text-embedding-3-small"
 	}
 }
 

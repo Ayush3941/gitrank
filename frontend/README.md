@@ -111,7 +111,7 @@ The public profile page, authenticated dashboard overview, onboarding reveal, ba
 - `npm run check:onboarding-prefetch-policy` fails CI if onboarding/marketing `next/link` usage omits explicit `prefetch={false}` in performance-sensitive entry flows
 - `npm run check:oauth-prefetch-policy` fails CI if links targeting `/oauth/github/start` omit strict prefetch-disable policy (`IntentPrefetchLink prefetchMode="never"` or `Link prefetch={false}`)
 - `npm run check:dashboard-route-copy-policy` fails CI if dashboard route pages stop sourcing metadata from `dashboardNavByHref`, preventing nav-label and metadata drift
-- `npm run check:env-example-coverage` fails CI when frontend runtime env keys in source drift from `gitrank/.env.example` (missing declarations or stale unused keys)
+- `npm run check:env-example-coverage` fails CI when a frontend runtime env key is absent from both the compact `gitrank/.env.example` and the supported-variable table in `gitrank/docs/configuration.md`
 - `npm run check:route-state-primitives` fails CI if route `loading`, `error`, `global-error`, or `not-found` files stop using shared route-state UI primitives
 - `npm run check:radius-tokens` fails CI if production frontend modules use large or hardcoded radius utility classes instead of `rounded-[var(--radius-universal)]`, `rounded-full`, or `rounded-none`
 - `npm run check:progress-names` fails CI if shared progress meters lack `aria-label` or `aria-labelledby`
@@ -185,11 +185,8 @@ If you expose a non-default CSRF cookie name to the browser, also set:
 NEXT_PUBLIC_GITRANK_CSRF_COOKIE_NAME=gitrank_csrf
 ```
 
-Set deterministic score-version fallback copy used when score history metadata is missing:
-
-```bash
-NEXT_PUBLIC_GITRANK_SCORE_VERSION_FALLBACK=v1alpha1
-```
+Score-version fallback copy is fixed in `lib/runtime/frontend-policy.ts`; API
+score metadata remains authoritative.
 
 If your backend uses a non-default session cookie name:
 
@@ -204,15 +201,16 @@ GitHub auth is initiated and completed through frontend routes:
 
 These routes proxy to auth-service and preserve auth cookies on the frontend origin.
 
-Optional contribution UI policy values (no hardcoded thresholds in component logic):
+Contribution display, rank labels, leaderboard fallbacks, and polling presets
+are shared policies under `lib/runtime/`. Components consume these policies;
+they do not define separate constants or environment overrides. Backend-provided
+history caps and high-XP thresholds retain precedence over display fallbacks.
 
-```bash
-NEXT_PUBLIC_GITRANK_CONTRIBUTION_CARD_PAGE_SIZE=12
-NEXT_PUBLIC_GITRANK_CONTRIBUTION_CARD_PAGE_SIZE_CONSTRAINED=6
-NEXT_PUBLIC_GITRANK_CONTRIBUTION_RENDER_HARD_CAP=100
-NEXT_PUBLIC_GITRANK_ABRA_CONTRIBUTION_SAMPLE_LIMIT=24
-NEXT_PUBLIC_GITRANK_HIGH_XP_THRESHOLD=200
-```
+The public frontend environment controls are CSRF cookie-name coordination, the
+bounded user-sync execution deadline (default 180 seconds), and web-vitals
+sampling. These values are embedded during the Next.js build. See the complete
+[configuration reference](../gitrank/docs/configuration.md) for supported
+deployment and operating overrides. Runtime continues to use one `gitrank/.env`.
 
 ## Optional ChatGPT ABRA Insights
 

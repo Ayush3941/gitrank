@@ -49,6 +49,8 @@ profile caching; scheduler execution uses its own PostgreSQL-backed state.
 Shared request and response shapes live in [contracts](../packages/contracts).
 Runtime policy lives in [config](../packages/config). Database changes live in
 [migrations](../deployments/migrations).
+The [configuration reference](./configuration.md) separates deployment and
+operating overrides from the compiled scoring, analyzer, and frontend policies.
 
 ## Trace These Flows
 

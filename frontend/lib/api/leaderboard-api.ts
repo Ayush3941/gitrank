@@ -222,7 +222,7 @@ function seasonFromResponse(payload: ApiLeaderboardResponse): LeaderboardSeason 
 
 function seasonFromGeneratedAt(
   generatedAt?: string,
-  scoringVersion = frontendPolicy.scoreVersionFallback,
+  scoringVersion: string = frontendPolicy.scoreVersionFallback,
   promotionRule?: string,
   resetRule?: string,
   promotionCutoffRank?: number,

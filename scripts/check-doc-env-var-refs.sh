@@ -32,6 +32,8 @@ collect_known_vars() {
       | sed -E 's/^([^:]+:)?[0-9]+:[[:space:]]*#?[[:space:]]*([A-Z][A-Z0-9_]*)=$/\2/'
   done
 
+  sed -nE 's/^\| `([A-Z][A-Z0-9_]*)` \|.*/\1/p' "$ROOT_DIR/gitrank/docs/configuration.md"
+
   cd "$ROOT_DIR"
   rg -n -o '(export[[:space:]]+)?[A-Z][A-Z0-9_]*=' scripts gitrank/scripts --glob '*.sh' \
     | sed -E 's/^([^:]+:)?[0-9]+:(export[[:space:]]+)?([A-Z][A-Z0-9_]*)=$/\3/'

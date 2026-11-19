@@ -14,12 +14,10 @@ import (
 )
 
 type Config struct {
-	BaseURL         string
-	APIKey          string
-	Model           string
-	RequestTimeout  time.Duration
-	ModerationModel string
-	EmbeddingModel  string
+	BaseURL        string
+	APIKey         string
+	Model          string
+	RequestTimeout time.Duration
 }
 
 type ResponsesRequest struct {

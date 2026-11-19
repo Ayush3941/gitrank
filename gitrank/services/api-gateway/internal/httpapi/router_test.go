@@ -1899,7 +1899,6 @@ func testConfig(profileBaseURL, authBaseURL, ingestorBaseURL string) config.App 
 		GitHub: config.GitHub{
 			AuthorizeURL:     "https://github.com/login/oauth/authorize",
 			TokenURL:         "https://github.com/login/oauth/access_token",
-			DeviceURL:        "https://github.com/login/device/code",
 			AppID:            "12345",
 			AppClientID:      "Iv1.test-client-id",
 			AppClientSecret:  "test-client-secret",

@@ -401,7 +401,7 @@ assert_backend_env_default_parity() {
     cd "$ROOT_DIR/gitrank/packages/config" \
       && go test ./... -run 'TestLoadDefaultsMatchBackendEnvExample|TestLoadDefaultsByServiceAddressKey' -count=1 >/dev/null
   ); then
-    fail "backend config defaults are out of sync with gitrank/.env.example"
+    fail "backend config defaults are out of sync with the env template and configuration reference"
   fi
 }
 

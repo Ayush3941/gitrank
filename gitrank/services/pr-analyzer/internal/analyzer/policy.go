@@ -1,10 +1,6 @@
 package analyzer
 
-import (
-	"encoding/json"
-	"slices"
-	"strings"
-)
+import "strings"
 
 type AnalyzerPolicy struct {
 	SecurityKeywords         []string            `json:"security_keywords"`
@@ -128,130 +124,6 @@ func defaultAnalyzerPolicy() AnalyzerPolicy {
 	}
 }
 
-func loadAnalyzerPolicy(rawJSON string) AnalyzerPolicy {
-	policy := defaultAnalyzerPolicy()
-	rawJSON = strings.TrimSpace(rawJSON)
-	if rawJSON == "" {
-		return policy
-	}
-
-	decoder := json.NewDecoder(strings.NewReader(rawJSON))
-	decoder.DisallowUnknownFields()
-	if err := decoder.Decode(&policy); err != nil {
-		return defaultAnalyzerPolicy()
-	}
-	return normalizeAnalyzerPolicy(policy)
-}
-
-func normalizeAnalyzerPolicy(policy AnalyzerPolicy) AnalyzerPolicy {
-	defaults := defaultAnalyzerPolicy()
-
-	policy.SecurityKeywords = normalizeTokenList(policy.SecurityKeywords, defaults.SecurityKeywords)
-	policy.PerformanceKeywords = normalizeTokenList(policy.PerformanceKeywords, defaults.PerformanceKeywords)
-	policy.RefactorKeywords = normalizeTokenList(policy.RefactorKeywords, defaults.RefactorKeywords)
-	policy.BugFixKeywords = normalizeTokenList(policy.BugFixKeywords, defaults.BugFixKeywords)
-	policy.MaintainerDesignKeywords = normalizeTokenList(policy.MaintainerDesignKeywords, defaults.MaintainerDesignKeywords)
-	policy.GuardedSummaryPhrases = normalizeTokenList(policy.GuardedSummaryPhrases, defaults.GuardedSummaryPhrases)
-	policy.CategorySkills = normalizeSkillMap(policy.CategorySkills, defaults.CategorySkills)
-
-	policy.ConfidenceBase = pickFloat(policy.ConfidenceBase, defaults.ConfidenceBase)
-	policy.ConfidenceDocsOnlyBonus = pickFloat(policy.ConfidenceDocsOnlyBonus, defaults.ConfidenceDocsOnlyBonus)
-	policy.ConfidenceSourceBonus = pickFloat(policy.ConfidenceSourceBonus, defaults.ConfidenceSourceBonus)
-	policy.ConfidenceLabelsBonus = pickFloat(policy.ConfidenceLabelsBonus, defaults.ConfidenceLabelsBonus)
-	policy.ConfidenceIssueReferenceBonus = pickFloat(policy.ConfidenceIssueReferenceBonus, defaults.ConfidenceIssueReferenceBonus)
-	policy.ConfidenceCriticalityBonus = pickFloat(policy.ConfidenceCriticalityBonus, defaults.ConfidenceCriticalityBonus)
-	policy.ConfidenceMax = pickFloat(policy.ConfidenceMax, defaults.ConfidenceMax)
-
-	policy.DepthBase = pickFloat(policy.DepthBase, defaults.DepthBase)
-	policy.DepthChangedFilesCap = pickInt(policy.DepthChangedFilesCap, defaults.DepthChangedFilesCap)
-	policy.DepthChangedFilesBonus = pickFloat(policy.DepthChangedFilesBonus, defaults.DepthChangedFilesBonus)
-	policy.DepthCommitsCap = pickInt(policy.DepthCommitsCap, defaults.DepthCommitsCap)
-	policy.DepthCommitsBonus = pickFloat(policy.DepthCommitsBonus, defaults.DepthCommitsBonus)
-	policy.DepthDiffLinesCap = pickInt(policy.DepthDiffLinesCap, defaults.DepthDiffLinesCap)
-	policy.DepthDiffLinesDivisor = pickFloat(policy.DepthDiffLinesDivisor, defaults.DepthDiffLinesDivisor)
-	policy.DepthSourceFilesBonus = pickFloat(policy.DepthSourceFilesBonus, defaults.DepthSourceFilesBonus)
-	policy.DepthTestFilesBonus = pickFloat(policy.DepthTestFilesBonus, defaults.DepthTestFilesBonus)
-	policy.DepthInfraSourceBonus = pickFloat(policy.DepthInfraSourceBonus, defaults.DepthInfraSourceBonus)
-	policy.DepthCriticalityCap = pickInt(policy.DepthCriticalityCap, defaults.DepthCriticalityCap)
-	policy.DepthCriticalityBonus = pickFloat(policy.DepthCriticalityBonus, defaults.DepthCriticalityBonus)
-	policy.DepthPolyglotBonus = pickFloat(policy.DepthPolyglotBonus, defaults.DepthPolyglotBonus)
-	policy.DepthDraftPenalty = pickFloat(policy.DepthDraftPenalty, defaults.DepthDraftPenalty)
-	policy.DepthMin = pickFloat(policy.DepthMin, defaults.DepthMin)
-	policy.DepthMax = pickFloat(policy.DepthMax, defaults.DepthMax)
-	if policy.DepthMax < policy.DepthMin {
-		policy.DepthMax = policy.DepthMin
-	}
-
-	policy.ReviewBase = pickFloat(policy.ReviewBase, defaults.ReviewBase)
-	policy.ReviewApprovedBonus = pickFloat(policy.ReviewApprovedBonus, defaults.ReviewApprovedBonus)
-	policy.ReviewChangesRequestedBonus = pickFloat(policy.ReviewChangesRequestedBonus, defaults.ReviewChangesRequestedBonus)
-	policy.ReviewCommentedBonus = pickFloat(policy.ReviewCommentedBonus, defaults.ReviewCommentedBonus)
-	policy.ReviewMaintainerAssociationAdd = pickFloat(policy.ReviewMaintainerAssociationAdd, defaults.ReviewMaintainerAssociationAdd)
-	policy.ReviewCyclesCap = pickInt(policy.ReviewCyclesCap, defaults.ReviewCyclesCap)
-	policy.ReviewCyclesBonus = pickFloat(policy.ReviewCyclesBonus, defaults.ReviewCyclesBonus)
-	policy.ReviewMax = pickFloat(policy.ReviewMax, defaults.ReviewMax)
-
-	policy.ReviewMeaningfulThreshold = pickFloat(policy.ReviewMeaningfulThreshold, defaults.ReviewMeaningfulThreshold)
-	policy.SmallChangeMaxFiles = pickInt(policy.SmallChangeMaxFiles, defaults.SmallChangeMaxFiles)
-	policy.SmallChangeMaxDiffLines = pickInt(policy.SmallChangeMaxDiffLines, defaults.SmallChangeMaxDiffLines)
-
-	return policy
-}
-
-func normalizeTokenList(raw []string, fallback []string) []string {
-	normalized := make([]string, 0, len(raw))
-	for _, item := range raw {
-		item = strings.ToLower(strings.TrimSpace(item))
-		if item == "" {
-			continue
-		}
-		normalized = append(normalized, item)
-	}
-	normalized = slices.Compact(normalized)
-	if len(normalized) == 0 {
-		return slices.Clone(fallback)
-	}
-	return normalized
-}
-
-func normalizeSkillMap(raw map[string][]string, fallback map[string][]string) map[string][]string {
-	if len(raw) == 0 {
-		return cloneSkillMap(fallback)
-	}
-	normalized := make(map[string][]string, len(raw))
-	for category, skills := range raw {
-		category = strings.TrimSpace(category)
-		if category == "" {
-			continue
-		}
-		skillSet := make([]string, 0, len(skills))
-		for _, skill := range skills {
-			skill = strings.TrimSpace(skill)
-			if skill == "" {
-				continue
-			}
-			skillSet = append(skillSet, skill)
-		}
-		skillSet = slices.Compact(skillSet)
-		if len(skillSet) == 0 {
-			continue
-		}
-		normalized[category] = skillSet
-	}
-	if len(normalized) == 0 {
-		return cloneSkillMap(fallback)
-	}
-	return normalized
-}
-
-func cloneSkillMap(source map[string][]string) map[string][]string {
-	cloned := make(map[string][]string, len(source))
-	for key, values := range source {
-		cloned[key] = slices.Clone(values)
-	}
-	return cloned
-}
-
 func hasAnyKeyword(text string, keywords []string) bool {
 	for _, keyword := range keywords {
 		if strings.Contains(text, keyword) {
@@ -259,18 +131,4 @@ func hasAnyKeyword(text string, keywords []string) bool {
 		}
 	}
 	return false
-}
-
-func pickFloat(value, fallback float64) float64 {
-	if value <= 0 {
-		return fallback
-	}
-	return value
-}
-
-func pickInt(value, fallback int) int {
-	if value <= 0 {
-		return fallback
-	}
-	return value
 }

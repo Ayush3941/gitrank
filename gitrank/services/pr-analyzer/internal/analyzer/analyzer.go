@@ -15,14 +15,11 @@ const analyzerVersion = "deterministic.v1"
 const aiSummaryPromptVersion = "ai.summary.v1"
 
 type AIConfig struct {
-	Provider            string
-	APIKey              string
-	Model               string
-	BaseURL             string
-	RequestTimeout      time.Duration
-	SummaryMaxRunes     int
-	PromptFilePathLimit int
-	AnalyzerPolicyJSON  string
+	Provider       string
+	APIKey         string
+	Model          string
+	BaseURL        string
+	RequestTimeout time.Duration
 }
 
 type Service struct {
@@ -39,7 +36,7 @@ func New() Service {
 func NewWithAI(cfg AIConfig) Service {
 	return Service{
 		summaryClient: newGeminiSummaryClient(cfg),
-		policy:        loadAnalyzerPolicy(cfg.AnalyzerPolicyJSON),
+		policy:        defaultAnalyzerPolicy(),
 	}
 }
 

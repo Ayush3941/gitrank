@@ -3,6 +3,7 @@ package scoring
 import (
 	"testing"
 
+	"github.com/gitrank/gitrank/packages/config"
 	"github.com/gitrank/gitrank/packages/contracts"
 )
 
@@ -112,7 +113,7 @@ func TestScoreRepeatedSimilarContributionGetsDiminishingReturns(t *testing.T) {
 }
 
 func TestRepositoryWeightIsBounded(t *testing.T) {
-	policy := defaultPolicy()
+	policy := config.DefaultScoringPolicy()
 	t.Run("high profile repository bonus is capped", func(t *testing.T) {
 		got := repositoryWeight(policy, contracts.RepositoryContext{
 			FullName:    "octo/repo",

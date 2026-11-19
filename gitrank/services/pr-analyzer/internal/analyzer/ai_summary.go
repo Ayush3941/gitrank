@@ -15,6 +15,11 @@ import (
 	"github.com/gitrank/gitrank/packages/contracts"
 )
 
+const (
+	summaryMaxRunes            = 320
+	summaryPromptFilePathLimit = 12
+)
+
 type aiSummaryClient struct {
 	httpClient          *http.Client
 	endpoint            string
@@ -90,9 +95,7 @@ func newGeminiSummaryClient(cfg AIConfig) *aiSummaryClient {
 	parsedBase.Fragment = ""
 
 	timeout := cfg.RequestTimeout
-	maxSummaryRunes := cfg.SummaryMaxRunes
-	promptFilePathLimit := cfg.PromptFilePathLimit
-	if timeout <= 0 || maxSummaryRunes <= 0 || promptFilePathLimit <= 0 {
+	if timeout <= 0 {
 		return nil
 	}
 
@@ -101,8 +104,8 @@ func newGeminiSummaryClient(cfg AIConfig) *aiSummaryClient {
 		endpoint:            parsedBase.String(),
 		apiKey:              apiKey,
 		model:               model,
-		maxSummaryRunes:     maxSummaryRunes,
-		promptFilePathLimit: promptFilePathLimit,
+		maxSummaryRunes:     summaryMaxRunes,
+		promptFilePathLimit: summaryPromptFilePathLimit,
 	}
 }
 
