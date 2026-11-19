@@ -1,8 +1,14 @@
 # Contributing to GitRank
 
-Last reviewed: June 14, 2026
+Last reviewed: November 19, 2026
 
 This document is intentionally detailed.
+
+## Session Notes (November 19, 2026)
+
+- Expanded [contributor onboarding](gitrank/docs/onboarding.md) with the product aim, intended audiences, service ownership, evidence authority, and implementation paths for browser auth, dashboard sync, and full PR grading.
+- Recorded current boundaries for bounded discovery, review hydration, analyzer invocation, queue handoff, scoring eligibility, heuristic report meters, quest XP, and leaderboard season semantics. These are code-review observations; live readiness and empirical scoring quality still require separate evidence.
+- Verification: 85 selected frontend tests passed across 10 files. The backend workspace run passed except for eight existing ingestor fetch-helper tests whose executor setup does not enable the strict GitHub App runtime. Service-specific integration database URLs were unset, so database integration tests were not exercised. The full repo-sync check stopped at the pre-existing untracked root PDF; that reference was left in place.
 
 ## Session Notes (June 14, 2026)
 
