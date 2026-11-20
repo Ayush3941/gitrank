@@ -158,50 +158,31 @@ describe("pr report metric ledger", () => {
 
     render(<PRBattleReportPageClient owner="octo" repo="gitrank" number={42} />);
 
-    expect(screen.getByText("2 metrics")).toBeTruthy();
     expect(screen.getByText("8 metrics")).toBeTruthy();
     expect(screen.getByText("3 metrics")).toBeTruthy();
 
-    const xpMetricLabel = screen.getByText((content, element) => {
-      return element?.tagName.toLowerCase() === "dt" && content === "XP earned";
+    const metricLabel = screen.getByText((content, element) => {
+      return element?.tagName.toLowerCase() === "dt" && content === "Difficulty score";
     });
-    const xpMetricCell = xpMetricLabel.closest("div");
-    if (!xpMetricCell) {
-      throw new Error("Expected XP earned metric cell to render.");
+    const metricCell = metricLabel.closest("div");
+    if (!metricCell) {
+      throw new Error("Expected difficulty metric cell to render.");
     }
-    const xpValue = xpMetricCell.querySelector("dd[aria-describedby]");
-    if (!xpValue) {
-      throw new Error("Expected XP earned metric value to reference its description.");
+    const metricValue = metricCell.querySelector("dd[aria-describedby]");
+    if (!metricValue) {
+      throw new Error("Expected difficulty metric value to reference its description.");
     }
-    const descriptionId = xpValue.getAttribute("aria-describedby");
-    expect(xpValue.hasAttribute("title")).toBe(false);
+    const descriptionId = metricValue.getAttribute("aria-describedby");
+    expect(metricValue.hasAttribute("title")).toBe(false);
     expect(descriptionId).toBeTruthy();
 
     const description = document.getElementById(descriptionId ?? "");
-    expect(description?.textContent).toBe("Final deterministic XP after multipliers and penalties.");
+    expect(description?.textContent).toBe("Complexity signal from size and code surface.");
     expect(description?.className).toContain("sr-only");
 
     fireEvent.click(screen.getByRole("button", { name: "Show metric notes" }));
 
     expect(description?.className).not.toContain("sr-only");
-    expect(screen.getByText("Final deterministic XP after multipliers and penalties.")).toBeTruthy();
-  });
-
-  it("uses readable pending copy when score-version metadata is unavailable", () => {
-    const report = {
-      ...toPullRequestAnalysis(prReportFixture),
-      scoreVersion: undefined,
-    };
-    mocks.query.mockReturnValue({
-      data: report,
-      isLoading: false,
-      isError: false,
-      refetch: mocks.refetch,
-    });
-
-    render(<PRBattleReportPageClient owner="octo" repo="gitrank" number={42} />);
-
-    expect(screen.getByText("Score version pending")).toBeTruthy();
-    expect(screen.queryByText("unknown")).toBeNull();
+    expect(screen.getByText("Complexity signal from size and code surface.")).toBeTruthy();
   });
 });

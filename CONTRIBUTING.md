@@ -1260,6 +1260,10 @@ AI input/token/cost limits apply only to generation; deterministic analysis
 does not depend on provider budgets. Generation never changes report health, scores, or sync state. The browser keeps
 text only in component state and cancels requests when the panel unmounts.
 
+The PR report's deterministic ledger shows core scoring signals and change-volume
+inputs. XP earned stays in the overview; the ledger omits the duplicate score
+outputs card and score-version row.
+
 Migration 0022 drops narrative/provider columns and clears copied report
 snapshots. Migration 0015's index uses only retained columns so full migration
 replay remains valid. Verify upgrades, fresh installs, repeat migration runs, and

@@ -3,7 +3,7 @@
 import { useId, useState } from "react";
 import { DisclosureToggle } from "@/components/shared/DisclosureToggle";
 import { GlowCard } from "@/components/shared/GlowCard";
-import { formatNumber, formatPluralCount, formatXp } from "@/lib/formatters";
+import { formatNumber, formatPluralCount } from "@/lib/formatters";
 import { formatContributionStatusLabel } from "@/lib/presentation/contribution-status";
 import { formatPRCategoryLabel } from "@/lib/presentation/pr-category-label";
 import type { PullRequestAnalysis } from "@/types/gitrank";
@@ -23,7 +23,7 @@ export function DeterministicMetricsLedgerCard({
         <div>
           <p className="text-xs font-medium text-primary">Deterministic metrics ledger</p>
           <h2 className="mt-2 text-sm font-semibold text-white">
-            Deterministic scoring inputs and outputs
+            Deterministic scoring inputs
           </h2>
           <p className="mt-2 text-xs text-muted">
             Only metrics used directly by the deterministic score formula are shown here.
@@ -41,25 +41,6 @@ export function DeterministicMetricsLedgerCard({
         />
       </div>
       <div id={ledgerRegionId} role="region" aria-labelledby={ledgerToggleId} className="space-y-4">
-        <LedgerSection
-          title="Score outputs"
-          description="Final output from deterministic scoring."
-          showDescriptions={showLedgerNotes}
-          metrics={[
-            {
-              id: "xp_earned",
-              label: "XP earned",
-              value: formatXp(report.contribution.xpEarned),
-              description: "Final deterministic XP after multipliers and penalties.",
-            },
-            {
-              id: "score_version",
-              label: "Score version",
-              value: report.scoreVersion || "Score version pending",
-              description: "Scoring formula revision used for this result.",
-            },
-          ]}
-        />
         <LedgerSection
           title="Core scoring signals"
           description="Primary inputs used directly by scoring."
