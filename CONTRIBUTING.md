@@ -597,6 +597,7 @@ Required guardrails:
 
 - Keep animation minimal on product routes (`/dashboard`, `/contributions`, `/badges`, `/quests`, `/settings`, `/leaderboard`).
 - Avoid continuous/repeating motion loops in core layouts, cards, tables, and nav surfaces.
+- The PR summary's three-dot loader may pulse only while awaiting its first text; reduced-motion users see static dots. This request-feedback stylesheet is the sole motion-budget exception.
 - Prefer static visuals over runtime visual effects (for example heavy blur stacks, multi-layer glow animations, and JS-driven parallax).
 - Use transitions only for state clarity; keep them short and limited to `opacity` and `transform` when possible.
 - Do not block first meaningful render on optional data. Non-critical enrichments (AI summaries, secondary panels, decorative stats) must degrade gracefully.

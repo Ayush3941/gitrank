@@ -36,6 +36,8 @@ function walk(entry) {
 
   const relative = path.relative(root, entry).split(path.sep).join("/");
   const source = readFileSync(entry, "utf8");
+  const requestFeedbackOnly =
+    relative === "features/pr-report/components/SummaryLoadingDots.module.css";
 
   if (/\bfrom\s+["']framer-motion["']/.test(source)) {
     violations.push(`${relative}: framer-motion import detected`);
@@ -45,7 +47,7 @@ function walk(entry) {
     violations.push(`${relative}: animation utility class detected`);
   }
 
-  if (/@keyframes\b/.test(source)) {
+  if (!requestFeedbackOnly && /@keyframes\b/.test(source)) {
     violations.push(`${relative}: keyframe animation declaration detected`);
   }
 
@@ -53,6 +55,7 @@ function walk(entry) {
     const rawValue = (match[1] ?? "").trim().toLowerCase();
     if (!rawValue) continue;
     if (rawValue.startsWith("none")) continue;
+    if (requestFeedbackOnly) continue;
     violations.push(`${relative}: animation declaration detected (${rawValue})`);
   }
 

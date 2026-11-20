@@ -5,6 +5,7 @@ import { GlowCard } from "@/components/shared/GlowCard";
 import { InlineNotice } from "@/components/shared/InlineNotice";
 import { Button } from "@/components/ui/button";
 import { usePRSummary } from "@/features/pr-report/application/use-pr-summary";
+import styles from "./SummaryLoadingDots.module.css";
 
 export function PRReportAISummaryCard({
   owner,
@@ -17,6 +18,7 @@ export function PRReportAISummaryCard({
 }) {
   const { text, status, error, generate, stop } = usePRSummary(owner, repo, number);
   const generating = status === "generating";
+  const hasSummary = text.trim().length > 0;
 
   return (
     <GlowCard className="space-y-4">
@@ -41,14 +43,20 @@ export function PRReportAISummaryCard({
             aria-busy={generating || undefined}
             onClick={() => { void generate(); }}
           >
-            {generating ? "Generating summary" : text ? "Generate again" : "Generate AI summary"}
+            {generating ? "Generating summary" : hasSummary ? "Generate again" : "Generate AI summary"}
           </Button>
           {generating ? (
             <Button type="button" size="sm" variant="ghost" onClick={stop}>Stop</Button>
           ) : null}
         </div>
       </div>
-      {!text ? (
+      {!hasSummary ? generating ? (
+        <div aria-hidden="true" className="flex h-6 items-center gap-1.5">
+          {["first", "middle", "last"].map((dot) => (
+            <span key={dot} className={`${styles.dot} h-1.5 w-1.5 rounded-full bg-primary`} />
+          ))}
+        </div>
+      ) : (
         <p className="text-sm leading-6 text-muted">
           Explore what changed and why it matters, explained in plain language.
         </p>
@@ -61,7 +69,7 @@ export function PRReportAISummaryCard({
       >
         {generating ? "Generating AI summary." : status === "complete" ? "AI summary ready." : status === "stopped" ? "Generation stopped." : ""}
       </span>
-      {text ? (
+      {hasSummary ? (
         <p
           aria-busy={generating || undefined}
           className="readable-measure break-anywhere whitespace-pre-line text-base leading-8 text-muted"
